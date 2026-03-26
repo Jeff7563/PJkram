@@ -19,7 +19,7 @@
     <div class="filter-bar">
       <div class="filter-group">
         <div class="filter-group">
-          <input type="text" placeholder="ค้นหาเอกสาร..." style="min-width: 250px;">
+          <input type="text" placeholder="ค้นหาเอกสาร..." class="form-control min-w-250">
         </div>
         <select>
           <option value="">สาขา</option>
@@ -35,7 +35,7 @@
         </select>
         <input type="date" class="date-input" value="2026-03-24">
       </div>
-      <div class="filter-group" style="justify-content: flex-end;">
+      <div class="filter-group justify-content-end">
         <button class="btn-search">ค้นหา</button>
         <button class="btn-reset">รีเซ็ต</button>
       </div>
@@ -52,7 +52,7 @@
             <th>ชื่อผู้ใช้งาน</th>
             <th>ประเภทรถ</th>
             <th>สถานะ</th>
-            <th style="text-align: center;">จัดการ</th>
+            <th class="text-center">จัดการ</th>
           </tr>
         </thead>
         <tbody>
@@ -62,9 +62,9 @@
             <td>TEST</td>
             <td>TEST</td>
             <td>TEST</td>
-            <td><span class="badge-status" style="padding: 6px 14px; font-size: 0.9rem; background-color: #27ae60;">อนุมัติการเคลม</span></td>
-            <td style="text-align: center;">
-              <a href="verify_claim.php" class="btn-action" style="padding: 6px 15px; font-size: 0.9rem;">ตรวจสอบ</a>
+            <td><span class="badge-status bg-success px-3 fs-md">อนุมัติการเคลม</span></td>
+            <td class="text-center">
+              <a href="verify_claim.php" class="btn-action px-3 py-1 fs-md">ตรวจสอบ</a>
             </td>
           </tr>
           <tr>
@@ -73,9 +73,9 @@
             <td>TEST</td>
             <td>TEST</td>
             <td>TEST</td>
-            <td><span class="badge-status" style="padding: 6px 14px; font-size: 0.9rem; background-color: #e74c3c;">ไม่อนุมัติ</span></td>
-            <td style="text-align: center;">
-              <a href="verify_claim.php" class="btn-action" style="padding: 6px 15px; font-size: 0.9rem;">ตรวจสอบ</a>
+            <td><span class="badge-status bg-danger px-3 fs-md text-white">ไม่อนุมัติ</span></td>
+            <td class="text-center">
+              <a href="verify_claim.php" class="btn-action px-3 py-1 fs-md">ตรวจสอบ</a>
             </td>
           </tr>
           <tr>
@@ -84,9 +84,9 @@
             <td>TEST</td>
             <td>TEST</td>
             <td>TEST</td>
-            <td><span class="badge-status" style="padding: 6px 14px; font-size: 0.9rem; background-color: #f39c12;">ตีกลับไปแก้ไข</span></td>
-            <td style="text-align: center;">
-              <a href="verify_claim.php" class="btn-action" style="padding: 6px 15px; font-size: 0.9rem;">ตรวจสอบ</a>
+            <td><span class="badge-status bg-warning px-3 fs-md text-white">ตีกลับไปแก้ไข</span></td>
+            <td class="text-center">
+              <a href="verify_claim.php" class="btn-action px-3 py-1 fs-md">ตรวจสอบ</a>
             </td>
           </tr>
         </tbody>

@@ -12,27 +12,28 @@
   <?php 
     $current_page = 'check.php';
     include 'includes/sidebar.php'; 
+    $doc_id = isset($_GET['id']) ? htmlspecialchars($_GET['id']) : 'TS01-001';
   ?>
 
-  <!-- Main Content -->
+    <!-- Main Content -->
   <div class="main-content">
     
       <div class="filter-bar">
-        <div style="font-size: 1.25rem; font-weight: 600;">ตรวจสอบ <span style="color: #999; font-weight: 400;">/ ตรวจสอบข้อมูลเคลม</span></div>
-        <div class="filter-group" style="justify-content: flex-end;">
-          <a href="#verification-section" class="btn-action" style="background-color: var(--primary-orange);">
-              <svg style="vertical-align: middle; margin-right: 5px;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+        <div class="fs-xl fw-600">ตรวจสอบ <span class="color-999 fw-normal">/ <?= $doc_id ?> / ตรวจสอบข้อมูลเคลม</span></div>
+        <div class="filter-group filter-group justify-content-end">
+          <a href="#verification-section" class="btn-action bg-primary-orange">
+              <svg class="vertical-middle mr-1"width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
               ไปยังส่วนตรวจสอบ
           </a>
-          <a href="check.php" class="btn-action" style="background-color: #6c757d;">
-              <svg style="vertical-align: middle; margin-right: 5px;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          <a href="check.php" class="btn-action bg-secondary">
+              <svg class="vertical-middle mr-1"width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
               ย้อนกลับ
           </a>
         </div>
       </div>
 
     <!-- Edit Form blocks -->
-    <div class="edit-container" style="margin-bottom: 40px;">
+    <div class="edit-container mb-5">
       
       <!-- Card 1: Main Info -->
       <div class="edit-card">
@@ -41,37 +42,45 @@
           ข้อมูลเอกสารเคลม
         </div>
           <div class="grid-2">
-            <div class="form-group row-group">
-              <label class="form-label">สาขา</label>
-              <select class="form-control">
-                <option>สำนักงานใหญ่</option>
-              </select>
-            </div>
-            
-            <div class="form-group row-group" style="align-items: center;">
-              <label class="form-label">ผู้ดูแลประจำร้าน</label>
-              <span class="text-danger" style="margin-top: 0;">MR TEST</span>
-            </div>
-            
-            <div class="form-group row-group">
-              <label class="form-label req">ประเภทการเคลม</label>
-              <div style="display:flex; gap:10px; width:100%;">
-                <select class="form-control"><option>รถลูกค้า</option></select>
-                <select class="form-control"><option>เคลมปกติ</option></select>
+            <!-- Left Column -->
+            <div class="d-flex flex-column gap-20">
+              <div class="form-group row-group">
+                <label class="form-label label-140 fw-600">สาขา</label>
+                <select class="form-control" disabled>
+                  <option>สำนักงานใหญ่</option>
+                </select>
               </div>
-            </div>
-            <div></div>
-            
-            <div class="form-group row-group">
-              <label class="form-label">เลขที่เอกสาร</label>
-              <div style="display:flex; gap:15px; align-items:center; width:100%; flex-wrap:wrap;">
-                <input type="text" class="form-control" value="TS01-001" readonly style="flex:1; min-width:150px;">
+              <div class="form-group row-group">
+                <label class="form-label label-140 fw-600">ประเภทการเคลม</label>
+                <div class="d-flex gap-10 w-100">
+                  <select class="form-control min-w-120"disabled><option>รถลูกค้า</option></select>
+                  <select class="form-control" disabled><option>เคลมปกติ</option></select>
+                </div>
+              </div>
+              <div class="form-group row-group">
+                <label class="form-label label-140 fw-600">เลขที่เอกสาร</label>
+                <input type="text" class="form-control" value="<?= $doc_id ?>" readonly class="bg-disabled input-readonly">
+              </div>
+              <div class="form-group row-group">
+                <label class="form-label label-140 fw-600">วันที่เอกสาร</label>
+                <input type="text" class="form-control" value="25/03/2569" readonly class="bg-light-gray input-readonly">
               </div>
             </div>
             
-            <div class="form-group row-group">
-              <label class="form-label">วันที่เอกสาร</label>
-              <input type="date" class="form-control" value="2026-03-23">
+            <!-- Right Column -->
+            <div class="d-flex flex-column gap-20">
+              <div class="form-group row-group">
+                <label class="form-label label-140 fw-600 color-555">ผู้บันทึกส่งเคลม</label>
+                <input type="text" class="form-control" value="Mr. TEST" readonly class="bg-readonly input-readonly">
+              </div>
+              <div class="form-group row-group">
+                <label class="form-label label-140 fw-600 color-555">ผู้แก้ไขครั้งล่าสุด</label>
+                <input type="text" id="top-editor-name" class="form-control" value="Mr. TEST" readonly class="bg-readonly input-readonly">
+              </div>
+              <div class="form-group row-group">
+                <label class="form-label label-140 fw-600 color-555">วันที่แก้ไข</label>
+                <input type="text" id="top-edit-date" class="form-control" value="00/00/0000" readonly class="bg-light-gray input-readonly">
+              </div>
             </div>
           </div>
         </div>
@@ -91,9 +100,9 @@
           </div>
           <div></div>
           
-          <div class="form-group row-group" style="grid-column: 1 / -1;">
+          <div class="form-group row-group form-group row-group full-width">
             <label class="form-label">ที่อยู่</label>
-            <div style="display:flex; flex-direction:column; gap:10px; width:100%;">
+            <div class="d-flex flex-column gap-10 w-100">
               <input type="text" class="form-control" placeholder="ที่อยู่ 1">
               <input type="text" class="form-control" placeholder="ที่อยู่ 2">
             </div>
@@ -133,7 +142,7 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
           ปัญหา
         </div>
-        <div class="form-group" style="margin-bottom: 25px;">
+        <div class="form-group mb-4">
           <label class="form-label">รายละเอียดปัญหาที่ลูกค้าแจ้ง</label>
           <textarea class="form-control" rows="4" placeholder="โปรดใส่รายละเอียด"></textarea>
         </div>
@@ -142,13 +151,29 @@
           <textarea class="form-control" rows="4" placeholder="โปรดใส่รายละเอียด"></textarea>
         </div>
       </div>
-      
+
+      <!-- Card: รูปภาพปัญหา -->
+      <div class="edit-card">
+        <div class="section-title d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-8">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+            รูปภาพปัญหา
+            <span id="img-count-badge" style="display:none;background:var(--primary-orange);color:#fff;border-radius:20px;padding:2px 12px;font-size:0.8rem;font-weight:600;margin-left:8px;">0 รูป</span>
+          </div>
+          <label class="btn-action cursor-pointer m-0 px-3 py-1 fs-md">
+            + อัปโหลดรูปภาพ
+            <input type="file" id="image-upload" multiple accept="image/*" class="d-none">
+          </label>
+        </div>
+        <div class="gallery-grid" id="gallery-grid"></div>
+      </div>
+
       <!-- Card 5: อะไหล่ และ ค่าแรง -->
-      <div class="edit-card" style="padding:0; overflow:hidden;">
+      <div class="edit-card edit-card p-0 overflow-hidden">
         <!-- Parts Table Area -->
-          <div style="padding: 25px 25px 10px 25px;">
-            <div class="section-title" style="display:flex; justify-content:space-between; border-bottom:none;">
-              <div style="display:flex; align-items:center; gap:8px;">
+          <div class="p-4 pb-2">
+            <div class="section-title section-title d-flex justify-content-between border-bottom-none">
+              <div class="d-flex align-items-center gap-8">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
                 รายการอะไหล่
               </div>
@@ -173,33 +198,33 @@
                 <tbody id="parts-tbody">
                   <!-- กลุ่มที่ 1: อะไหล่หลัก -->
                   <tr class="group-header">
-                    <td colspan="7" style="color:#e74c3c;">อะไหล่หลัก</td>
-                    <td colspan="3" class="center" style="font-weight:normal; font-size: 0.85rem; padding-top:20px; text-align:right; padding-right:10px;">
-                      <label style="cursor:pointer;"><input type="checkbox" class="custom-check">ไม่ระบุจำนวน อะไหล่หลัก</label>
+                    <td colspan="7" class="text-danger">อะไหล่หลัก</td>
+                    <td colspan="3" class="center fw-normal fs-sm pt-4 text-right pr-3">
+                      <label class="cursor-pointer"><input type="checkbox" class="custom-check">ไม่ระบุจำนวน อะไหล่หลัก</label>
                     </td>
                   </tr>
                   
-                  <tr id="add-main-row" style="background:#fff;">
-                    <td colspan="10" style="padding: 10px; text-align:center; border-bottom:1px solid #eaeaea;">
-                      <button type="button" class="btn-action" id="btn-add-main" style="background:#fff; color:var(--primary-orange); border: 1px dashed var(--primary-orange); padding: 5px 15px; font-size:0.85rem; margin:0 auto; display:inline-block;">+ เพิ่มอะไหล่หลัก</button>
+                  <tr id="add-main-row" class="bg-white">
+                    <td colspan="10" class="p-2 text-center border-bottom">
+                      <button type="button" class="btn-action" id="btn-add-main" class="btn-action bg-white text-primary-orange border-dashed-orange px-3 py-1 fs-sm mx-auto d-inline-block">+ เพิ่มอะไหล่หลัก</button>
                     </td>
                   </tr>
 
                   <!-- กลุ่มที่ 2: อะไหล่ที่เคลมร่วมกัน -->
                   <tr class="group-header">
-                    <td colspan="10" style="color:#e74c3c;">อะไหล่ที่เคลมร่วมกัน</td>
+                    <td colspan="10" class="text-danger">อะไหล่ที่เคลมร่วมกัน</td>
                   </tr>
                   
-                  <tr id="add-assoc-row" style="background:#fff;">
-                    <td colspan="10" style="padding: 10px; text-align:center; border-bottom:1px solid #eaeaea;">
-                      <button type="button" class="btn-action" id="btn-add-assoc" style="background:#fff; color:var(--primary-orange); border: 1px dashed var(--primary-orange); padding: 5px 15px; font-size:0.85rem; margin:0 auto; display:inline-block;">+ เพิ่มอะไหล่เคลมร่วม</button>
+                  <tr id="add-assoc-row" class="bg-white">
+                    <td colspan="10" class="p-2 text-center border-bottom">
+                      <button type="button" class="btn-action" id="btn-add-assoc" class="btn-action bg-white text-primary-orange border-dashed-orange px-3 py-1 fs-sm mx-auto d-inline-block">+ เพิ่มอะไหล่เคลมร่วม</button>
                     </td>
                   </tr>
 
                   <tr class="summary-row">
-                    <td colspan="5" style="padding-top:20px; padding-bottom:20px;">ยอดรวม</td>
+                    <td colspan="5" class="pt-4 pb-4">ยอดรวม</td>
                     <td class="center" id="sum-qty">3</td>
-                    <td class="center" id="sum-money" style="text-align: right; padding-right:15px;">126.75</td>
+                    <td class="center" id="sum-money" class="text-right pr-3">126.75</td>
                     <td colspan="3"></td>
                   </tr>
                 </tbody>
@@ -207,82 +232,81 @@
             </div>
           </div>
 
-      </div> <!-- ปิด Card ส่วนของอะไหล่ -->
-
-      <!-- Card 6: ค่าแรง -->
-      <div class="edit-card" style="padding: 25px; background: #fafafa;">
+        <!-- Labor Cost Area -->
+        <div class="border-top p-4 bg-light-alt">
           <div class="section-title">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
             ค่าแรง
           </div>
           <div class="grid-2">
             <!-- Left side labor -->
-            <div style="display:flex; flex-direction:column; gap:15px;">
+            <div class="d-flex flex-column gap-15">
               <div class="form-group row-group">
                 <label class="form-label req">จำนวน FRT</label>
-                <div style="display:flex; gap:10px; align-items:center; width:100%;">
-                  <input type="number" step="0.01" class="form-control num" id="labor-frt" value="0.00"> <span style="width:35px; display:inline-block; flex-shrink:0;">ชม.</span>
+                <div class="d-flex gap-10 align-items-center w-100">
+                  <input type="number" step="0.01" class="form-control num" id="labor-frt" value="0.00"> <span class="w-35 d-inline-block flex-shrink-0">ชม.</span>
                 </div>
               </div>
               <div class="form-group row-group">
                 <label class="form-label">FRT. Rate/hr</label>
-                <div style="display:flex; gap:10px; align-items:center; width:100%;">
-                  <input type="number" step="0.01" class="form-control num" id="labor-rate" value="0.00"> <span style="width:35px; display:inline-block; flex-shrink:0;">บาท</span>
+                <div class="d-flex gap-10 align-items-center w-100">
+                  <input type="number" step="0.01" class="form-control num" id="labor-rate" value="0.00"> <span class="w-35 d-inline-block flex-shrink-0">บาท</span>
                 </div>
               </div>
               <div class="form-group row-group">
                 <label class="form-label">รวมค่าแรง</label>
-                <div style="display:flex; gap:10px; align-items:center; width:100%;">
-                  <input type="text" class="form-control num" id="labor-total" value="0.00" readonly> <span style="width:35px; display:inline-block; flex-shrink:0;">บาท</span>
+                <div class="d-flex gap-10 align-items-center w-100">
+                  <input type="text" class="form-control num" id="labor-total" value="0.00" readonly> <span class="w-35 d-inline-block flex-shrink-0">บาท</span>
                 </div>
               </div>
               <div class="form-group row-group">
                 <label class="form-label">รวมค่าอะไหล่</label>
-                <div style="display:flex; gap:10px; align-items:center; width:100%;">
-                  <input type="text" class="form-control num" id="labor-parts-total" value="0.00" readonly> <span style="width:35px; display:inline-block; flex-shrink:0;">บาท</span>
+                <div class="d-flex gap-10 align-items-center w-100">
+                  <input type="text" class="form-control num" id="labor-parts-total" value="0.00" readonly> <span class="w-35 d-inline-block flex-shrink-0">บาท</span>
                 </div>
               </div>
             </div>
             <!-- Right side calculation -->
-            <div style="display:flex; flex-direction:column; gap:15px;">
+            <div class="d-flex flex-column gap-15">
                <div class="form-group row-group">
                 <label class="form-label">อัตราค่าการจัดการ</label>
-                <div style="display:flex; gap:10px; align-items:center; width:100%;">
-                  <input type="number" step="0.1" class="form-control num" id="manage-pct" value="0.00"> <span style="width:35px; display:inline-block; flex-shrink:0;">%</span>
+                <div class="d-flex gap-10 align-items-center w-100">
+                  <input type="number" step="0.1" class="form-control num" id="manage-pct" value="0.00"> <span class="w-35 d-inline-block flex-shrink-0">%</span>
                 </div>
               </div>
                <div class="form-group row-group">
                 <label class="form-label">ค่าการจัดการ</label>
-                <div style="display:flex; gap:10px; align-items:center; width:100%;">
-                  <input type="text" class="form-control num" id="manage-fee" value="0.00" readonly> <span style="width:35px; display:inline-block; flex-shrink:0;">บาท</span>
+                <div class="d-flex gap-10 align-items-center w-100">
+                  <input type="text" class="form-control num" id="manage-fee" value="0.00" readonly> <span class="w-35 d-inline-block flex-shrink-0">บาท</span>
                 </div>
               </div>
                <div class="form-group row-group">
                 <label class="form-label">ค่าใช้จ่ายอื่นๆ</label>
-                <div style="display:flex; gap:10px; align-items:center; width:100%;">
-                  <input type="number" step="0.01" class="form-control num" id="other-fee" value="0.00"> <span style="width:35px; display:inline-block; flex-shrink:0;">บาท</span>
+                <div class="d-flex gap-10 align-items-center w-100">
+                  <input type="number" step="0.01" class="form-control num" id="other-fee" value="0.00"> <span class="w-35 d-inline-block flex-shrink-0">บาท</span>
                 </div>
               </div>
                <div class="form-group row-group">
-                <label class="form-label" style="font-weight:600; color:var(--primary-orange);">รวมเงินเคลมสุทธิ</label>
-                <div style="display:flex; gap:10px; align-items:center; width:100%;">
-                  <input type="text" class="form-control num" id="grand-total" value="173.09" style="background:#fff5f0; border-color:var(--primary-orange); color:var(--primary-orange); font-weight:bold; font-size:1.1rem;" readonly> <span style="width:35px; display:inline-block; flex-shrink:0;">บาท</span>
+                <label class="form-label fw-600 text-primary-orange">รวมเงินเคลมสุทธิ</label>
+                <div class="d-flex gap-10 align-items-center w-100">
+                  <input type="text" class="form-control num" id="grand-total" value="173.09" class="verification-total" readonly> <span class="w-35 d-inline-block flex-shrink-0">บาท</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
       
       <!-- Card 6: รูปภาพปัญหา -->
       <div class="edit-card">
-        <div class="section-title" style="display:flex; justify-content:space-between; align-items:center;">
-          <div style="display:flex; align-items:center; gap:8px;">
+        <div class="section-title section-title d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-8">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
             รูปภาพปัญหา
           </div>
-          <label class="btn-action" style="cursor:pointer; margin:0; padding:6px 15px; font-size:0.9rem;">
+          <label class="btn-action cursor-pointer m-0 px-3 py-1 fs-md">
             + อัปโหลดรูปภาพ
-            <input type="file" id="image-upload" multiple accept="image/*" style="display:none;">
+            <input type="file" id="image-upload" multiple accept="image/*" class="d-none">
           </label>
         </div>
         
@@ -291,39 +315,39 @@
       </div>
       
       <!-- Card 7: การตรวจสอบผลและอนุมัติ -->
-      <div class="edit-card" id="verification-section" style="border: 2px solid var(--primary-orange); box-shadow: 0 8px 30px rgba(242,114,43,0.15);">
-        <div class="section-title" style="color: var(--primary-orange); border-bottom-color: rgba(242,114,43,0.2);">
+      <div class="edit-card" id="verification-section" class="verification-box">
+        <div class="section-title section-title verification-title">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
           ผลการตรวจสอบและอนุมัติ
         </div>
         
         <div class="grid-2">
           <!-- Checklists -->
-          <div style="display:flex; flex-direction:column; gap:12px;">
-            <label class="form-label" style="margin-bottom:5px;">รายการตรวจสอบ (Checklist)</label>
-            <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer;">
-              <input type="checkbox" class="custom-check" style="margin-top:2px; transform:scale(1.2);"> 
-              <span style="color:#333; font-size:0.95rem; line-height:1.4;">ตรวจสอบความถูกต้องของข้อมูลลูกค้าและหมายเลขตัวถัง</span>
+          <div class="checklist-container">
+            <label class="form-label mb-1">รายการตรวจสอบ (Checklist)</label>
+            <label class="checklist-item">
+              <input type="checkbox" class="custom-check custom-check checklist-checkbox"> 
+              <span class="checklist-text">ตรวจสอบความถูกต้องของข้อมูลลูกค้าและหมายเลขตัวถัง</span>
             </label>
-            <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer;">
-              <input type="checkbox" class="custom-check" style="margin-top:2px; transform:scale(1.2);"> 
-              <span style="color:#333; font-size:0.95rem; line-height:1.4;">ตรวจสอบรายละเอียดและการแนบรูปภาพประกอบปัญหา</span>
+            <label class="checklist-item">
+              <input type="checkbox" class="custom-check custom-check checklist-checkbox"> 
+              <span class="checklist-text">ตรวจสอบรายละเอียดและการแนบรูปภาพประกอบปัญหา</span>
             </label>
-            <label style="display:flex; align-items:flex-start; gap:10px; cursor:pointer;">
-              <input type="checkbox" class="custom-check" style="margin-top:2px; transform:scale(1.2);"> 
-              <span style="color:#333; font-size:0.95rem; line-height:1.4;">ตรวจสอบรายการอะไหล่ ค่าแรง และยอดเคลมสุทธิว่าถูกต้องเหมาะสม</span>
+            <label class="checklist-item">
+              <input type="checkbox" class="custom-check custom-check checklist-checkbox"> 
+              <span class="checklist-text">ตรวจสอบรายการอะไหล่ ค่าแรง และยอดเคลมสุทธิว่าถูกต้องเหมาะสม</span>
             </label>
           </div>
           
           <!-- Approval Status & Remarks -->
-          <div style="display:flex; flex-direction:column; gap:15px;">
+          <div class="d-flex flex-column gap-15">
             <div class="form-group row-group">
-              <label class="form-label req" style="width:120px;">ผลพิจารณา</label>
-              <select class="form-control" style="border-color:var(--primary-orange); border-width:2px; font-weight:bold;">
+              <label class="form-label req label-120">ผลพิจารณา</label>
+              <select class="form-control verification-select">
                 <option value="">-- กรุณาเลือกผลการตรวจสอบ --</option>
-                <option value="approve" style="color:#2ecc71;">อนุมัติการเคลม</option>
-                <option value="reject" style="color:#e74c3c;">ไม่อนุมัติ</option>
-                <option value="return" style="color:#f39c12;">ตีกลับไปแก้ไข</option>
+                <option value="approve" class="text-success">อนุมัติการเคลม</option>
+                <option value="reject" class="text-danger">ไม่อนุมัติ</option>
+                <option value="return" class="text-warning">ตีกลับไปแก้ไข</option>
               </select>
             </div>
             <div class="form-group">
@@ -333,20 +357,20 @@
           </div>
           
           <!-- Inspector Info -->
-          <div class="form-group row-group" style="padding-top:15px; border-top:1px dashed #ddd;">
-             <label class="form-label req" style="width:120px;">ผู้ตรวจสอบ</label>
+          <div class="form-group row-group form-group row-group signature-row">
+             <label class="form-label req label-120">ผู้ตรวจสอบ</label>
              <input type="text" class="form-control" placeholder="ชื่อ-นามสกุล ผู้ตรวจสอบ">
           </div>
-          <div class="form-group row-group" style="padding-top:15px; border-top:1px dashed #ddd;">
-             <label class="form-label req" style="width:120px;">วันที่ตรวจสอบ</label>
+          <div class="form-group row-group form-group row-group signature-row">
+             <label class="form-label req label-120">วันที่ตรวจสอบ</label>
              <input type="date" class="form-control" value="2026-03-24">
           </div>
         </div>
         
         <!-- Action Buttons -->
-        <div style="margin-top: 30px; display:flex; justify-content:flex-end; gap:15px;">
-          <a href="check.php" class="btn-action" style="background:#fff; color:#555; border:1px solid #ddd; padding:12px 25px; font-size:1rem; text-decoration:none;">ยกเลิก</a>
-          <button type="button" class="btn-action" style="background:#2ecc71; padding:12px 30px; font-size:1rem; box-shadow:0 4px 10px rgba(46,204,113,0.3); border:none; cursor:pointer; font-weight:600;">บันทึกผลการตรวจสอบ</button>
+        <div class="signature-actions">
+          <a href="check.php" class="btn-action btn-cancel">ยกเลิก</a>
+          <button type="button" class="btn-action btn-save">บันทึกผลการตรวจสอบ</button>
         </div>
       </div>
 
@@ -437,7 +461,7 @@
            <td class="center"><input type="text" class="form-control sm num part-total" value="0.00" readonly></td>
            <td class="center"><input type="checkbox" class="custom-check"></td>
            <td class="center"><input type="checkbox" class="custom-check"></td>
-           <td class="center"><button type="button" class="btn-remove-part" style="color:#e74c3c; background:none; border:none; cursor:pointer; font-weight:bold; font-size:1.1rem;">×</button></td>
+           <td class="center"><button type="button" class="btn-remove-part btn-remove-part-icon">×</button></td>
         `;
         attachRowEvents(tr);
         return tr;
@@ -498,14 +522,14 @@
         const div = document.createElement('div');
         div.className = 'gallery-item';
         div.innerHTML = `
-          <img src="${src}" alt="uploaded image" class="preview-img" style="cursor:pointer;" title="คลิกเพื่อขยาย">
-          <div style="padding: 10px; display:flex; justify-content:space-between; align-items:center; background:#fff; border-top:1px solid #eee;">
-            <span style="font-size:0.85rem; color:#555; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:90px;" title="${title}">${title}</span>
-            <div style="display:flex; gap:12px; align-items:center;">
-              <a href="${src}" download="${title}" style="text-decoration:none; color:#777; display:flex;" title="ดาวน์โหลดพร้อมชื่อใหม่" onmouseover="this.style.color='var(--primary-orange)'" onmouseout="this.style.color='#777'">
+          <img src="${src}" alt="uploaded image" class="preview-img cursor-pointer"title="คลิกเพื่อขยาย">
+          <div class="img-preview-footer">
+            <span class="img-preview-title" title="${title}">${title}</span>
+            <div class="img-preview-actions">
+              <a href="${src}" download="${title}" class="img-download-link" title="ดาวน์โหลดพร้อมชื่อใหม่">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
               </a>
-              <button type="button" class="btn-remove-img" style="color:#e74c3c; background:none; border:none; cursor:pointer; font-weight:bold; font-size:1.3rem; padding:0; display:flex;" title="ลบรูป">×</button>
+              <button type="button" class="btn-remove-img btn-remove-img" title="ลบรูป">×</button>
             </div>
           </div>
         `;
@@ -517,10 +541,26 @@
         });
         
         galleryGrid.appendChild(div);
+        updateImgCountBadge();
+      }
+
+      function updateImgCountBadge() {
+        const badge = document.getElementById('img-count-badge');
+        if (!badge) return;
+        const count = document.querySelectorAll('#gallery-grid .gallery-item').length;
+        if (count > 0) {
+          badge.textContent = count + ' รูป';
+          badge.style.display = 'inline-block';
+        } else {
+          badge.style.display = 'none';
+        }
       }
       
       // Wire up initial gallery item
-      document.querySelectorAll('.btn-remove-img').forEach(btn => btn.addEventListener('click', function() { this.closest('.gallery-item').remove(); }));
+      document.querySelectorAll('.btn-remove-img').forEach(btn => btn.addEventListener('click', function() {
+        this.closest('.gallery-item').remove();
+        updateImgCountBadge();
+      }));
       document.querySelectorAll('.preview-img').forEach(img => img.addEventListener('click', function() {
          modalImg.src = this.src;
          imageModal.style.display = 'flex';

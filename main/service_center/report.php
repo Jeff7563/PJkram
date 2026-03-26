@@ -19,7 +19,7 @@
     <div class="filter-bar">
       <div class="filter-group">
         <div class="filter-group">
-          <input type="text" placeholder="ค้นหาเอกสาร..." style="min-width: 250px;">
+          <input type="text" placeholder="ค้นหาเอกสาร..." class="form-control min-w-250">
         </div>
         <select>
           <option value="">สาขา</option>
@@ -33,7 +33,7 @@
         </select>
         <input type="date" class="date-input" value="2026-03-24">
       </div>
-      <div class="filter-group" style="justify-content: flex-end;">
+      <div class="filter-group filter-group justify-content-end">
         <button class="btn-search">ค้นหา</button>
         <button class="btn-reset">รีเซ็ต</button>
       </div>
@@ -50,7 +50,7 @@
             <th>ชื่อผู้ใช้งาน</th>
             <th>ประเภทรถ</th>
             <th>สถานะ</th>
-            <th style="text-align: center;">Export</th>
+            <th class="text-center">Export</th>
           </tr>
         </thead>
         <tbody>
@@ -60,9 +60,9 @@
             <td>TEST</td>
             <td>TEST</td>
             <td>TEST</td>
-            <td><span class="badge-status" style="padding: 6px 14px; font-size: 0.9rem;">ตรวจสอบแล้ว</span></td>
-            <td style="text-align: center;">
-              <button class="btn-action btn-export-row" data-doc="TS01-001" style="margin: 0; padding: 6px 12px; font-size: 0.85rem; background-color: #34495e;">Export</button>
+            <td><span class="badge-status bg-success px-3 fs-md text-white">ตรวจสอบแล้ว</span></td>
+            <td class="text-center">
+              <button class="btn-action btn-export-row" data-doc="TS01-001">Export</button>
             </td>
           </tr>
           <tr>
@@ -71,9 +71,9 @@
             <td>TEST</td>
             <td>TEST</td>
             <td>TEST</td>
-            <td><span class="badge-status" style="padding: 6px 14px; font-size: 0.9rem;">ตรวจสอบแล้ว</span></td>
-            <td style="text-align: center;">
-              <button class="btn-action btn-export-row" data-doc="TS01-002" style="margin: 0; padding: 6px 12px; font-size: 0.85rem; background-color: #34495e;">Export</button>
+            <td><span class="badge-status bg-success px-3 fs-md text-white">ตรวจสอบแล้ว</span></td>
+            <td class="text-center">
+              <button class="btn-action btn-export-row" data-doc="TS01-002">Export</button>
             </td>
           </tr>
         </tbody>
@@ -83,19 +83,19 @@
   
   <!-- Export Modal -->
   <div class="modal-overlay" id="export-modal">
-    <div class="modal-content">
-      <div class="modal-close" id="close-export-modal" style="position:absolute; right:15px; top:10px; cursor:pointer; font-size:1.8rem; color:#888;">&times;</div>
-      <h3 style="margin-top:0; color:#333; margin-bottom: 5px;">เลือกประเภทไฟล์</h3>
-      <p style="color:#666; font-size:0.95rem; margin-bottom: 25px;">ดาวน์โหลดเอกสาร: <span id="export-doc-number" style="font-weight:bold; color:var(--primary-orange);"></span></p>
+    <div class="modal-content" style="max-width: 400px; text-align: center; position: relative;">
+      <div class="modal-close" id="close-export-modal">&times;</div>
+      <h3 class="export-modal-title">เลือกประเภทไฟล์</h3>
+      <p class="export-modal-desc">ดาวน์โหลดเอกสาร: <span id="export-doc-number"></span></p>
       
-      <div style="display:flex; justify-content:center; gap:20px;">
-        <button class="btn-export-pdf" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; width:110px; height:100px; transition: transform 0.2s;">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-          PDF
+      <div class="export-btn-container">
+        <button class="btn-export-pdf">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          <span style="font-weight:600; color:#444;">PDF</span>
         </button>
-        <button class="btn-export-excel" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; width:110px; height:100px; transition: transform 0.2s;">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="17"></line><line x1="16" y1="13" x2="8" y2="17"></line></svg>
-          Excel
+        <button class="btn-export-excel">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#27ae60" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 0 0 0 2 2h12a2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="17"></line><line x1="16" y1="13" x2="8" y2="17"></line></svg>
+          <span style="font-weight:600; color:#444;">Excel</span>
         </button>
       </div>
     </div>

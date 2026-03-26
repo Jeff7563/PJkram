@@ -71,3 +71,70 @@
       from { opacity: 0; transform: scale(0.95); }
       to { opacity: 1; transform: scale(1); }
     }
+/* Refactored from report.php inline styles */
+.min-w-250 { min-width: 250px; }
+.px-3 { padding-left: 15px; padding-right: 15px; }
+.py-1 { padding-top: 5px; padding-bottom: 5px; }
+.fs-md { font-size: 0.9rem; }
+.text-center { text-align: center; }
+
+.btn-export-row {
+  margin: 0; 
+  padding: 6px 12px; 
+  font-size: 0.85rem; 
+  background-color: #34495e;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.btn-export-row:hover { opacity: 0.9; }
+
+#close-export-modal {
+  position: absolute; 
+  right: 15px; 
+  top: 10px; 
+  cursor: pointer; 
+  font-size: 1.8rem; 
+  color: #888;
+}
+
+.export-modal-title {
+  margin-top: 0; 
+  color: #333; 
+  margin-bottom: 5px;
+}
+
+.export-modal-desc {
+  color: #666; 
+  font-size: 0.95rem; 
+  margin-bottom: 25px;
+}
+
+#export-doc-number {
+  font-weight: bold; 
+  color: var(--primary-orange);
+}
+
+.export-btn-container {
+  display: flex; 
+  justify-content: center; 
+  gap: 20px;
+}
+
+.btn-export-pdf, .btn-export-excel {
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: center; 
+  gap: 8px; 
+  width: 110px; 
+  height: 100px; 
+  transition: transform 0.2s;
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.btn-export-pdf:hover, .btn-export-excel:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }

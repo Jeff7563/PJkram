@@ -1,0 +1,350 @@
+/*
+ * styles-claim_form.css
+ * Override สำหรับหน้า claim_form.php
+ * - ปรับสีพื้นหลังให้เหมือนหน้าอื่นๆ
+ * - จัดวาง layout 2 คอลัมน์แบบ label+input เรียงเป็นระเบียบ
+ */
+
+/* === พื้นหลัง / container === */
+body {
+  background-color: var(--bg-color, #fcf9f2) !important;
+  background: var(--bg-color, #fcf9f2) !important;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: var(--sidebar-w, 290px);
+  padding: 30px 30px 40px;
+  min-height: 100vh;
+  background-color: var(--bg-color, #fcf9f2);
+}
+
+/* ยกเลิก container margin-auto เดิม (ไม่ต้องการอีกต่อไปเมื่อมี sidebar) */
+.container {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* === Card (ฟอร์มหลัก) === */
+#claimForm.card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 30px 32px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+  border: 1px solid rgba(0,0,0,0.04);
+}
+
+/* === Page Title === */
+.page-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--primary-orange, #f2722b);
+  margin: 0 0 6px 0;
+}
+.page-subtitle {
+  font-size: 0.9rem;
+  color: #888;
+  margin: 0 0 20px 0;
+}
+
+/* === Form Grid: 2 คอลัมน์ === */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 28px;
+  align-items: start;
+}
+.form-grid .full {
+  grid-column: 1 / -1;
+}
+
+/* === Inline Fields: Label + Input เรียงแนวนอน === */
+label.field.inline-field {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  align-items: center;
+  gap: 10px;
+}
+label.field.inline-field .label-text {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #222;
+  white-space: nowrap;
+  margin: 0;
+}
+label.field.inline-field input,
+label.field.inline-field select {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  font-size: 0.9rem;
+  background: #fff;
+  font-family: 'Kanit', sans-serif;
+  color: #333;
+  transition: border-color 0.2s;
+}
+label.field.inline-field input:focus,
+label.field.inline-field select:focus {
+  border-color: var(--primary-orange, #f2722b);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(242,114,43,0.08);
+}
+
+/* === Radio group row === */
+.radio-group {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  align-items: center;
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+.radio-group .label-text {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #222;
+  margin: 0;
+}
+.radio-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.radio-row label,
+.claim-options label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #333;
+  padding: 7px 14px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.radio-row label:hover,
+.claim-options label:hover {
+  border-color: var(--primary-orange, #f2722b);
+  background: rgba(242,114,43,0.04);
+}
+.radio-row label.checked,
+.claim-options label.checked {
+  border-color: var(--primary-orange, #f2722b);
+  background: rgba(242,114,43,0.08);
+  color: var(--primary-orange, #f2722b);
+  font-weight: 600;
+}
+/* hide native radio visual — use label pill instead */
+.radio-row input[type="radio"],
+.claim-options input[type="radio"],
+.claim-options input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 1px;
+  height: 1px;
+}
+
+/* === Parts action buttons === */
+.parts-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.btn-parts-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 22px;
+  background: var(--primary-orange, #f2722b);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.92rem;
+  border: none;
+  outline: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Kanit', sans-serif;
+  box-shadow: 0 4px 12px rgba(242,114,43,0.28);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn-parts-add:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(242,114,43,0.35);
+}
+
+.btn-parts-upload {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 22px;
+  background: #00b551;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.92rem;
+  border: none;
+  outline: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Kanit', sans-serif;
+  box-shadow: 0 4px 12px rgba(0,181,81,0.28);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn-parts-upload:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,181,81,0.35);
+}
+
+/* === Image preview after upload === */
+.parts-img-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+.parts-img-preview .preview-thumb {
+  position: relative;
+  width: 110px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border: 1px solid #eee;
+}
+.parts-img-preview .preview-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.parts-img-preview .preview-thumb .remove-thumb {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+/* === Remove black border from fieldsets === */
+fieldset {
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+fieldset legend {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #222;
+  margin-bottom: 10px;
+  display: block;
+}
+
+
+.radio-group-left {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  align-items: center;
+  gap: 10px;
+}
+.radio-group-left > .label-text {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #222;
+  margin: 0;
+}
+
+/* Brand + Grade selects นำไปเรียงในแนวนอน */
+.brand-select,
+.grade-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.brand-select .label-text,
+.grade-field .label-text {
+  font-weight: 600;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  margin: 0;
+}
+
+/* === Textarea === */
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  font-size: 0.9rem;
+  font-family: 'Kanit', sans-serif;
+  min-height: 88px;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+textarea:focus {
+  border-color: var(--primary-orange, #f2722b);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(242,114,43,0.08);
+}
+
+/* === Section legend === */
+.section-legend {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #222;
+  margin-bottom: 10px;
+}
+
+/* === Submit Actions === */
+.actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+.btn.primary {
+  background: var(--primary-orange, #f2722b);
+  color: #fff;
+  border-color: var(--primary-orange, #f2722b);
+  padding: 11px 28px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(242,114,43,0.25);
+  transition: transform 0.15s, box-shadow 0.15s;
+  font-family: 'Kanit', sans-serif;
+}
+.btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(242,114,43,0.3);
+}
+.btn:not(.primary) {
+  padding: 11px 24px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  background: #fff;
+  color: #555;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Kanit', sans-serif;
+  transition: background 0.15s;
+}
+.btn:not(.primary):hover { background: #f5f5f5; }
