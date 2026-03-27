@@ -13,7 +13,6 @@
     <a href="claim_form.php" class="nav-btn <?= ($current_page == 'claim_form.php') ? 'active' : '';?>">ฟอร์มส่งเคลม</a>
     <a href="history.php" class="nav-btn <?= ($current_page == 'history.php') ? 'active' : '';?>">ประวัติเคลม</a>
     <a href="check.php" class="nav-btn <?= ($current_page == 'check.php') ? 'active' : '';?>">ตรวจเช็ค</a>
-    <a href="report.php" class="nav-btn <?= ($current_page == 'report.php') ? 'active' : '';?>">รายงาน</a>
   </div>
 </div>
 

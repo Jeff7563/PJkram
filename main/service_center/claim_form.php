@@ -499,183 +499,182 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="tab-content" id="claimFormTabContent">
           <div class="tab-pane fade show active" id="tab-basic" role="tabpanel" aria-labelledby="tab-basic-tab">
             <div class="row g-3">
-          <div class="col-12 col-md-6">
-            <div class="form-row-item">
-              <label for="branch" class="form-label">สาขา</label>
-              <select id="branch" name="branch" class="form-select" required>
-                <option value="">-- เลือกสาขา --</option>
-                <option>สาขา สกลนคร</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="col-12 col-md-6">
-            <div class="form-row-item">
-              <label for="claimDate" class="form-label">วันที่ส่งเคลม</label>
-              <input type="date" id="claimDate" name="claimDate" class="form-control" value="<?php echo date('Y-m-d'); ?>" readonly required>
-            </div>
-          </div>
-
-          <div class="col-12 col-md-6">
-            <div class="form-row-item align-items-start">
-              <label class="form-label">ประเภทรถ</label>
-              <div class="d-flex gap-2">
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="carType" id="carTypeNew" value="new" checked required>
-                  <label class="form-check-label" for="carTypeNew">รถใหม่</label>
+              <div class="col-12 col-md-6">
+                <div class="form-row-item">
+                  <label for="branch" class="form-label">สาขา</label>
+                  <select id="branch" name="branch" class="form-select" required>
+                    <option value="">-- เลือกสาขา --</option>
+                    <option>สาขา สกลนคร</option>
+                  </select>
                 </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="carType" id="carTypeUsed" value="used" required>
-                  <label class="form-check-label" for="carTypeUsed">รถมือสอง</label>
+              </div>
+
+              <div class="col-12 col-md-6">
+                <div class="form-row-item">
+                  <label for="claimDate" class="form-label">วันที่ส่งเคลม</label>
+                  <input type="date" id="claimDate" name="claimDate" class="form-control" value="<?php echo date('Y-m-d'); ?>" readonly required>
+                </div>
+              </div>
+
+              <div class="col-12 col-md-6">
+                <div class="form-row-item align-items-start">
+                  <label class="form-label">ประเภทรถ</label>
+                  <div class="d-flex gap-2">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="carType" id="carTypeNew" value="new" checked required>
+                      <label class="form-check-label" for="carTypeNew">รถใหม่</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="carType" id="carTypeUsed" value="used" required>
+                      <label class="form-check-label" for="carTypeUsed">รถมือสอง</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12 col-md-6">
+                <div class="form-row-item">
+                  <label for="carBrand" class="form-label">ยี่ห้อ</label>
+                  <select id="carBrand" name="carBrand" class="form-select" required>
+                    <option value="">-- เลือกยี่ห้อ --</option>
+                    <option>Honda</option>
+                    <option>Yamaha</option>
+                    <option>Vespa</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-12 col-md-6 grade-field d-none" id="gradeLabel">
+                <div class="form-row-item">
+                  <label for="usedGrade" class="form-label">เกรด</label>
+                  <select id="usedGrade" name="usedGrade" class="form-select">
+                    <option value="">-- เลือกเกรด --</option>
+                    <option value="A_premium">A พรีเมี่ยม</option>
+                    <option value="A_w6">A รับประกันเครื่องยนต์ 6 เดือน</option>
+                    <option value="C_w1">C รับประกันเครื่องยนต์ 1 เดือน</option>
+                    <option value="C_as_is">C ตามสภาพไม่รับประกัน</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-12 col-md-6">
+                <div class="form-row-item">
+                  <label for="vin" class="form-label">หมายเลขตัวถัง</label>
+                  <input type="text" id="vin" name="VIN Number" class="form-control" placeholder="VIN Number" required>
+                </div>
+              </div>
+
+              <div class="col-12 col-md-6">
+                <div class="form-row-item">
+                  <label for="ownerName" class="form-label">ชื่อ-นามสกุล (ผู้ซื้อ)</label>
+                  <input type="text" id="ownerName" name="ownerName" class="form-control" placeholder="ชื่อ นามสกุล" required>
+                </div>
+              </div>
+            </div>
+
+            <!-- Problem Description Section -->
+            <div class="row g-3 mt-2">
+              <div class="col-12">
+                <h5 class="fw-bold mb-3" style="color: #222; font-size: 1rem;">รายละเอียดปัญหาที่ลูกค้าแจ้ง :</h5>
+                <div class="mb-3">
+                  <textarea id="problemDesc" name="problemDesc" rows="4" class="form-control" placeholder="อธิบายปัญหาที่ลูกค้าแจ้ง" required></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Inspection Result Section -->
+            <div class="row g-3">
+              <div class="col-12">
+                <h5 class="fw-bold mb-3" style="color: #222; font-size: 1rem;">ผลการตรวจเช็คปัญหา :</h5>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="mb-3">
+                  <label for="inspectMethod" class="form-label fw-semibold">วิธีตรวจเช็ค</label>
+                  <textarea id="inspectMethod" name="inspectMethod" rows="3" class="form-control" placeholder="วิธีตรวจเช็ค" required></textarea>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="mb-3">
+                  <label for="inspectCause" class="form-label fw-semibold">สาเหตุของปัญหา</label>
+                  <textarea id="inspectCause" name="inspectCause" rows="3" class="form-control" placeholder="สาเหตุของปัญหา" required></textarea>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="alert alert-info mb-0" style="background-color: #fff6f6; border-left: 4px solid var(--primary-orange); font-size: 0.95rem;">
+                  <strong>***หมายเหตุ :</strong>
+                  <ol style="margin: 6px 0 0 18px; padding: 0;">
+                    <li>รถมือสองมีปัญหาปรึกษาช่างมือสอง เบอร์โทรศัพท์ พี่สีเมือง 061-0190011 พี่บัว 093-3197117 หรือ 042-71135 ต่อ 201</li>
+                    <li>รถใหม่มีปัญหาปรึกษาศูนย์บริการ Honda 086-4594656 Yamaha 086-4550614 Vespa 099-1285556</li>
+                  </ol>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="col-12 col-md-6">
-            <div class="form-row-item">
-              <label for="carBrand" class="form-label">ยี่ห้อ</label>
-              <select id="carBrand" name="carBrand" class="form-select" required>
-                <option value="">-- เลือกยี่ห้อ --</option>
-                <option>Honda</option>
-                <option>Yamaha</option>
-                <option>Vespa</option>
-              </select>
-            </div>
-          </div>
+          <div class="tab-pane fade" id="tab-images" role="tabpanel" aria-labelledby="tab-images-tab">
+            <fieldset class="full images">
+              <legend>แนบรูปภาพปัญหา :</legend>
+              <div class="image-uploader">
+                <div class="image-gallery" id="imageGallery">
+                  <div class="upload-card" data-field="imgFullCar">
+                    <div class="drop-area">
+                      <div class="upload-placeholder"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-modern"></use></svg>ภาพรถทั้งคัน</div>
+                      <div class="upload-hint">คลิกหรือวางรูปที่นี่</div>
+                      <span class="attach-count" aria-hidden="true">0</span>
+                    </div>
+                    <input type="file" id="imgFullCar" name="imgFullCar" accept="image/*">
+                    <div class="preview" data-target="imgFullCar"></div>
+                  </div>
 
-          <div class="col-12 col-md-6 grade-field d-none" id="gradeLabel">
-            <div class="form-row-item">
-              <label for="usedGrade" class="form-label">เกรด</label>
-              <select id="usedGrade" name="usedGrade" class="form-select">
-                <option value="">-- เลือกเกรด --</option>
-                <option value="A_premium">A พรีเมี่ยม</option>
-                <option value="A_w6">A รับประกันเครื่องยนต์ 6 เดือน</option>
-                <option value="C_w1">C รับประกันเครื่องยนต์ 1 เดือน</option>
-                <option value="C_as_is">C ตามสภาพไม่รับประกัน</option>
-              </select>
-            </div>
-          </div>
+                  <div class="upload-card" data-field="imgSpot">
+                    <div class="drop-area">
+                      <div class="upload-placeholder"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-modern"></use></svg>ภาพจุดที่เกิดปัญหา</div>
+                      <div class="upload-hint">รองรับหลายรูป</div>
+                      <span class="attach-count" aria-hidden="true">0</span>
+                    </div>
+                    <input type="file" id="imgSpot" name="imgSpot[]" accept="image/*" multiple>
+                    <div class="preview" data-target="imgSpot"></div>
+                  </div>
 
-          <div class="col-12 col-md-6">
-            <div class="form-row-item">
-              <label for="vin" class="form-label">หมายเลขตัวถัง</label>
-              <input type="text" id="vin" name="VIN Number" class="form-control" placeholder="VIN Number" required>
-            </div>
-          </div>
+                  <div class="upload-card" data-field="imgPart">
+                    <div class="drop-area">
+                      <div class="upload-placeholder"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-modern"></use></svg>ภาพชิ้นส่วนที่เกิดความเสียหาย</div>
+                      <div class="upload-hint">รองรับหลายรูป</div>
+                      <span class="attach-count" aria-hidden="true">0</span>
+                    </div>
+                    <input type="file" id="imgPart" name="imgPart[]" accept="image/*" multiple>
+                    <div class="preview" data-target="imgPart"></div>
+                  </div>
 
-          <div class="col-12 col-md-6">
-            <div class="form-row-item">
-              <label for="ownerName" class="form-label">ชื่อ-นามสกุล (ผู้ซื้อ)</label>
-              <input type="text" id="ownerName" name="ownerName" class="form-control" placeholder="ชื่อ นามสกุล" required>
-            </div>
-          </div>
-        </div>
+                  <div class="upload-card" data-field="imgWarranty">
+                    <div class="drop-area">
+                      <div class="upload-placeholder"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-modern"></use></svg>ภาพสมุดรับประกันที่มีประวัติ</div>
+                      <div class="upload-hint">คลิกหรือวางรูปที่นี่</div>
+                      <span class="attach-count" aria-hidden="true">0</span>
+                    </div>
+                    <input type="file" id="imgWarranty" name="imgWarranty" accept="image/*">
+                    <div class="preview" data-target="imgWarranty"></div>
+                  </div>
 
-        <!-- Problem Description Section -->
-        <div class="row g-3 mt-2">
-          <div class="col-12">
-            <h5 class="fw-bold mb-3" style="color: #222; font-size: 1rem;">รายละเอียดปัญหาที่ลูกค้าแจ้ง :</h5>
-            <div class="mb-3">
-              <textarea id="problemDesc" name="problemDesc" rows="4" class="form-control" placeholder="อธิบายปัญหาที่ลูกค้าแจ้ง" required></textarea>
-            </div>
-          </div>
-        </div>
+                  <div class="upload-card" data-field="imgOdometer">
+                    <div class="drop-area">
+                      <div class="upload-placeholder"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-modern"></use></svg>ภาพเลขไมล์</div>
+                      <div class="upload-hint">คลิกหรือวางรูปที่นี่</div>
+                      <span class="attach-count" aria-hidden="true">0</span>
+                    </div>
+                    <input type="file" id="imgOdometer" name="imgOdometer" accept="image/*">
+                    <div class="preview" data-target="imgOdometer"></div>
+                  </div>
 
-        <!-- Inspection Result Section -->
-        <div class="row g-3">
-          <div class="col-12">
-            <h5 class="fw-bold mb-3" style="color: #222; font-size: 1rem;">ผลการตรวจเช็คปัญหา :</h5>
-          </div>
-          <div class="col-12 col-md-6">
-            <div class="mb-3">
-              <label for="inspectMethod" class="form-label fw-semibold">วิธีตรวจเช็ค</label>
-              <textarea id="inspectMethod" name="inspectMethod" rows="3" class="form-control" placeholder="วิธีตรวจเช็ค" required></textarea>
-            </div>
-          </div>
-          <div class="col-12 col-md-6">
-            <div class="mb-3">
-              <label for="inspectCause" class="form-label fw-semibold">สาเหตุของปัญหา</label>
-              <textarea id="inspectCause" name="inspectCause" rows="3" class="form-control" placeholder="สาเหตุของปัญหา" required></textarea>
-            </div>
-          </div>
-          <div class="col-12">
-            <div class="alert alert-info mb-0" style="background-color: #fff6f6; border-left: 4px solid var(--primary-orange); font-size: 0.95rem;">
-              <strong>***หมายเหตุ :</strong>
-              <ol style="margin: 6px 0 0 18px; padding: 0;">
-                <li>รถมือสองมีปัญหาปรึกษาช่างมือสอง เบอร์โทรศัพท์ พี่สีเมือง 061-0190011 พี่บัว 093-3197117 หรือ 042-71135 ต่อ 201</li>
-                <li>รถใหม่มีปัญหาปรึกษาศูนย์บริการ Honda 086-4594656 Yamaha 086-4550614 Vespa 099-1285556</li>
-              </ol>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="tab-pane fade" id="tab-images" role="tabpanel" aria-labelledby="tab-images-tab">
-        <fieldset class="full images">
-          <legend>แนบรูปภาพปัญหา :</legend>
-          <div class="image-uploader">
-            <div class="image-gallery" id="imageGallery">
-              <div class="upload-card" data-field="imgFullCar">
-                <div class="drop-area">
-                  <div class="upload-placeholder"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-modern"></use></svg>ภาพรถทั้งคัน</div>
-                  <div class="upload-hint">คลิกหรือวางรูปที่นี่</div>
-                  <span class="attach-count" aria-hidden="true">0</span>
-                </div>
-                <input type="file" id="imgFullCar" name="imgFullCar" accept="image/*">
-                <div class="preview" data-target="imgFullCar"></div>
-              </div>
-
-              <div class="upload-card" data-field="imgSpot">
-                <div class="drop-area">
-                  <div class="upload-placeholder"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-modern"></use></svg>ภาพจุดที่เกิดปัญหา</div>
-                  <div class="upload-hint">รองรับหลายรูป</div>
-                  <span class="attach-count" aria-hidden="true">0</span>
-                </div>
-                <input type="file" id="imgSpot" name="imgSpot[]" accept="image/*" multiple>
-                <div class="preview" data-target="imgSpot"></div>
-              </div>
-
-              <div class="upload-card" data-field="imgPart">
-                <div class="drop-area">
-                  <div class="upload-placeholder"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-modern"></use></svg>ภาพชิ้นส่วนที่เกิดความเสียหาย</div>
-                  <div class="upload-hint">รองรับหลายรูป</div>
-                  <span class="attach-count" aria-hidden="true">0</span>
-                </div>
-                <input type="file" id="imgPart" name="imgPart[]" accept="image/*" multiple>
-                <div class="preview" data-target="imgPart"></div>
-              </div>
-
-              <div class="upload-card" data-field="imgWarranty">
-                <div class="drop-area">
-                  <div class="upload-placeholder"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-modern"></use></svg>ภาพสมุดรับประกันที่มีประวัติ</div>
-                  <div class="upload-hint">คลิกหรือวางรูปที่นี่</div>
-                  <span class="attach-count" aria-hidden="true">0</span>
-                </div>
-                <input type="file" id="imgWarranty" name="imgWarranty" accept="image/*">
-                <div class="preview" data-target="imgWarranty"></div>
-              </div>
-
-              <div class="upload-card" data-field="imgOdometer">
-                <div class="drop-area">
-                  <div class="upload-placeholder"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-modern"></use></svg>ภาพเลขไมล์</div>
-                  <div class="upload-hint">คลิกหรือวางรูปที่นี่</div>
-                  <span class="attach-count" aria-hidden="true">0</span>
-                </div>
-                <input type="file" id="imgOdometer" name="imgOdometer" accept="image/*">
-                <div class="preview" data-target="imgOdometer"></div>
-              </div>
-
-              <div class="upload-card" data-field="imgEstimate">
-                <div class="drop-area">
-                  <div class="upload-placeholder"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-modern"></use></svg>ภาพใบประเมินรายการอะไหล่</div>
-                  <div class="upload-hint">คลิกหรือวางรูปที่นี่</div>
-                  <span class="attach-count" aria-hidden="true">0</span>
-                </div>
-                <input type="file" id="imgEstimate" name="imgEstimate" accept="image/*">
-                <div class="preview" data-target="imgEstimate"></div>
-              </div>
-
+                  <div class="upload-card" data-field="imgEstimate">
+                    <div class="drop-area">
+                      <div class="upload-placeholder"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-modern"></use></svg>ภาพใบประเมินรายการอะไหล่</div>
+                      <div class="upload-hint">คลิกหรือวางรูปที่นี่</div>
+                      <span class="attach-count" aria-hidden="true">0</span>
+                    </div>
+                    <input type="file" id="imgEstimate" name="imgEstimate" accept="image/*">
+                    <div class="preview" data-target="imgEstimate"></div>
+                  </div>
             </div>
           </div>
         </fieldset>
@@ -761,7 +760,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="file" id="imgPartsUpload" name="imgParts[]" accept="image/*" multiple style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;">
           </div>
           <!-- Image preview grid -->
-          <div id="partsImgPreview" class="parts-img-preview"></div>
+          <div id="partsImgPreview" class="parts-img-preview" style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 15px;"></div>
         </section>
 
         <!-- Parts Delivery Section -->
@@ -771,10 +770,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <h5 class="fw-bold" style="color: #222; font-size: 1rem;">ประเภทการส่ง อะไหล่</h5>
             </div>
             <div class="col-12">
-              <div class="d-flex flex-wrap gap-3">
+              <div class=" d-flex flex-wrap gap-3">
                 <div class="form-check">
                   <input class="form-check-input" type="radio" name="partsDelivery" id="partsDelivery_stock" value="in_stock" checked>
-                  <label class="form-check-label" for="partsDelivery_stock">ใช้อะไหล่ ที่มีในสต็อกสาขา</label>
+                  <label class="form-check-label" for="partsDelivery_stock">ซ่อมที่สาขา</label>
                 </div>
                 <div class="form-check">
                   <input class="form-check-input" type="radio" name="partsDelivery" id="partsDelivery_hq" value="wait_hq">
@@ -797,85 +796,75 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       <div class="tab-pane fade" id="tab-replace" role="tabpanel" aria-labelledby="tab-replace-tab">
 
-        <!-- Replacement Details Section -->
-        <div id="replaceBlock" class="card d-none mt-4 p-4">
-          <h5 class="fw-bold mb-4" style="color: #222; font-size: 1rem;">รายละเอียดการเปลี่ยนคันใหม่</h5>
-          
-          <!-- Old Vehicle Down Payment -->
-          <div class="row g-3 mb-3">
-            <div class="col-12">
-              <label class="form-label fw-semibold">รถคันเก่า : คงเหลือเงินดาวน์</label>
-            </div>
-            <div class="col-12 col-md-6">
-              <div class="input-group">
-                <input type="number" class="form-control" name="old_down_balance" placeholder="0.00" step="0.01" min="0">
-                <span class="input-group-text">บาท</span>
-              </div>
+      <!-- Replacement Details Section -->
+      <div id="replaceBlock" class="card d-none mt-4 p-4">
+        <h5 class="fw-bold mb-4" style="color: #222; font-size: 1rem;">รายละเอียดการเปลี่ยนคันใหม่</h5>
+        
+      
+        <!-- Old Vehicle Down Payment -->
+        <div class="row g-3 mb-3">
+          <div class="col-12">
+            <label class="form-label fw-semibold">รถคันเก่า : คงเหลือเงินดาวน์</label>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="input-group">
+              <input type="number" class="form-control" name="old_down_balance" placeholder="0.00" step="0.01" min="0">
+              <span class="input-group-text">บาท</span>
             </div>
           </div>
+        </div>
 
-          <!-- New Vehicle Details -->
-          <h6 class="fw-bold mb-3 mt-4" style="color: #333; font-size: 0.95rem;">รายละเอียดรถคันใหม่</h6>
+        <!-- New Vehicle Details -->
+        <h6 class="fw-bold mb-3 mt-4" style="color: #333; font-size: 0.95rem;">รายละเอียดรถคันใหม่</h6>
 
-          <!-- New Vehicle Down Payment -->
-          <div class="row g-3 mb-3">
-            <div class="col-12">
-              <label class="form-label fw-semibold">รถคันใหม่ : คงเหลือเงินดาวน์</label>
-            </div>
-            <div class="col-12 col-md-6">
-              <div class="input-group">
-                <input type="number" class="form-control" name="new_down_balance" placeholder="0.00" step="0.01" min="0">
-                <span class="input-group-text">บาท</span>
+        <!-- New Vehicle Down Payment -->
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-6">
+            <div class="d-flex gap-3 align-items-center">
+              <div style="flex: 1; min-width: 0;">
+                  <label class="form-label fw-semibold">รถคันใหม่ : คงเหลือเงินดาวน์</label>
+                  <div class="input-group">
+                    <input type="number" class="form-control" name="new_down_balance" placeholder="0.00" step="0.01" min="0">
+                    <span class="input-group-text">บาท</span>
+                  </div>
               </div>
-            </div>
-          </div>
-
-          <!-- Replace Type -->
-          <div class="row g-3 mb-3">
-            <div class="col-12">
-              <label class="form-label fw-semibold">ประเภทรถ</label>
-            </div>
-            <div class="col-12">
-              <div class="d-flex gap-3">
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="replaceType" id="replaceType_new" value="new">
-                  <label class="form-check-label" for="replaceType_new">รถใหม่</label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="replaceType" id="replaceType_used" value="used">
-                  <label class="form-check-label" for="replaceType_used">รถมือสอง</label>
+              <div style="flex: 1; min-width: 0;">
+                <label class="form-label fw-semibold">ประเภทรถ</label>
+                <div class="d-flex gap-3 align-items-center" style="height: 30px;">
+                  <div class="form-check m-0">
+                    <input class="form-check-input" type="radio" name="replaceType" id="replaceType_new" value="new">
+                    <label class="form-check-label" for="replaceType_new">รถใหม่</label>
+                  </div>
+                  <div class="form-check m-0">
+                    <input class="form-check-input" type="radio" name="replaceType" id="replaceType_used" value="used">
+                    <label class="form-check-label" for="replaceType_used">รถมือสอง</label>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
           <!-- New Vehicle Details Grid -->
-          <div class="row g-3 mb-3">
-            <div class="col-12 col-md-4">
-              <label for="replaceBrand" class="form-label fw-semibold">ยี่ห้อ</label>
-              <select id="replaceBrand" name="replace_brand" class="form-select">
-                <option value="">-- เลือกยี่ห้อ --</option>
-                <option>Honda</option>
-                <option>Yamaha</option>
-                <option>Vespa</option>
-              </select>
-            </div>
-            <div class="col-12 col-md-4">
-              <label for="replaceModel" class="form-label fw-semibold">รุ่น</label>
-              <input type="text" id="replaceModel" name="replace_model" class="form-control" placeholder="รุ่น">
-            </div>
-            <div class="col-12 col-md-4">
-              <label for="replaceColor" class="form-label fw-semibold">สี</label>
-              <input type="text" id="replaceColor" name="replace_color" class="form-control" placeholder="สี">
+
+        <div class="row g-3 mb-3">
+          <div class="col-12 col-md-6">
+            <div class="d-flex gap-10">
+              <div style="flex: 1; min-width: 0;">
+                <label for="replaceModel" class="form-label fw-semibold">รุ่น</label>
+                <input type="text" id="replaceModel" name="replace_model" class="form-control" placeholder="รุ่น">
+              </div>
+              <div style="flex: 1; min-width: 0;">
+                <label for="replaceColor" class="form-label fw-semibold">สี</label>
+                <input type="text" id="replaceColor" name="replace_color" class="form-control" placeholder="สี">
+              </div>
+              <div style="flex: 1; min-width: 0;">
+                <label for="replaceVin" class="form-label fw-semibold">เลขตัวถัง</label>
+                <input type="text" id="replaceVin" name="replace_vin" class="form-control" placeholder="เลขตัวถัง / VIN">
+              </div>
             </div>
           </div>
-
-          <!-- Additional Details -->
-          <div class="row g-3 mb-3">
-            <div class="col-12 col-md-6">
-              <label for="replaceVin" class="form-label fw-semibold">เลขตัวถัง</label>
-              <input type="text" id="replaceVin" name="replace_vin" class="form-control" placeholder="เลขตัวถัง / VIN">
-            </div>
+            
             <div class="col-12 col-md-6">
               <label for="replaceReceiveDate" class="form-label fw-semibold">วันที่รับรถ</label>
               <input type="date" id="replaceReceiveDate" name="replace_receive_date" class="form-control">
@@ -886,16 +875,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <div class="row g-3 mb-3">
             <div class="col-12">
               <label for="replaceReason" class="form-label fw-semibold">สาเหตุที่เปลี่ยนคัน</label>
-              <input type="text" id="replaceReason" name="replace_reason" class="form-control" placeholder="ระบุสาเหตุการเปลี่ยนคัน">
+                <input type="text" id="replaceReason" name="replace_reason" class="form-control" placeholder="ระบุสาเหตุการเปลี่ยนคัน">
             </div>
           </div>
 
           <!-- Approval -->
           <div class="row g-3 mb-3">
             <div class="col-12 col-md-6">
-              <label for="replaceApprover" class="form-label fw-semibold">ผู้อนุมัติ</label>
-              <input type="text" id="replaceApprover" name="replace_approver" class="form-control" placeholder="ชื่อผู้อนุมัติ">
+             <div class="d-flex gap-10">
+                <div style="flex: 1; min-width: 0;">
+                  <label for="replaceid" class="form-label fw-semibold">รหัสพนักงาน</label>
+                  <input type="text" id="replaceid" name="replace_id" class="form-control" placeholder="รหัสพนักงาน">
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                  <label for="replacename" class="form-label fw-semibold">ชื่อพนักงาน</label>
+                  <input type="text" id="replacename" name="replace_name" class="form-control" placeholder="ชื่อพนักงาน">
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                  <label for="replacesignature" class="form-label fw-semibold">ลายเซ็นต์</label>
+                  <input type="text" id="replacesignature" name="replace_signature" class="form-control" placeholder="ลายเซ็นต์">
+                </div>
+              </div>
             </div>
+            
             <div class="col-12 col-md-6">
               <label for="replaceApproveDate" class="form-label fw-semibold">วันที่อนุมัติ</label>
               <input type="date" id="replaceApproveDate" name="replace_approve_date" class="form-control">
@@ -1263,46 +1265,79 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }).catch(err=>{ resultBox.textContent = 'เกิดข้อผิดพลาด: '+ err.message });
       });
 
-      // อัปโหลดรูปภาพอะไหล่
+      // ==========================================
+      // ระบบอัปโหลดรูปภาพอะไหล่ (เชื่อมเข้ากับระบบ filesMap หลัก)
+      // ==========================================
       const btnUploadParts = document.getElementById('btnUploadParts');
       const imgPartsUpload = document.getElementById('imgPartsUpload');
+      const partsPreview = document.getElementById('partsImgPreview');
+
+      // 1. สร้าง key ใน filesMap ให้ชื่อตรงกับ name ของ input (เพื่อส่งไป PHP ได้ถูกต้อง)
+      const partsFieldId = 'imgParts[]';
+      filesMap[partsFieldId] = [];
+
       if (btnUploadParts && imgPartsUpload) {
-        btnUploadParts.addEventListener('click', function() {
-          imgPartsUpload.click();
-        });
+        btnUploadParts.addEventListener('click', () => imgPartsUpload.click());
+        
         imgPartsUpload.addEventListener('change', function() {
-          const preview = document.getElementById('partsImgPreview');
-          const count = this.files.length;
-          if (count > 0) {
-            // Update button text
-            btnUploadParts.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> อัปโหลดแล้ว ${count} รูป`;
-            // Render previews
-            Array.from(this.files).forEach(file => {
-              const reader = new FileReader();
-              reader.onload = function(e) {
-                const thumb = document.createElement('div');
-                thumb.className = 'preview-thumb';
-                thumb.innerHTML = `
-                  <img src="${e.target.result}" alt="${file.name}">
-                  <button type="button" class="remove-thumb" title="ลบรูป">×</button>`;
-                const uploadSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`;
-                function updateBtnText() {
-                  const remaining = preview.querySelectorAll('.preview-thumb').length;
-                  if (remaining === 0) {
-                    btnUploadParts.innerHTML = uploadSvg + ' อัปโหลดรูปภาพ';
-                  } else {
-                    btnUploadParts.innerHTML = uploadSvg + ` อัปโหลดแล้ว ${remaining} รูป`;
-                  }
-                }
-                thumb.querySelector('.remove-thumb').addEventListener('click', () => {
-                  thumb.remove();
-                  updateBtnText();
-                });
-                preview.appendChild(thumb);
-              };
-              reader.readAsDataURL(file);
-            });
+          const chosenFiles = Array.from(this.files || []);
+          if (chosenFiles.length > 0) {
+            // เอาไฟล์ที่เลือกใหม่ไปต่อท้ายไฟล์เดิมใน filesMap
+            filesMap[partsFieldId] = filesMap[partsFieldId].concat(chosenFiles);
+            renderPartsPreview();
           }
+          this.value = ''; // เคลียร์ค่า input เพื่อให้กดเลือกไฟล์เดิมซ้ำได้ถ้าต้องการ
+        });
+      }
+
+      function renderPartsPreview() {
+        partsPreview.innerHTML = '';
+        const list = filesMap[partsFieldId];
+        
+        // อัปเดตข้อความจำนวนรูปบนปุ่ม
+        const uploadSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`;
+        if (list.length === 0) {
+          btnUploadParts.innerHTML = uploadSvg + ' อัปโหลดรูปภาพ';
+        } else {
+          btnUploadParts.innerHTML = uploadSvg + ` อัปโหลดแล้ว ${list.length} รูป`;
+        }
+
+        // วาดรูปทั้งหมดที่อยู่ใน filesMap ออกมา
+        list.forEach((file, idx) => {
+          const wrap = document.createElement('div');
+          wrap.className = 'preview-thumb';
+          // ฝัง Style ย่อขนาดตรงนี้เลย ตัดปัญหา CSS ทับกัน
+          wrap.style.cssText = 'position: relative; width: 120px; height: 120px; border-radius: 8px; overflow: hidden; border: 1px solid #e0e0e0; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.05);';
+          
+          const img = document.createElement('img');
+          img.alt = file.name;
+          img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; display: block; cursor: pointer;';
+          
+          const reader = new FileReader();
+          reader.onload = e => { img.src = e.target.result; };
+          reader.readAsDataURL(file);
+          
+          // ปุ่มลบรูป
+          const del = document.createElement('button');
+          del.type = 'button';
+          del.title = 'ลบรูป';
+          del.innerHTML = '×';
+          del.style.cssText = 'position: absolute; top: 6px; right: 6px; background: rgba(255, 30, 30, 0.85); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; padding: 0;';
+          del.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            filesMap[partsFieldId].splice(idx, 1); // ลบไฟล์ออกจากตัวแปร
+            renderPartsPreview(); // วาดรูปใหม่
+          });
+
+          // 2. ฟีเจอร์พิเศษ: คลิกที่รูปเพื่อเปิด Lightbox ขยายดูได้เหมือนกลุ่มด้านบน!
+          img.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            openLightbox(partsFieldId, idx);
+          });
+
+          wrap.appendChild(img);
+          wrap.appendChild(del);
+          partsPreview.appendChild(wrap);
         });
       }
 

@@ -22,3 +22,178 @@
       font-weight: 600;
       color: #333;
     }
+    
+    .floating-export {
+      position: fixed;
+      bottom: 40px;
+      right: 40px;
+      z-index: 9999;
+      display: flex;
+      gap: 15px; /* ระยะห่างระหว่างปุ่มยกเลิกและปุ่มยืนยัน */
+    }
+
+    .btn-floating-export {
+      background: linear-gradient(135deg, #1D6F42, #27ae60);
+      color: white;
+      border: none;
+      border-radius: 30px;
+      padding: 12px 24px;
+      font-family: 'Kanit', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 6px 15px rgba(39, 174, 96, 0.4);
+      transition: all 0.3s ease;
+    }
+    .btn-floating-export:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 10px 25px rgba(39, 174, 96, 0.6);
+    }
+
+    /* ปุ่มยกเลิก (สีเทา-แดง) */
+    .btn-floating-cancel {
+      background: #f1f1f1;
+      color: #e74c3c;
+      border: 1px solid #e74c3c;
+      border-radius: 30px;
+      padding: 12px 24px;
+      font-family: 'Kanit', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: none; /* ซ่อนไว้ก่อน */
+      transition: all 0.3s ease;
+    }
+    .btn-floating-cancel:hover {
+      background: #e74c3c;
+      color: white;
+    }
+
+    @media (max-width: 768px) {
+      .floating-export { bottom: 25px; right: 20px; }
+    }
+
+    /* พื้นหลังสีดำโปร่งแสง */
+    .export-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 10000;
+      display: none; /* ซ่อนไว้ก่อน */
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(2px);
+    }
+    
+    /* สั่งให้แสดงผลเมื่อใส่คลาส .show */
+    .export-modal-overlay.show {
+      display: flex;
+    }
+
+    /* กล่องสีขาว */
+    .export-modal-box {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 30px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      position: relative;
+      font-family: 'Kanit', sans-serif;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      animation: modalFadeIn 0.3s ease;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* ปุ่มกากบาทปิด */
+    .export-modal-close {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: #999;
+      cursor: pointer;
+      line-height: 1;
+      padding: 5px;
+      transition: color 0.2s;
+    }
+    .export-modal-close:hover { color: #333; }
+
+    /* หัวข้อ */
+    .export-modal-title {
+      margin: 0 0 15px 0;
+      color: #333;
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    /* ซับไตเติ้ล + เลขเอกสาร */
+    .export-modal-subtitle {
+      margin: 0 0 25px 0;
+      color: #555;
+      font-size: 1rem;
+    }
+    .export-modal-subtitle span {
+      font-weight: 700;
+      color: #f2722b; /* สีส้ม */
+    }
+
+    /* กล่องปุ่มตัวเลือก */
+    .export-options {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    /* ปุ่ม PDF / Excel */
+    .export-opt-btn {
+      flex: 1;
+      background: #f9f9f9;
+      border: 1px solid #eaeaea;
+      border-radius: 12px;
+      padding: 25px 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      font-family: 'Kanit', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #333;
+      transition: all 0.2s ease;
+    }
+    .export-opt-btn:hover {
+      background: #ffffff;
+      border-color: #d0d0d0;
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 8px; /* ขอบมนตามรูป */
+      color: #ffffff;
+      font-family: 'Kanit', sans-serif;
+      font-size: 0.95rem;
+      text-align: center;
+      min-width: 120px;
+    }
+
+    /* กำหนดสีตามสถานะ */
+    .status-approve { background-color: #00b551; } /* สีเขียว */
+    .status-reject  { background-color: #ff2a2a; } /* สีแดง */
+    .status-return  { background-color: #ffc107; } /* สีเหลือง */
+    .status-pending { background-color: #a3a3a3; } /* สีเทา */
+
+ 
