@@ -1,182 +1,199 @@
 /*
- * styles-claim_form.css
- * Override สำหรับหน้า claim_form.php
- * - ปรับสีพื้นหลังให้เหมือนหน้าอื่นๆ
- * - จัดวาง layout 2 คอลัมน์แบบ label+input เรียงเป็นระเบียบ
+ * styles-claim_form.css — Bootstrap 5.3 overrides + Brand theming
+ * ใช้ Bootstrap class เป็นหลัก (row, col, form-control, etc.)
+ * ไฟล์นี้เพิ่มเติม: สี, เงา, ขอบกลม, transitions เท่านั้น
  */
 
-/* === พื้นหลัง / container === */
+:root {
+  --primary-orange: #f2722b;
+  --light-orange: #f9b27d;
+  --bg-color: #fcf9f2;
+  --btn-green: #00b551;
+  --btn-red: #ff1e1e;
+  --text-color: #333333;
+}
+
+/* === Body & Background === */
 body {
-  background-color: var(--bg-color, #fcf9f2) !important;
-  background: var(--bg-color, #fcf9f2) !important;
+  background-color: var(--bg-color);
 }
 
 .main-content {
-  flex: 1;
-  margin-left: var(--sidebar-w, 290px);
-  padding: 30px 30px 40px;
-  min-height: 100vh;
-  background-color: var(--bg-color, #fcf9f2);
+  background-color: var(--bg-color);
 }
 
-/* ยกเลิก container margin-auto เดิม (ไม่ต้องการอีกต่อไปเมื่อมี sidebar) */
-.container {
-  max-width: 100%;
-  margin: 0;
-  padding: 0;
-}
-
-/* === Card (ฟอร์มหลัก) === */
-#claimForm.card {
+/* === Card === */
+.card {
   background: #fff;
   border-radius: 14px;
-  padding: 30px 32px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
-  border: 1px solid rgba(0,0,0,0.04);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* === Page Title === */
-.page-title {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--primary-orange, #f2722b);
-  margin: 0 0 6px 0;
-}
-.page-subtitle {
-  font-size: 0.9rem;
-  color: #888;
-  margin: 0 0 20px 0;
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
 }
 
-/* === Form Grid: 2 คอลัมน์ === */
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px 28px;
-  align-items: start;
-}
-.form-grid .full {
-  grid-column: 1 / -1;
+/* === Layout / Tabs polish === */
+#claimForm {
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
-/* === Inline Fields: Label + Input เรียงแนวนอน === */
-label.field.inline-field {
-  display: grid;
-  grid-template-columns: 140px 1fr;
-  align-items: center;
-  gap: 10px;
+.tab-content {
+  padding-top: 0.75rem;
 }
-label.field.inline-field .label-text {
+
+.nav-tabs {
+  border-bottom: 0;
+  margin-bottom: 1rem;
+}
+
+.nav-tabs .nav-link {
+  border: 1px solid #ececec;
+  border-radius: 0.75rem;
+  margin-right: 0.35rem;
+  color: #555;
+  background: #fff;
   font-weight: 600;
-  font-size: 0.9rem;
+  padding: 0.65rem 1rem;
+}
+
+.nav-tabs .nav-link.active {
+  color: #fff;
+  background: var(--primary-orange);
+  border-color: var(--primary-orange);
+}
+
+.nav-tabs .nav-link:not(.active):hover {
+  background: #fafafa;
+}
+
+/* === Horizontal inline label layout === */
+.form-row-item {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 0.82rem;
+}
+
+.form-row-item .form-label {
+  margin-bottom: 0;
+  font-weight: 700;
   color: #222;
   white-space: nowrap;
-  margin: 0;
-}
-label.field.inline-field input,
-label.field.inline-field select {
-  flex: 1;
-  min-width: 0;
-  padding: 9px 12px;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
-  font-size: 0.9rem;
-  background: #fff;
-  font-family: 'Kanit', sans-serif;
-  color: #333;
-  transition: border-color 0.2s;
-}
-label.field.inline-field input:focus,
-label.field.inline-field select:focus {
-  border-color: var(--primary-orange, #f2722b);
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(242,114,43,0.08);
 }
 
-/* === Radio group row === */
-.radio-group {
-  display: grid;
-  grid-template-columns: 140px 1fr;
-  align-items: center;
-  gap: 10px;
-  grid-column: 1 / -1;
+.form-row-item .form-control,
+.form-row-item .form-select,
+.form-row-item .form-check {
+  width: 100%;
 }
-.radio-group .label-text {
+
+@media (max-width: 900px) {
+  .form-row-item {
+    display: block;
+  }
+  .form-row-item .form-label {
+    margin-bottom: 0.3rem;
+  }
+}
+
+/* === Form Controls (Bootstrap overrides) === */
+.form-label {
   font-weight: 600;
-  font-size: 0.9rem;
   color: #222;
-  margin: 0;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
 }
-.radio-row {
-  display: flex;
-  gap: 16px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.radio-row label,
-.claim-options label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 500;
-  font-size: 0.9rem;
-  color: #333;
-  padding: 7px 14px;
+
+.form-control,
+.form-select {
   border: 1px solid #e0e0e0;
   border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.radio-row label:hover,
-.claim-options label:hover {
-  border-color: var(--primary-orange, #f2722b);
-  background: rgba(242,114,43,0.04);
-}
-.radio-row label.checked,
-.claim-options label.checked {
-  border-color: var(--primary-orange, #f2722b);
-  background: rgba(242,114,43,0.08);
-  color: var(--primary-orange, #f2722b);
-  font-weight: 600;
-}
-/* hide native radio visual — use label pill instead */
-.radio-row input[type="radio"],
-.claim-options input[type="radio"],
-.claim-options input[type="checkbox"] {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-  width: 1px;
-  height: 1px;
-}
-
-/* === Parts action buttons === */
-.parts-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.btn-parts-add {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 10px 22px;
-  background: var(--primary-orange, #f2722b);
-  color: #fff;
-  font-weight: 600;
-  font-size: 0.92rem;
-  border: none;
-  outline: none;
-  border-radius: 8px;
-  cursor: pointer;
+  padding: 0.65rem 0.875rem;
   font-family: 'Kanit', sans-serif;
-  box-shadow: 0 4px 12px rgba(242,114,43,0.28);
-  transition: transform 0.15s, box-shadow 0.15s;
+  font-size: 0.95rem;
+  color: #333;
+  background-color: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
-.btn-parts-add:hover {
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--primary-orange);
+  box-shadow: 0 0 0 0.2rem rgba(242, 114, 43, 0.15);
+  outline: none;
+}
+
+.form-control::placeholder {
+  color: #999;
+  font-style: italic;
+}
+
+/* === Checkboxes & Radios === */
+.form-check-input {
+  width: 1.25em;
+  height: 1.25em;
+  border: 2px solid #ccc;
+  border-radius: 0.25em;
+  cursor: pointer;
+  accent-color: var(--primary-orange);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-check-input:checked {
+  background-color: var(--primary-orange);
+  border-color: var(--primary-orange);
+}
+
+.form-check-input:focus {
+  border-color: var(--primary-orange);
+  box-shadow: 0 0 0 0.25rem rgba(242, 114, 43, 0.25);
+}
+
+.form-check-label {
+  cursor: pointer;
+  user-select: none;
+  font-weight: 500;
+  margin-bottom: 0;
+}
+
+/* === Buttons === */
+.btn {
+  font-family: 'Kanit', sans-serif;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background-color: var(--primary-orange);
+  border-color: var(--primary-orange);
+}
+
+.btn-primary:hover {
+  background-color: #da5400;
+  border-color: #da5400;
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(242,114,43,0.35);
+  box-shadow: 0 6px 18px rgba(242, 114, 43, 0.25);
+}
+
+.btn-success {
+  background-color: var(--btn-green);
+  border-color: var(--btn-green);
+  color: #fff;
+}
+
+.btn-success:hover {
+  background-color: #009041;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 181, 81, 0.25);
 }
 
 .btn-parts-upload {
@@ -196,155 +213,153 @@ label.field.inline-field select:focus {
   box-shadow: 0 4px 12px rgba(0,181,81,0.28);
   transition: transform 0.15s, box-shadow 0.15s;
 }
-.btn-parts-upload:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0,181,81,0.35);
-}
 
-/* === Image preview after upload === */
-.parts-img-preview {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 14px;
-}
-.parts-img-preview .preview-thumb {
-  position: relative;
-  width: 110px;
-  height: 80px;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  border: 1px solid #eee;
-}
-.parts-img-preview .preview-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-.parts-img-preview .preview-thumb .remove-thumb {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 22px;
-  height: 22px;
-  background: rgba(0,0,0,0.55);
-  color: #fff;
-  border: none;
-  border-radius: 50%;
-  font-size: 14px;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
-
-/* === Remove black border from fieldsets === */
-fieldset {
-  border: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-fieldset legend {
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: #222;
-  margin-bottom: 10px;
-  display: block;
-}
-
-
-.radio-group-left {
-  display: grid;
-  grid-template-columns: 140px 1fr;
-  align-items: center;
-  gap: 10px;
-}
-.radio-group-left > .label-text {
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: #222;
-  margin: 0;
-}
-
-/* Brand + Grade selects นำไปเรียงในแนวนอน */
-.brand-select,
-.grade-field {
+.btn-parts-add {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-}
-.brand-select .label-text,
-.grade-field .label-text {
+  gap: 7px;
+  padding: 10px 22px;
+  background: var(--primary-orange, #f2722b);
+  color: #fff;
   font-weight: 600;
-  font-size: 0.9rem;
-  white-space: nowrap;
-  margin: 0;
+  font-size: 0.92rem;
+  border: none;
+  outline: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Kanit', sans-serif;
+  box-shadow: 0 4px 12px rgba(242,114,43,0.28);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+/* === Responsive Adjustments === */
+@media (max-width: 768px) {
+  .form-label {
+    font-size: 0.9rem;
+  }
+
+  .form-control,
+  .form-select {
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .btn {
+    width: 100%;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .card {
+    padding: 1rem;
+  }
 }
 
 /* === Textarea === */
 textarea {
   width: 100%;
-  padding: 10px 12px;
+  padding: 0.75rem 0.875rem;
   border-radius: 8px;
   border: 1px solid #e0e0e0;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-family: 'Kanit', sans-serif;
-  min-height: 88px;
+  min-height: 100px;
   resize: vertical;
   transition: border-color 0.2s;
 }
+
 textarea:focus {
-  border-color: var(--primary-orange, #f2722b);
+  border-color: var(--primary-orange);
+  box-shadow: 0 0 0 0.2rem rgba(242, 114, 43, 0.15);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(242,114,43,0.08);
 }
 
-/* === Section legend === */
-.section-legend {
-  font-weight: 700;
+/* === Tables === */
+.table {
+  font-family: 'Kanit', sans-serif;
   font-size: 0.95rem;
-  color: #222;
-  margin-bottom: 10px;
 }
 
-/* === Submit Actions === */
-.actions {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  margin-top: 24px;
-}
-.btn.primary {
-  background: var(--primary-orange, #f2722b);
-  color: #fff;
-  border-color: var(--primary-orange, #f2722b);
-  padding: 11px 28px;
-  border-radius: 10px;
-  font-size: 1rem;
+.table thead th {
+  background-color: #f8f8f8;
+  color: #333;
   font-weight: 600;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.table tbody tr:hover {
+  background-color: rgba(242, 114, 43, 0.03);
+}
+
+.table td {
+  vertical-align: middle;
+  padding: 0.75rem;
+}
+
+/* === Image Preview Container === */
+.image-preview-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.preview-item {
+  position: relative;
+  width: 100px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.preview-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.preview-item .btn-remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: rgba(255, 30, 30, 0.85);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(242,114,43,0.25);
-  transition: transform 0.15s, box-shadow 0.15s;
-  font-family: 'Kanit', sans-serif;
+  font-size: 16px;
+  transition: background 0.2s;
 }
-.btn.primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 18px rgba(242,114,43,0.3);
+
+.preview-item .btn-remove:hover {
+  background: rgba(255, 30, 30, 1);
 }
-.btn:not(.primary) {
-  padding: 11px 24px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  background: #fff;
-  color: #555;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  font-family: 'Kanit', sans-serif;
-  transition: background 0.15s;
+
+/* === Utility Classes === */
+.d-none {
+  display: none !important;
 }
-.btn:not(.primary):hover { background: #f5f5f5; }
+
+.d-block {
+  display: block !important;
+}
+
+.mt-3 {
+  margin-top: 1rem;
+}
+
+.mb-3 {
+  margin-bottom: 1rem;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}

@@ -9,21 +9,16 @@
 </head>
 <body>
 
-  <!-- Sidebar -->
   <?php include 'includes/sidebar.php'; ?>
 
-  <!-- Main Content -->
   <div class="main-content">
     
-    <!-- Filter Bar -->
     <div class="filter-bar">
       <div class="filter-group">
         <input type="text" placeholder="ค้นหาเอกสาร..." class="form-control min-w-250">
         <select>
           <option value="">สาขา</option>
-          <option value="bangkok">กรุงเทพฯ</option>
-          <option value="chiangmai">เชียงใหม่</option>
-          <option value="khonkaen">ขอนแก่น</option>
+          <option value="***">***</option>
         </select>
         <select>
           <option value=""selected>สถานะ</option>
@@ -37,10 +32,8 @@
       </div>
     </div>
 
-    <!-- History Grid -->
     <div class="history-grid">
       
-      <!-- Card 1 -->
       <div class="history-card">
         <div class="hc-header">
           <div class="hc-header-left">
@@ -104,7 +97,6 @@
         </div>
       </div>
 
-      <!-- Card 2 -->
       <div class="history-card">
         <div class="hc-header">
           <div class="hc-header-left">
@@ -168,7 +160,6 @@
         </div>
       </div>
 
-      <!-- Card 3 -->
       <div class="history-card">
         <div class="hc-header">
           <div class="hc-header-left">
@@ -232,7 +223,6 @@
         </div>
       </div>
 
-      <!-- Card 4 -->
       <div class="history-card">
         <div class="hc-header">
           <div class="hc-header-left">
@@ -241,7 +231,7 @@
           </div>
           <div class="hc-header-right">
             <div class="hc-badge bg-primary-orange text-white">สถานะ : ซ่อมเสร็จสิ้น</div>
-            <a href="edit_claim.php?id=TS01-004" class="hc-btn bg-secondary text-white">ดูข้อมูล</a>
+            <a href="edit_claim.php?id=TS01-004" class="hc-btn">แก้ไข</a>
           </div>
         </div>
         

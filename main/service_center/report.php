@@ -9,13 +9,10 @@
 </head>
 <body>
 
-  <!-- Sidebar -->
   <?php include 'includes/sidebar.php'; ?>
 
-  <!-- Main Content -->
   <div class="main-content">
     
-    <!-- Header & Actions -->
     <div class="filter-bar">
       <div class="filter-group">
         <div class="filter-group">
@@ -39,7 +36,6 @@
       </div>
     </div>
 
-    <!-- Data Table -->
     <div class="table-container">
       <table>
         <thead>
@@ -81,7 +77,6 @@
     </div>
   </div>
   
-  <!-- Export Modal -->
   <div class="modal-overlay" id="export-modal">
     <div class="modal-content" style="max-width: 400px; text-align: center; position: relative;">
       <div class="modal-close" id="close-export-modal">&times;</div>

@@ -101,14 +101,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>ฟอร์มส่งเคลม</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-dxz0OFf2LjA5efXKwBlenuMxS9IIrLs+1E1iY1p6RhJHciAPxsBHo/djC6AmlL0I" crossorigin="anonymous">
   <link rel="stylesheet" href="css/theme.css">
-  <link rel="stylesheet" href="css/styles.css">
-  <link rel="stylesheet" href="css/styles-claim_form.css">
+  <link rel="stylesheet" href="css/styles.css"> 
+  <link rel="stylesheet" href="css/styles-claim_form.css"> 
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
     :root{--orange:#e65100;--orange-600:#ff7a1a;--black:#121212;--muted:#6b6b6b;--bg:#f7f8fb;--surface:#ffffff;--soft-shadow:rgba(16,24,40,0.06);--icon-card-grad:linear-gradient(135deg,#ff7a1a,#ff8a3d)}
     *{box-sizing:border-box}
-    body{font-family:'Kanit',Inter,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:linear-gradient(180deg,#fbfbfd,#ffffff);color:var(--black);-webkit-font-smoothing:antialiased;font-size:16px;line-height:1.55}
+    body{font-family:'Kanit',Inter,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:linear-gradient(180deg,#fbfbfd,#ffffff);color:var(--black);-webkit-font-smoothing:antialiased;font-size:16px;line-height:1.55;display:flex;min-height:100vh}
     .container{max-width:1100px;margin:28px auto;padding:0 18px}
     .header{padding:10px 0}
     h1{color:var(--orange);margin:0;font-size:1.6rem}
@@ -135,11 +136,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .card{background:var(--surface);border-radius:16px;padding:24px;border:1px solid rgba(16,24,40,0.03);box-shadow:0 12px 40px var(--soft-shadow);transition:transform .18s ease,box-shadow .18s ease}
     .card:hover{transform:translateY(-6px);box-shadow:0 24px 60px rgba(16,24,40,0.08)}
 
-    /* Form grid */
-    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
-    /* prevent grid children from forcing overflow; allow them to shrink when needed */
-    .form-grid, .form-grid > *, .field, .inline-field, .claim-row, .upload-card, .upload-card .drop-area {min-width:0}
-    .form-grid .full{grid-column:1 / -1}
+    /* Bootstrap layout helpers */
+    .field, .inline-field, .claim-row, .upload-card, .upload-card .drop-area {min-width:0}
     .field{display:flex;flex-direction:column;gap:6px}
     /* inline-field: label and input on same row for compact fields (e.g., VIN, owner) */
     .inline-field{flex-direction:row;align-items:center;gap:6px}
@@ -147,6 +145,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .inline-field.keep-inline{flex-direction:row !important}
     .inline-field.keep-inline .label-text{min-width:160px}
     .inline-field .label-text{margin-bottom:0;min-width:120px;white-space:nowrap;color:var(--muted);font-weight:700}
+    @media (max-width: 768px) {
+      .inline-field.keep-inline, .inline-field {flex-direction:column !important;align-items:stretch !important;}
+      .inline-field .label-text, .inline-field.keep-inline .label-text {min-width:auto !important;white-space:normal !important;margin-bottom:6px;}
+      .form-grid > * {width:100% !important;}
+    }
     /* ensure inputs/selects can shrink and not overflow their containers */
     input[type="text"], input[type="number"], input[type="date"], select, textarea{min-width:0}
     .inline-field .label-text.label-dark{color:var(--black);font-weight:700}
@@ -365,7 +368,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     /* Responsive */
     @media (max-width:880px){
-      .form-grid{grid-template-columns:1fr;gap:12px}
       .label-text{font-size:0.95rem}
       .container{padding:0 12px}
       .inline-field{flex-direction:column;align-items:stretch}
@@ -435,6 +437,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       .upload-card .preview{justify-content:flex-start}
       input[type="text"], input[type="number"], input[type="date"], select, textarea{max-width:100%;box-sizing:border-box}
     }
+    /* Responsive form helpers */
+    @media (max-width:768px) {
+      .inline-field {
+        flex-direction: column !important;
+        align-items: stretch !important;
+      }
+      .inline-field .label-text {
+        min-width: auto;
+        margin-bottom: 6px;
+      }
+      .inline-field.keep-inline {
+        flex-direction: column !important;
+        align-items: stretch !important;
+      }
+      .inline-field.keep-inline .label-text {
+        min-width: auto !important;
+        margin-bottom: 6px;
+      }
+    }
+    /* Container responsive */
+    @media (max-width:1024px) {
+      .container { max-width:100%; margin:20px auto; }
+    }
+    @media (max-width:768px) {
+      .container { max-width:100%; margin:16px auto; padding:0 12px; }
+      .main-content { padding:16px !important; }
+    }
   </style>
 </head>
 <body>
@@ -465,87 +494,124 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <symbol id="icon-close" viewBox="0 0 24 24"><path d="M18.3 5.7L12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3 10.6 10.6 16.9 4.3z"/></symbol>
     </svg>
 
-    <form id="claimForm" class="card" method="post" enctype="multipart/form-data">
-      <section class="form-grid">
-        <label class="field inline-field keep-inline"> <span class="label-text label-dark">สาขา :</span>
-          <select id="branch" name="branch" required>
-            <option value="">-- เลือกสาขา --</option>
-            <option>สาขา กรุงเทพฯ</option>
-            <option>สาขา เชียงใหม่</option>
-            <option>สาขา ขอนแก่น</option>
-          </select>
-        </label>
+    <form id="claimForm" class="card p-4" method="post" enctype="multipart/form-data">
+      <div class="container-fluid">
+        <div class="tab-content" id="claimFormTabContent">
+          <div class="tab-pane fade show active" id="tab-basic" role="tabpanel" aria-labelledby="tab-basic-tab">
+            <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <div class="form-row-item">
+              <label for="branch" class="form-label">สาขา</label>
+              <select id="branch" name="branch" class="form-select" required>
+                <option value="">-- เลือกสาขา --</option>
+                <option>สาขา สกลนคร</option>
+              </select>
+            </div>
+          </div>
 
-          <label class="field inline-field keep-inline"> <span class="label-text label-dark">วันที่ส่งเคลม : </span>
-            <input type="date" id="claimDate" name="claimDate" value="<?php echo date('Y-m-d'); ?>" readonly required>
-          </label>
+          <div class="col-12 col-md-6">
+            <div class="form-row-item">
+              <label for="claimDate" class="form-label">วันที่ส่งเคลม</label>
+              <input type="date" id="claimDate" name="claimDate" class="form-control" value="<?php echo date('Y-m-d'); ?>" readonly required>
+            </div>
+          </div>
 
-        <!-- ประเภทรถ: คอลัมน์ซ้าย -->
-        <div class="radio-group-left"> <span class="label-text label-dark">ประเภทรถ : </span>
-          <div class="radio-row">
-            <label><input type="radio" name="carType" value="new" checked> รถใหม่</label>
-            <label><input type="radio" name="carType" value="used"> รถมือสอง</label>
+          <div class="col-12 col-md-6">
+            <div class="form-row-item align-items-start">
+              <label class="form-label">ประเภทรถ</label>
+              <div class="d-flex gap-2">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="carType" id="carTypeNew" value="new" checked required>
+                  <label class="form-check-label" for="carTypeNew">รถใหม่</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="carType" id="carTypeUsed" value="used" required>
+                  <label class="form-check-label" for="carTypeUsed">รถมือสอง</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <div class="form-row-item">
+              <label for="carBrand" class="form-label">ยี่ห้อ</label>
+              <select id="carBrand" name="carBrand" class="form-select" required>
+                <option value="">-- เลือกยี่ห้อ --</option>
+                <option>Honda</option>
+                <option>Yamaha</option>
+                <option>Vespa</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6 grade-field d-none" id="gradeLabel">
+            <div class="form-row-item">
+              <label for="usedGrade" class="form-label">เกรด</label>
+              <select id="usedGrade" name="usedGrade" class="form-select">
+                <option value="">-- เลือกเกรด --</option>
+                <option value="A_premium">A พรีเมี่ยม</option>
+                <option value="A_w6">A รับประกันเครื่องยนต์ 6 เดือน</option>
+                <option value="C_w1">C รับประกันเครื่องยนต์ 1 เดือน</option>
+                <option value="C_as_is">C ตามสภาพไม่รับประกัน</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <div class="form-row-item">
+              <label for="vin" class="form-label">หมายเลขตัวถัง</label>
+              <input type="text" id="vin" name="VIN Number" class="form-control" placeholder="VIN Number" required>
+            </div>
+          </div>
+
+          <div class="col-12 col-md-6">
+            <div class="form-row-item">
+              <label for="ownerName" class="form-label">ชื่อ-นามสกุล (ผู้ซื้อ)</label>
+              <input type="text" id="ownerName" name="ownerName" class="form-control" placeholder="ชื่อ นามสกุล" required>
+            </div>
           </div>
         </div>
 
-        <!-- ยี่ห้อ: คอลัมน์ขวา (เรียงตรงข้ามประเภทรถ) -->
-        <label class="field inline-field keep-inline">
-          <span class="label-text label-dark">ยี่ห้อ :</span>
-          <select id="carBrand" name="carBrand">
-            <option value="">-- เลือกยี่ห้อ --</option>
-            <option>Honda</option>
-            <option>Yamaha</option>
-            <option>Vespa</option>
-          </select>
-        </label>
-
-        <!-- เกรด: แสดงเมื่อเลือกรถมือสอง, อยู่ row ถัดมาคอลัมน์ขวา -->
-        <div class="grade-field" style="display:none"></div>
-        <label class="field inline-field keep-inline grade-field" id="gradeLabel" style="display:none">
-          <span class="label-text label-dark">เกรด :</span>
-          <select id="usedGrade" name="usedGrade">
-            <option value="">-- เลือกเกรด --</option>
-            <option value="A_premium">A พรีเมี่ยม</option>
-            <option value="A_w6">A รับประกันเครื่องยนต์ 6 เดือน</option>
-            <option value="C_w1">C รับประกันเครื่องยนต์ 1 เดือน</option>
-            <option value="C_as_is">C ตามสภาพไม่รับประกัน</option>
-          </select>
-        </label>
-
-        <label class="field inline-field keep-inline"> <span class="label-text label-dark"> หมายเลขตัวถัง : </span>
-          <input type="text" id="vin" name="VIN Number" placeholder="VIN Number" required>
-        </label>
-
-        <label class="field inline-field keep-inline"> <span class="label-text label-dark"> ชื่อ-นามสกุล(ผู้ซื้อ) :</span>
-          <input type="text" id="ownerName" name="ownerName" placeholder="ชื่อ นามสกุล" required>
-        </label>
-
-        <div class="full">
-          <div class="section-legend">รายละเอียดปัญหาที่ลูกค้าแจ้ง :</div>
-          <label class="field">
-            <textarea id="problemDesc" name="problemDesc" rows="4" placeholder="อธิบายปัญหาที่ลูกค้าแจ้ง" required></textarea>
-          </label>
-        </div>
-
-        <div class="full">
-          <div class="section-legend">ผลการตรวจเช็คปัญหา :</div>
-          <div class="subfield">
-            <label class="field"> <span class="label-text">วิธีตรวจเช็ค :</span>
-              <textarea id="inspectMethod" name="inspectMethod" rows="2" placeholder="วิธีตรวจเช็ค"></textarea>
-            </label>
-            <label class="field"> <span class="label-text">สาเหตุของปัญหา :</span>
-              <textarea id="inspectCause" name="inspectCause" rows="2" placeholder="สาเหตุของปัญหา"></textarea>
-            </label>
-          </div>
-          <div class="note-box" aria-live="polite">
-            <strong>***หมายเหตุ : </strong>
-            <ol>
-              <li>รถมือสองมีปัญหาปรึกษาช่างมือสอง เบอร์โทรศัพท์ พี่สีเมือง 061-0190011 พี่บัว 093-3197117  หรือ 042-71135 ต่อ 201</li>
-              <li>รถใหม่มีปัญหาปรึกษาศูนย์บริการ Honda 086-4594656 Yamaha 086-4550614 Vespa 099-1285556</li>
-            </ol>
+        <!-- Problem Description Section -->
+        <div class="row g-3 mt-2">
+          <div class="col-12">
+            <h5 class="fw-bold mb-3" style="color: #222; font-size: 1rem;">รายละเอียดปัญหาที่ลูกค้าแจ้ง :</h5>
+            <div class="mb-3">
+              <textarea id="problemDesc" name="problemDesc" rows="4" class="form-control" placeholder="อธิบายปัญหาที่ลูกค้าแจ้ง" required></textarea>
+            </div>
           </div>
         </div>
 
+        <!-- Inspection Result Section -->
+        <div class="row g-3">
+          <div class="col-12">
+            <h5 class="fw-bold mb-3" style="color: #222; font-size: 1rem;">ผลการตรวจเช็คปัญหา :</h5>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="mb-3">
+              <label for="inspectMethod" class="form-label fw-semibold">วิธีตรวจเช็ค</label>
+              <textarea id="inspectMethod" name="inspectMethod" rows="3" class="form-control" placeholder="วิธีตรวจเช็ค" required></textarea>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="mb-3">
+              <label for="inspectCause" class="form-label fw-semibold">สาเหตุของปัญหา</label>
+              <textarea id="inspectCause" name="inspectCause" rows="3" class="form-control" placeholder="สาเหตุของปัญหา" required></textarea>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="alert alert-info mb-0" style="background-color: #fff6f6; border-left: 4px solid var(--primary-orange); font-size: 0.95rem;">
+              <strong>***หมายเหตุ :</strong>
+              <ol style="margin: 6px 0 0 18px; padding: 0;">
+                <li>รถมือสองมีปัญหาปรึกษาช่างมือสอง เบอร์โทรศัพท์ พี่สีเมือง 061-0190011 พี่บัว 093-3197117 หรือ 042-71135 ต่อ 201</li>
+                <li>รถใหม่มีปัญหาปรึกษาศูนย์บริการ Honda 086-4594656 Yamaha 086-4550614 Vespa 099-1285556</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade" id="tab-images" role="tabpanel" aria-labelledby="tab-images-tab">
         <fieldset class="full images">
           <legend>แนบรูปภาพปัญหา :</legend>
           <div class="image-uploader">
@@ -613,40 +679,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
           </div>
         </fieldset>
+      </div>
 
-        <fieldset class="full">
-          <legend>ประเภทการเคลม :</legend>
-          <div class="claim-row">
-            <label class="field" style="margin:0">
-              <select id="claimCategory" name="claimCategory">
+      <div class="tab-pane fade" id="tab-claim" role="tabpanel" aria-labelledby="tab-claim-tab">
+
+        <!-- Claim Category Section -->
+        <div class="row g-3 mt-2">
+          <div class="col-12">
+            <h5 class="fw-bold mb-3" style="color: #222; font-size: 1rem;">ประเภทการเคลม :</h5>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="mb-3">
+              <label for="claimCategory" class="form-label fw-semibold">เลือกประเภท</label>
+              <select id="claimCategory" name="claimCategory" class="form-select">
                 <option value="">-- เลือกประเภทการเคลม --</option>
                 <option value="pre-sale">เคลมรถก่อนขาย</option>
                 <option value="technical">เคลมปัญหาทางเทคนิค</option>
                 <option value="customer-sale">เคลมรถลูกค้า</option>
               </select>
-            </label>
-
-            <div class="claim-options">
-              <label><input type="radio" name="claimAction" id="claim_repair" value="repairBranch"> ซ่อมที่สาขา</label>
-              <label><input type="radio" name="claimAction" id="claim_send" value="sendHQ"> ส่งซ่อมที่สนญ.</label>
-              <label><input type="radio" name="claimAction" id="claim_replace" value="replaceVehicle"> เปลี่ยนคัน</label>
-              <label class="other-inline"><input type="radio" name="claimAction" id="claim_other" value="other"> อื่นๆ <input type="text" id="claimOtherText" name="claimOtherText" placeholder="ระบุอื่นๆ" style="display:none"></label>
             </div>
           </div>
-        </fieldset>
+          
+          <div class="col-12">
+            <div class="mb-3">
+              <label class="form-label fw-semibold">การดำเนินการ</label>
+              <div class="d-flex flex-wrap gap-2">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="claimAction" id="claim_repair" value="repairBranch">
+                  <label class="form-check-label" for="claim_repair">ซ่อมที่สาขา</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="claimAction" id="claim_send" value="sendHQ">
+                  <label class="form-check-label" for="claim_send">ส่งซ่อมที่สนญ.</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="claimAction" id="claim_replace" value="replaceVehicle">
+                  <label class="form-check-label" for="claim_replace">เปลี่ยนคัน</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="claimAction" id="claim_other" value="other">
+                  <label class="form-check-label" for="claim_other">อื่นๆ</label>
+                </div>
+              </div>
+              <input type="text" id="claimOtherText" name="claimOtherText" class="form-control mt-2 d-none" placeholder="ระบุอื่นๆ">
+            </div>
+          </div>
+        </div>
 
-        <section id="partsSection" class="full parts" style="display:none">
-          <h3>ระบุรายการอะไหล่ ที่ต้องการเคลม/จำนวน</h3>
-          <div class="table-responsive">
-          <table id="partsTable">
-            <thead>
-              <tr>
-                <th style="width:48px">ลำดับ</th>
-                <th style="width:140px">รหัสอะไหล่</th>
-                <th>ชื่ออะไหล่</th>
-                <th style="width:96px">จำนวน</th>
-                <th style="width:120px">ราคา</th>
-                <th style="width:160px">หมายเหตุ</th>
+        <!-- Parts Section -->
+        <section id="partsSection" class="d-none mt-4">
+          <div class="row g-3">
+            <div class="col-12">
+              <h5 class="fw-bold" style="color: #222; font-size: 1rem;">ระบุรายการอะไหล่ ที่ต้องการเคลม/จำนวน</h5>
+            </div>
+            <div class="col-12">
+              <div class="table-responsive">
+              <table id="partsTable" class="table table-hover">
+                <thead class="table-light">
+                  <tr>
+                    <th style="width:48px">ลำดับ</th>
+                    <th style="width:140px">รหัสอะไหล่</th>
+                    <th>ชื่ออะไหล่</th>
+                    <th style="width:96px">จำนวน</th>
+                    <th style="width:120px">ราคา</th>
+                    <th style="width:160px">หมายเหตุ</th>
                 <th style="width:72px">จัดการ</th>
               </tr>
             </thead>
@@ -668,86 +764,179 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <div id="partsImgPreview" class="parts-img-preview"></div>
         </section>
 
-        <fieldset id="partsDeliverySection" class="full" style="display:none">
-          <legend>ประเภทการส่ง อะไหล่</legend>
-          <div class="radio-row">
-            <label><input type="radio" name="partsDelivery" value="in_stock" checked> ใช้อะไหล่ ที่มีในสต็อกสาขา</label>
-            <label><input type="radio" name="partsDelivery" value="wait_hq"> รอส่งอะไหล่ จากสนญ.</label>
-            <label><input type="radio" name="partsDelivery" value="buy_outside"> ซื้ออะไหล่ร้านนอก</label>
-            <label class="other-inline"><input type="radio" name="partsDelivery" id="partsDeliveryOtherRadio" value="other"> อื่นๆ <input type="text" id="partsDeliveryOtherText" name="partsDeliveryOtherText" placeholder="ระบุอื่นๆ"></label>
-          </div>
-        </fieldset>
-
-        <!-- Replacement details show here when 'เปลี่ยนคัน' is checked -->
-        <div class="replace-block card" id="replaceBlock" style="display:none;padding:14px">
-          <div class="section-legend">รายละเอียดการเปลี่ยนคันใหม่</div>
-          <div class="field inline-field"><span class="label-text">รถคันเก่า : คงเหลือเงินดาวน์</span>
-            <div class="compact-number"><input type="number" name="old_down_balance" placeholder="0.00" step="0.01" min="0" /><span class="unit">บาท</span></div>
-          </div>
-          <fieldset id="replaceDetails" class="full">
-           <legend>รายละเอียดรถคันใหม่</legend>
-            <div class="field inline-field"><span class="label-text">รถคันใหม่ : คงเหลือเงินดาวน์</span>
-              <div class="compact-number"><input type="number" name="new_down_balance" placeholder="0.00" step="0.01" min="0" /><span class="unit">บาท</span></div>
-                        <div class="field inline-field"><span class="label-text">ประเภทรถ</span>
-              <div class="replace-type" style="display:flex;gap:12px;align-items:center">
-                <label><input type="radio" name="replaceType" value="new"> รถใหม่</label>
-                <label><input type="radio" name="replaceType" value="used"> รถมือสอง</label>
+        <!-- Parts Delivery Section -->
+        <div id="partsDeliverySection" class="d-none mt-4">
+          <div class="row g-3">
+            <div class="col-12">
+              <h5 class="fw-bold" style="color: #222; font-size: 1rem;">ประเภทการส่ง อะไหล่</h5>
+            </div>
+            <div class="col-12">
+              <div class="d-flex flex-wrap gap-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="partsDelivery" id="partsDelivery_stock" value="in_stock" checked>
+                  <label class="form-check-label" for="partsDelivery_stock">ใช้อะไหล่ ที่มีในสต็อกสาขา</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="partsDelivery" id="partsDelivery_hq" value="wait_hq">
+                  <label class="form-check-label" for="partsDelivery_hq">รอส่งอะไหล่ จากสนญ.</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="partsDelivery" id="partsDelivery_buy" value="buy_outside">
+                  <label class="form-check-label" for="partsDelivery_buy">ซื้ออะไหล่ร้านนอก</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="partsDelivery" id="partsDeliveryOtherRadio" value="other">
+                  <label class="form-check-label" for="partsDeliveryOtherRadio">อื่นๆ</label>
+                </div>
               </div>
+              <input type="text" id="partsDeliveryOtherText" name="partsDeliveryOtherText" class="form-control mt-2 d-none" placeholder="ระบุอื่นๆ">
+            </div>
           </div>
-            </div>
-            <div class="replace-grid">
-              <label class="field inline-field"><span class="label-text">ยี่ห้อ</span>
-                <select name="replace_brand" id="replaceBrand">
-                  <option value="">-- เลือกยี่ห้อ --</option>
-                  <option>Honda</option>
-                  <option>Yamaha</option>
-                  <option>Vespa</option>
-                </select>
-              </label>
-              <label class="field inline-field"><span class="label-text">รุ่น</span><input type="text" name="replace_model" placeholder="รุ่น"></label>
-              <label class="field inline-field"><span class="label-text">สี</span><input type="text" name="replace_color" placeholder="สี"></label>
-            </div>
+        </div>
+      </div>
 
-            <div class="replace-grid-2">
-              <label class="field inline-field"><span class="label-text">เลขตัวถัง</span><input type="text" name="replace_vin" placeholder="เลขตัวถัง / VIN"></label>
-              <label class="field inline-field"><span class="label-text">วันที่รับรถ</span><input type="date" name="replace_receive_date"></label>
-            </div>
-          </fieldset>
-          <div style="margin-top:8px">
-            <label class="field full"><span class="label-text">สาเหตุที่เปลี่ยนคัน</span>
-              <input type="text" name="replace_reason" placeholder="ระบุสาเหตุการเปลี่ยนคัน">
-            </label>
-          </div>
+      <div class="tab-pane fade" id="tab-replace" role="tabpanel" aria-labelledby="tab-replace-tab">
 
-          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:8px">
-            <label class="field inline-field"><span class="label-text">ผู้อนุมัติ</span><input type="text" name="replace_approver" placeholder="ชื่อผู้อนุมัติ"></label>
-            <label class="field inline-field"><span class="label-text">วันที่อนุมัติ</span><input type="date" name="replace_approve_date"></label>
+        <!-- Replacement Details Section -->
+        <div id="replaceBlock" class="card d-none mt-4 p-4">
+          <h5 class="fw-bold mb-4" style="color: #222; font-size: 1rem;">รายละเอียดการเปลี่ยนคันใหม่</h5>
+          
+          <!-- Old Vehicle Down Payment -->
+          <div class="row g-3 mb-3">
+            <div class="col-12">
+              <label class="form-label fw-semibold">รถคันเก่า : คงเหลือเงินดาวน์</label>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="input-group">
+                <input type="number" class="form-control" name="old_down_balance" placeholder="0.00" step="0.01" min="0">
+                <span class="input-group-text">บาท</span>
+              </div>
+            </div>
           </div>
 
-          <div style="margin-top:12px">
-            <div style="margin-top:8px;color:#c00;font-size:0.9rem">
-              <div>***หมายเหตุ : </div>
-              <div>1. ลูกค้าแจ้งเปลี่ยนคัน ส่งให้สินเชื่อพร้อมใบอนุมัติทุกครั้งที่มีการเปลี่ยน/ตัวจริงแนบมากับสัญญาส่งให้บัญชี</div>
-              <div style="margin-top:6px;color:#c00;font-size:0.85rem">2. สินเชื่อเช็คประกันรถหาย / ทะเบียนแก้ไข พ.ร.บ.-ทะเบียน / บริหารสต็อก ตัดแลกเปลี่ยน / ธุรการสินเชื่อ ตรวจรอบการเปิดขาย</div>
+          <!-- New Vehicle Details -->
+          <h6 class="fw-bold mb-3 mt-4" style="color: #333; font-size: 0.95rem;">รายละเอียดรถคันใหม่</h6>
+
+          <!-- New Vehicle Down Payment -->
+          <div class="row g-3 mb-3">
+            <div class="col-12">
+              <label class="form-label fw-semibold">รถคันใหม่ : คงเหลือเงินดาวน์</label>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="input-group">
+                <input type="number" class="form-control" name="new_down_balance" placeholder="0.00" step="0.01" min="0">
+                <span class="input-group-text">บาท</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Replace Type -->
+          <div class="row g-3 mb-3">
+            <div class="col-12">
+              <label class="form-label fw-semibold">ประเภทรถ</label>
+            </div>
+            <div class="col-12">
+              <div class="d-flex gap-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="replaceType" id="replaceType_new" value="new">
+                  <label class="form-check-label" for="replaceType_new">รถใหม่</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="replaceType" id="replaceType_used" value="used">
+                  <label class="form-check-label" for="replaceType_used">รถมือสอง</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- New Vehicle Details Grid -->
+          <div class="row g-3 mb-3">
+            <div class="col-12 col-md-4">
+              <label for="replaceBrand" class="form-label fw-semibold">ยี่ห้อ</label>
+              <select id="replaceBrand" name="replace_brand" class="form-select">
+                <option value="">-- เลือกยี่ห้อ --</option>
+                <option>Honda</option>
+                <option>Yamaha</option>
+                <option>Vespa</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-4">
+              <label for="replaceModel" class="form-label fw-semibold">รุ่น</label>
+              <input type="text" id="replaceModel" name="replace_model" class="form-control" placeholder="รุ่น">
+            </div>
+            <div class="col-12 col-md-4">
+              <label for="replaceColor" class="form-label fw-semibold">สี</label>
+              <input type="text" id="replaceColor" name="replace_color" class="form-control" placeholder="สี">
+            </div>
+          </div>
+
+          <!-- Additional Details -->
+          <div class="row g-3 mb-3">
+            <div class="col-12 col-md-6">
+              <label for="replaceVin" class="form-label fw-semibold">เลขตัวถัง</label>
+              <input type="text" id="replaceVin" name="replace_vin" class="form-control" placeholder="เลขตัวถัง / VIN">
+            </div>
+            <div class="col-12 col-md-6">
+              <label for="replaceReceiveDate" class="form-label fw-semibold">วันที่รับรถ</label>
+              <input type="date" id="replaceReceiveDate" name="replace_receive_date" class="form-control">
+            </div>
+          </div>
+
+          <!-- Replace Reason -->
+          <div class="row g-3 mb-3">
+            <div class="col-12">
+              <label for="replaceReason" class="form-label fw-semibold">สาเหตุที่เปลี่ยนคัน</label>
+              <input type="text" id="replaceReason" name="replace_reason" class="form-control" placeholder="ระบุสาเหตุการเปลี่ยนคัน">
+            </div>
+          </div>
+
+          <!-- Approval -->
+          <div class="row g-3 mb-3">
+            <div class="col-12 col-md-6">
+              <label for="replaceApprover" class="form-label fw-semibold">ผู้อนุมัติ</label>
+              <input type="text" id="replaceApprover" name="replace_approver" class="form-control" placeholder="ชื่อผู้อนุมัติ">
+            </div>
+            <div class="col-12 col-md-6">
+              <label for="replaceApproveDate" class="form-label fw-semibold">วันที่อนุมัติ</label>
+              <input type="date" id="replaceApproveDate" name="replace_approve_date" class="form-control">
+            </div>
+          </div>
+
+          <div class="row mt-3 mb-0">
+            <div class="col-12">
+              <p class="text-danger fw-bold" style="font-size:0.95rem; margin-bottom:0;">***หมายเหตุ :</p>
+              <p class="text-danger" style="font-size:0.95rem; margin-bottom:0.25rem;">1. ลูกค้าแจ้งเปลี่ยนคัน ส่งให้สินเชื่อพร้อมใบอนุมัติทุกครั้งที่มีการเปลี่ยน/ตัวจริงแนบมากับสัญญาส่งให้บัญชี</p>
+              <p class="text-danger" style="font-size:0.95rem;">2. สินเชื่อเช็คประกันรถหาย / ทะเบียนแก้ไข พ.ร.บ.-ทะเบียน / บริหารสต็อก ตัดแลกเปลี่ยน / ธุรการสินเชื่อ ตรวจรอบการเปิดขาย กลับมาให้หน่อย</p>
             </div>
           </div>
         </div>
 
-        <label class="field"> <span class="label-text">ผู้บันทึกส่งเคลม</span>
-          <input type="text" id="recorder" name="recorder" placeholder="ชื่อผู้บันทึก" required>
-        </label>
+        <!-- Recorder Field -->
+        <div class="row g-3 mt-2">
+          <div class="col-12 col-md-6">
+            <div class="mb-3">
+              <label for="recorder" class="form-label fw-semibold">ผู้บันทึกส่งเคลม</label>
+              <input type="text" id="recorder" name="recorder" class="form-control" placeholder="ชื่อผู้บันทึก" required>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-      </section>
-
-      <div class="actions">
-        <button type="submit" class="btn primary">บันทึกการส่งเคลม</button>
-        <button type="reset" class="btn">รีเซ็ต</button>
+      <!-- Action Buttons -->
+      <div class="row mt-4 mb-3">
+        <div class="col-12 d-flex gap-2 justify-content-end">
+          <button type="submit" class="btn btn-primary">บันทึกการส่งเคลม</button>
+          <button type="reset" class="btn btn-outline-secondary">รีเซ็ต</button>
+        </div>
       </div>
 
       <div id="result" class="result" role="status" aria-live="polite"></div>
     </form>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-cndY3KSa6nw2pNpGFAvZrKpT8829k3KgAC45Eynl0qsnI9qZC6Qys9VbDomvY1vG" crossorigin="anonymous"></script>
   <script src="js/app.js"></script>
   <script>
     (function(){
@@ -765,7 +954,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       function updateGradeVisibility(){
         const used = !!document.querySelector('input[name="carType"]:checked') && document.querySelector('input[name="carType"]:checked').value === 'used';
         gradeFields.forEach(f => {
-          f.style.display = used ? 'flex' : 'none';
+          f.classList.toggle('d-none', !used);
         });
       }
       // listen for carType changes
@@ -784,16 +973,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         const sel = document.querySelector('input[name="claimAction"]:checked');
         const val = sel ? sel.value : '';
         const show = val === 'repairBranch' || val === 'sendHQ';
-        partsSection.style.display = show ? 'block' : 'none';
+        partsSection.classList.toggle('d-none', !show);
         const partsDeliverySection = document.getElementById('partsDeliverySection');
-        if(partsDeliverySection) partsDeliverySection.style.display = show ? 'block' : 'none';
+        if(partsDeliverySection) partsDeliverySection.classList.toggle('d-none', !show);
       }
 
       function updateClaimActionVisibility(){
         const sel = document.querySelector('input[name="claimAction"]:checked');
         const val = sel ? sel.value : '';
-        if(replaceBlock) replaceBlock.style.display = val === 'replaceVehicle' ? 'grid' : 'none';
-        if(claimOtherTextInit) { claimOtherTextInit.style.display = val === 'other' ? 'inline-block' : 'none'; if(val !== 'other') claimOtherTextInit.value = ''; }
+        if(replaceBlock) replaceBlock.classList.toggle('d-none', val !== 'replaceVehicle');
+        if(claimOtherTextInit) { claimOtherTextInit.classList.toggle('d-none', val !== 'other'); if(val !== 'other') claimOtherTextInit.value = ''; }
       }
 
       claimActionRadios.forEach(r=> r.addEventListener('change', ()=>{ updatePartsVisibility(); updateClaimActionVisibility(); updateCheckedClasses(); }));
@@ -807,7 +996,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         function updatePartsDeliveryOther(){
           const sel = document.querySelector('input[name="partsDelivery"]:checked');
           const other = sel && sel.value === 'other';
-          partsDeliveryOtherText.style.display = other ? 'inline-block' : 'none';
+          partsDeliveryOtherText.classList.toggle('d-none', !other);
           if(!other) partsDeliveryOtherText.value = '';
         }
         partsDeliveryRadios.forEach(r=> r.addEventListener('change', updatePartsDeliveryOther));
