@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>แก้ไขข้อมูลเคลม - ระบบจัดการฟอร์มส่งเคลม</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/styles-edit_claim.css">
 </head>
@@ -17,319 +18,366 @@
 
   <!-- Main Content -->
   <div class="main-content">
+    <div class="container-fluid p-0">
     
-      <div class="filter-bar">
-        <div class="fs-xl fw-600">ประวัติเคลม <span class="color-999 fw-normal">/ <?= $doc_id ?> / แก้ไข</span></div>
-        <div class="filter-group filter-group justify-content-end">
-          <a href="#verification-section" class="btn-action bg-primary-orange text-decoration-none">ไปยังลงชื่อผู้แก้ไข</a>
-          <a href="history.php" class="btn-action bg-secondary text-decoration-none">ย้อนกลับ</a>
+      <div class="filter-bar mb-4">
+        <div class="row w-100 align-items-center g-3">
+          <div class="col-12 col-md-6">
+            <div class="fs-xl fw-600">ประวัติเคลม <span class="color-999 fw-normal">/ <?= $doc_id ?> / แก้ไข</span></div>
+          </div>
+          <div class="col-12 col-md-6 text-md-end">
+            <div class="d-flex gap-2 justify-content-md-end">
+              <a href="#verification-section" class="btn-action bg-primary-orange text-decoration-none px-3 py-1 color-fff">ไปยังลงชื่อผู้แก้ไข</a>
+              <a href="history.php" class="btn-action bg-secondary text-decoration-none px-3 py-1 color-fff">ย้อนกลับ</a>
+            </div>
+          </div>
         </div>
       </div>
 
-    <!-- Edit Form blocks -->
-    <div class="edit-container mb-5">
-      
-      <!-- Card 1: Main Info -->
-      <div class="edit-card">
-        <div class="section-title">
-          แก้ไขข้อมูล
-        </div>
-          <div class="grid-2">
+      <!-- Edit Form blocks -->
+      <div class="edit-container mb-5">
+        
+        <!-- Card 1: Main Info -->
+        <div class="edit-card mb-4 border-0 shadow-sm rounded-4 p-4">
+          <div class="section-title mb-4 pb-2 border-bottom fw-bold fs-5">แก้ไขข้อมูล</div>
+          <div class="row g-4">
             <!-- Left Column -->
-            <div class="d-flex flex-column gap-20">
-              <div class="form-group row-group">
-                <label class="form-label label-140 fw-600">สาขา</label>
-                <select class="form-control" required>
-                  <option>สำนักงานใหญ่</option>
-                </select>
-              </div>
-              <div class="form-group row-group">
-                <label class="form-label label-140 fw-600">ประเภทการเคลม</label>
-                <div class="d-flex gap-10 w-100">
-                  <select class="form-control min-w-120"><option>รถลูกค้า</option></select>
-                  <select class="form-control"><option>เคลมปกติ</option></select>
+            <div class="col-12 col-lg-6">
+              <div class="d-flex flex-column gap-3">
+                <div class="row align-items-center">
+                  <label class="col-sm-4 col-form-label fw-600">สาขา</label>
+                  <div class="col-sm-8">
+                    <select class="form-select border-2" required>
+                      <option>สำนักงานใหญ่</option>
+                    </select>
+                  </div>
                 </div>
-              </div>
-              <div class="form-group row-group">
-                <label class="form-label label-140 fw-600">เลขที่เอกสาร</label>
-                <input type="text" class="form-control" value="<?= $doc_id ?>" readonly class="bg-disabled input-readonly">
-              </div>
-              <div class="form-group row-group">
-                <label class="form-label label-140 fw-600">วันที่เอกสาร</label>
-                <input type="text" class="form-control" value="25/03/2569" readonly class="bg-light-gray input-readonly">
+                <div class="row align-items-center">
+                  <label class="col-sm-4 col-form-label fw-600">ประเภทการเคลม</label>
+                  <div class="col-sm-8">
+                    <div class="row g-2">
+                       <div class="col-6"><select class="form-select border-2"><option>รถลูกค้า</option></select></div>
+                       <div class="col-6"><select class="form-select border-2"><option>เคลมปกติ</option></select></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row align-items-center">
+                  <label class="col-sm-4 col-form-label fw-600">เลขที่เอกสาร</label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control bg-light border-0" value="<?= $doc_id ?>" readonly>
+                  </div>
+                </div>
+                <div class="row align-items-center">
+                  <label class="col-sm-4 col-form-label fw-600">วันที่เอกสาร</label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control bg-light border-0" value="25/03/2569" readonly>
+                  </div>
+                </div>
               </div>
             </div>
             
             <!-- Right Column -->
-            <div class="d-flex flex-column gap-20">
-              <div class="form-group row-group">
-                <label class="form-label label-140 fw-600 color-555">ผู้บันทึกส่งเคลม</label>
-                <input type="text" class="form-control" value="Mr. TEST" readonly class="bg-readonly input-readonly">
-              </div>
-              <div class="form-group row-group">
-                <label class="form-label label-140 fw-600 color-555">ผู้แก้ไขครั้งล่าสุด</label>
-                <input type="text" id="top-editor-name" class="form-control" value="Mr. TEST" readonly class="bg-readonly input-readonly">
-              </div>
-              <div class="form-group row-group">
-                <label class="form-label label-140 fw-600 color-555">วันที่แก้ไข</label>
-                <input type="text" id="top-edit-date" class="form-control" value="00/00/0000" readonly class="bg-light-gray input-readonly">
+            <div class="col-12 col-lg-6">
+              <div class="d-flex flex-column gap-3">
+                <div class="row align-items-center">
+                  <label class="col-sm-4 col-form-label fw-600 color-555">ผู้บันทึกส่งเคลม</label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control bg-light border-0" value="Mr. TEST" readonly>
+                  </div>
+                </div>
+                <div class="row align-items-center">
+                  <label class="col-sm-4 col-form-label fw-600 color-555">ผู้แก้ไขครั้งล่าสุด</label>
+                  <div class="col-sm-8">
+                    <input type="text" id="top-editor-name" class="form-control bg-light border-0" value="Mr. TEST" readonly>
+                  </div>
+                </div>
+                <div class="row align-items-center">
+                  <label class="col-sm-4 col-form-label fw-600 color-555">วันที่แก้ไข</label>
+                  <div class="col-sm-8">
+                    <input type="text" id="top-edit-date" class="form-control bg-light border-0" value="00/00/0000" readonly>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      
-      <!-- Card 2: ข้อมูลผู้ใช้ & หมายเลขตัวถัง -->
-      <div class="edit-card">
-        <div class="section-title">
-          ข้อมูลผู้ใช้
-        </div>
-        <div class="grid-2">
-          
-
-          <div class="form-group row-group">
-            <label class="form-label req">ชื่อ-นามสกุล</label>
-             <input type="text" class="form-control" placeholder="ชื่อ นามสกุล" required>
-          </div>
-          <div></div>
-          
-          <div class="form-group row-group form-group row-group full-width">
-            <label class="form-label">ที่อยู่</label>
-            <div class="d-flex flex-column gap-10 w-100">
-              <input type="text" class="form-control" placeholder="ที่อยู่ 1">
-              <input type="text" class="form-control" placeholder="ที่อยู่ 2">
+        
+        <!-- Card 2: ข้อมูลผู้ใช้ & หมายเลขตัวถัง -->
+        <div class="edit-card mb-4 border-0 shadow-sm rounded-4 p-4">
+          <div class="section-title mb-4 pb-2 border-bottom fw-bold fs-5">ข้อมูลผู้ใช้</div>
+          <div class="row g-4">
+            <div class="col-12 col-lg-6">
+              <div class="row align-items-center mb-3">
+                <label class="col-sm-4 col-form-label fw-600 req">ชื่อ-นามสกุล</label>
+                <div class="col-sm-8">
+                  <input type="text" class="form-control border-2" placeholder="ชื่อ นามสกุล" required>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <label class="col-sm-4 col-form-label fw-600">ที่อยู่</label>
+                <div class="col-sm-8">
+                  <input type="text" class="form-control border-2 mb-2" placeholder="ที่อยู่ 1">
+                  <input type="text" class="form-control border-2" placeholder="ที่อยู่ 2">
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-12 col-lg-6">
+              <div class="row align-items-center mb-3">
+                <label class="col-sm-4 col-form-label fw-600">จังหวัด</label>
+                <div class="col-sm-8">
+                  <input type="text" class="form-control border-2" placeholder="จังหวัด">
+                </div>
+              </div>
+              <div class="row align-items-center mb-3">
+                <label class="col-sm-4 col-form-label fw-600">เบอร์โทรศัพท์</label>
+                <div class="col-sm-8">
+                  <input type="text" class="form-control border-2" placeholder="เบอร์โทรศัพท์">
+                </div>
+              </div>
+              <div class="row align-items-center">
+                <label class="col-sm-4 col-form-label fw-600 req">หมายเลขตัวถัง</label>
+                <div class="col-sm-8">
+                  <input type="text" class="form-control border-2" placeholder="หมายเลขตัวถัง" id="vin_number">
+                </div>
+              </div>
             </div>
           </div>
-          
-          <div class="form-group row-group">
-             <label class="form-label">รหัสไปรษณีย์</label>
-             <input type="text" class="form-control" placeholder="รหัสไปรษณีย์">
+        </div>
+        
+        <!-- Card 4: ปัญหา -->
+        <div class="edit-card mb-4 border-0 shadow-sm rounded-4 p-4">
+          <div class="section-title mb-4 pb-2 border-bottom fw-bold fs-5">ปัญหา</div>
+          <div class="mb-4">
+            <label class="form-label fw-600 mb-2">รายละเอียดปัญหาที่ลูกค้าแจ้ง</label>
+            <textarea class="form-control border-2" rows="4" placeholder="โปรดใส่รายละเอียด"></textarea>
           </div>
-
-          <div class="form-group row-group">
-             <label class="form-label">จังหวัด</label>
-             <input type="text" class="form-control" placeholder="จังหวัด">
-            </div>
-
-          <div class="form-group row-group">
-             <label class="form-label">เบอร์โทรศัพท์</label>
-             <input type="text" class="form-control" placeholder="เบอร์โทรศัพท์">
+          <div>
+            <label class="form-label fw-600 mb-2">ผลการตรวจเช็คปัญหา วิธีการตรวจเช็ค และสาเหตุของปัญหา</label>
+            <textarea class="form-control border-2" rows="4" placeholder="โปรดใส่รายละเอียด"></textarea>
           </div>
-
-          <div class="form-group row-group">
-            <label class="form-label req">หมายเลขตัวถัง</label>
-             <input type="text" class="form-control" placeholder="หมายเลขตัวถัง" id="vin_number">
-          </div>
-          <div></div>
-
         </div>
-      </div>
-      
-      <!-- Card 3 (รถ) REMOVED based on User request -->
-      
-      <!-- Card 4: ปัญหา -->
-      <div class="edit-card">
-        <div class="section-title">
-          ปัญหา
-        </div>
-        <div class="form-group mb-4">
-          <label class="form-label">รายละเอียดปัญหาที่ลูกค้าแจ้ง</label>
-          <textarea class="form-control" rows="4" placeholder="โปรดใส่รายละเอียด"></textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">ผลการตรวจเช็คปัญหา วิธีการตรวจเช็ค และสาเหตุของปัญหา</label>
-          <textarea class="form-control" rows="4" placeholder="โปรดใส่รายละเอียด"></textarea>
-        </div>
-      </div>
 
         <!-- Card 6: รูปภาพปัญหา -->
-        <div class="edit-card">
-          <div class="section-title section-title d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-8">
+        <div class="edit-card mb-4 border-0 shadow-sm rounded-4 p-4">
+          <div class="section-title d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-4 pb-2 border-bottom gap-3">
+            <div class="d-flex align-items-center fw-bold fs-5">
               รูปภาพปัญหา
-              <span id="img-count-badge" style="display:none;background:var(--primary-orange);color:#fff;border-radius:20px;padding:2px 12px;font-size:0.8rem;font-weight:600;margin-left:8px;">0 รูป</span>
+              <span id="img-count-badge" class="badge rounded-pill bg-primary-orange ms-2 px-3" style="display:none;">0 รูป</span>
             </div>
-            <label class="btn-action cursor-pointer m-0 px-3 py-1 fs-md">
+            <label class="btn-action bg-primary-orange color-fff cursor-pointer m-0 px-3 py-2 fs-md rounded-3 shadow-sm text-center">
               + อัปโหลดรูปภาพ
               <input type="file" id="image-upload" multiple accept="image/*" class="d-none">
             </label>
           </div>
+          <div class="gallery-grid" id="gallery-grid"></div>
+        </div>
+        
+        <!-- Card 5: อะไหล่ -->
+        <div class="edit-card p-0 overflow-hidden mb-4 border-0 shadow-sm rounded-4">
+            <div class="p-4">
+              <div class="section-title mb-3 pb-2 border-bottom fw-bold fs-5">รายการอะไหล่</div>
+              <div class="table-responsive">
+                <table class="edit-table table table-hover align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th width="40">#</th>
+                      <th>รหัสสินค้า</th>
+                      <th>ชื่อสินค้า</th>
+                      <th width="100">Lot No.</th>
+                      <th width="120" class="text-center">ราคา/หน่วย</th>
+                      <th width="90" class="text-center">จำนวน</th>
+                      <th width="120" class="text-center">เป็นเงิน</th>
+                      <th width="70" class="text-center">ส่งDCS</th>
+                      <th width="70" class="text-center">พิเศษ</th>
+                      <th width="50" class="text-center">ลบ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="parts-tbody">
+                    <!-- กลุ่มที่ 1: อะไหล่หลัก -->
+                    <tr class="group-header bg-light">
+                      <td colspan="7" class="text-danger fw-bold py-3 ps-3">อะไหล่หลัก</td>
+                      <td colspan="3" class="text-end pe-3">
+                        <div class="form-check d-inline-block">
+                          <input class="form-check-input" type="checkbox" id="no-qty-main">
+                          <label class="form-check-label fs-xs" for="no-qty-main">ไม่ระบุจำนวน อะไหล่หลัก</label>
+                        </div>
+                      </td>
+                    </tr>
+                    
+                    <tr id="add-main-row">
+                      <td colspan="10" class="p-3 text-center">
+                        <button type="button" class="btn btn-outline-orange btn-sm text-primary-orange w-100 py-3 border-dashed" id="btn-add-main" style="border-style: dashed !important; border-width: 2px;">+ เพิ่มอะไหล่หลัก</button>
+                      </td>
+                    </tr>
+
+                    <!-- กลุ่มที่ 2: อะไหล่ที่เคลมร่วมกัน -->
+                    <tr class="group-header bg-light">
+                      <td colspan="10" class="text-danger fw-bold">อะไหล่ที่เคลมร่วมกัน</td>
+                    </tr>
+                    
+                    <tr id="add-assoc-row">
+                      <td colspan="10" class="p-2 text-center">
+                        <button type="button" class="btn btn-outline-orange btn-sm text-primary-orange" id="btn-add-assoc" style="border-style: dashed;">+ เพิ่มอะไหล่เคลมร่วม</button>
+                      </td>
+                    </tr>
+
+                    <tr class="summary-row fw-bold bg-light">
+                      <td colspan="5" class="py-3 ps-4">ยอดรวม</td>
+                      <td class="text-center" id="sum-qty">0</td>
+                      <td class="text-center" id="sum-money">0.00</td>
+                      <td colspan="3"></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+        </div>
+
+        <!-- Card 6: ค่าแรง & สรุปเงิน -->
+        <div class="edit-card p-4 border-0 shadow-sm rounded-4 mb-4" style="background-color: #fbfbfb;">
+            <div class="section-title mb-4 pb-2 border-bottom fw-bold fs-5">ค่าแรงและสรุปเงินประจำเคส</div>
+            <div class="row g-4">
+              <!-- Left side labor -->
+              <div class="col-12 col-lg-6">
+                <div class="bg-white p-4 rounded-4 shadow-sm h-100">
+                  <div class="d-flex flex-column gap-3">
+                    <div class="row align-items-center">
+                      <label class="col-sm-5 col-form-label fw-600 req">จำนวน FRT</label>
+                      <div class="col-sm-7">
+                        <div class="input-group">
+                          <input type="number" step="0.01" class="form-control border-2" id="labor-frt" value="0.00">
+                          <span class="input-group-text border-2">ชม.</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row align-items-center">
+                      <label class="col-sm-5 col-form-label fw-600">FRT. Rate/hr</label>
+                      <div class="col-sm-7">
+                        <div class="input-group">
+                          <input type="number" step="0.01" class="form-control border-2" id="labor-rate" value="0.00">
+                          <span class="input-group-text border-2">บาท</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row align-items-center">
+                      <label class="col-sm-5 col-form-label fw-600">รวมค่าแรง</label>
+                      <div class="col-sm-7">
+                        <div class="input-group">
+                          <input type="text" class="form-control bg-light border-0 fw-bold" id="labor-total" value="0.00" readonly>
+                          <span class="input-group-text border-0 bg-light">บาท</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row align-items-center">
+                      <label class="col-sm-5 col-form-label fw-600">รวมค่าอะไหล่</label>
+                      <div class="col-sm-7">
+                        <div class="input-group">
+                          <input type="text" class="form-control bg-light border-0 fw-bold" id="labor-parts-total" value="0.00" readonly>
+                          <span class="input-group-text border-0 bg-light">บาท</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Right side calculation -->
+              <div class="col-12 col-lg-6">
+                <div class="bg-white p-4 rounded-4 shadow-sm h-100">
+                  <div class="d-flex flex-column gap-3">
+                    <div class="row align-items-center">
+                      <label class="col-sm-5 col-form-label fw-600">อัตราค่าการจัดการ</label>
+                      <div class="col-sm-7">
+                        <div class="input-group">
+                          <input type="number" step="0.1" class="form-control border-2" id="manage-pct" value="0.00">
+                          <span class="input-group-text border-2">%</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row align-items-center">
+                      <label class="col-sm-5 col-form-label fw-600">ค่าการจัดการ</label>
+                      <div class="col-sm-7">
+                        <div class="input-group">
+                          <input type="text" class="form-control bg-light border-0 fw-bold" id="manage-fee" value="0.00" readonly>
+                          <span class="input-group-text border-0 bg-light">บาท</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row align-items-center">
+                      <label class="col-sm-5 col-form-label fw-600">ค่าใช้จ่ายอื่นๆ</label>
+                      <div class="col-sm-7">
+                        <div class="input-group">
+                          <input type="number" step="0.01" class="form-control border-2" id="other-fee" value="0.00">
+                          <span class="input-group-text border-2">บาท</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row align-items-center">
+                      <label class="col-sm-5 col-form-label fw-700 text-primary-orange fs-5">รวมเงินเคลมสุทธิ</label>
+                      <div class="col-sm-7">
+                        <div class="input-group shadow-sm">
+                          <input type="text" class="form-control hc-total-input fw-bold border-2 border-primary-orange text-primary-orange fs-5 py-2" id="grand-total" value="0.00" readonly>
+                          <span class="input-group-text border-2 border-primary-orange bg-primary-orange color-fff fw-bold">บาท</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        <!-- Card 7: การตรวจสอบผลและอนุมัติ -->
+        <div class="edit-card border-0 shadow-sm rounded-4 p-4" id="verification-section">
+          <div class="section-title verification-title mb-4 pb-2 border-bottom fw-bold fs-5 color-primary-orange">ลงชื่อผู้แก้ไขเอกสาร</div>
           
-          <div class="gallery-grid" id="gallery-grid">
-        </div>
-      </div>
-      
-      <!-- Card 5: อะไหล่ และ ค่าแรง -->
-      <div class="edit-card edit-card p-0 overflow-hidden">
-        <!-- Parts Table Area -->
-          <div class="p-4 pb-2">
-            <div class="section-title section-title d-flex justify-content-between border-bottom-none">
-              <div class="d-flex align-items-center gap-8">
-                รายการอะไหล่
+          <div class="row g-4 mb-4">
+              <div class="col-12 col-lg-6">
+                <div class="row align-items-center">
+                  <label class="col-sm-3 col-form-label fw-600">สถานะ :</label>
+                  <div class="col-sm-9">
+                    <select class="form-select verification-select fw-bold border-2">
+                      <option value="">-- กรุณาเลือกสถานะของเคส --</option>
+                      <option value="wait" class="text-warning">รอตรวจสอบ</option>
+                      <option value="approve" class="text-success">อนุมัติการเคลม</option>
+                      <option value="reject" class="text-danger">ไม่นุมัติ</option>
+                    </select>
+                  </div>
+                </div>
               </div>
-            </div>
-            
-            <div class="table-responsive">
-              <table class="edit-table">
-                <thead>
-                  <tr>
-                    <th width="40">#</th>
-                    <th>รหัสสินค้า</th>
-                    <th>ชื่อสินค้า</th>
-                    <th width="100">Lot No.</th>
-                    <th width="120" class="center">ราคา/หน่วย</th>
-                    <th width="90" class="center">จำนวน</th>
-                    <th width="120" class="center">เป็นเงิน</th>
-                    <th width="70" class="center">ส่งDCS</th>
-                    <th width="70" class="center">พิเศษ</th>
-                    <th width="50" class="center">ลบ</th>
-                  </tr>
-                </thead>
-                <tbody id="parts-tbody">
-                  <!-- กลุ่มที่ 1: อะไหล่หลัก -->
-                  <tr class="group-header">
-                    <td colspan="7" class="text-danger">อะไหล่หลัก</td>
-                    <td colspan="3" class="center fw-normal fs-sm pt-4 text-right pr-3">
-                      <label class="cursor-pointer"><input type="checkbox" class="custom-check">ไม่ระบุจำนวน อะไหล่หลัก</label>
-                    </td>
-                  </tr>
-                  
-                  <tr id="add-main-row" class="bg-white">
-                    <td colspan="10" class="p-2 text-center border-bottom">
-                      <button type="button" class="btn-action" id="btn-add-main" class="btn-action bg-white text-primary-orange border-dashed-orange px-3 py-1 fs-sm mx-auto d-inline-block">+ เพิ่มอะไหล่หลัก</button>
-                    </td>
-                  </tr>
-
-                  <!-- กลุ่มที่ 2: อะไหล่ที่เคลมร่วมกัน -->
-                  <tr class="group-header">
-                    <td colspan="10" class="text-danger">อะไหล่ที่เคลมร่วมกัน</td>
-                  </tr>
-                  
-                  <tr id="add-assoc-row" class="bg-white">
-                    <td colspan="10" class="p-2 text-center border-bottom">
-                      <button type="button" class="btn-action" id="btn-add-assoc" class="btn-action bg-white text-primary-orange border-dashed-orange px-3 py-1 fs-sm mx-auto d-inline-block">+ เพิ่มอะไหล่เคลมร่วม</button>
-                    </td>
-                  </tr>
-
-                  <tr class="summary-row">
-                    <td colspan="5" class="pt-4 pb-4">ยอดรวม</td>
-                    <td class="center" id="sum-qty">3</td>
-                    <td class="center" id="sum-money" class="text-right pr-3">126.75</td>
-                    <td colspan="3"></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+              <div class="col-12 col-lg-6">
+                <div class="">
+                  <label class="form-label fw-600 mb-2">หมายเหตุ / ความเห็นของผู้แก้ไข</label>
+                  <textarea class="form-control border-2" rows="3" placeholder="ระบุเหตุผลการแก้ไข..."></textarea>
+                </div>
+              </div>
           </div>
-
-      </div> <!-- ปิด Card ส่วนของอะไหล่ -->
-
-      <!-- Card 6: ค่าแรง -->
-      <div class="edit-card edit-card p-4 bg-light-alt">
-          <div class="section-title">
-            ค่าแรง
+          
+          <div class="row g-4 border-top pt-4">
+             <div class="col-12 col-lg-6">
+               <div class="row align-items-center mb-3">
+                  <label class="col-sm-4 col-form-label fw-600">ลงชื่อผู้แก้ไข</label>
+                  <div class="col-sm-8">
+                    <input type="text" id="bottom-editor-name" class="form-control border-2" placeholder="ชื่อ-นามสกุล ผู้แก้ไข">
+                  </div>
+               </div>
+               <div class="row align-items-center">
+                  <label class="col-sm-4 col-form-label fw-600">วันที่แก้ไข</label>
+                  <div class="col-sm-8">
+                    <input type="date" id="bottom-edit-date" class="form-control border-2">
+                  </div>
+               </div>
+             </div>
+             
+             <div class="col-12 col-lg-6 d-flex flex-column flex-sm-row justify-content-end align-items-stretch align-items-sm-end gap-3 mt-4 mt-lg-0">
+                <a href="history.php" class="btn btn-secondary px-5 py-2 rounded-3 shadow-sm text-decoration-none text-center color-fff">ยกเลิก</a>
+                <button type="submit" class="btn-action bg-primary-orange color-fff border-0 px-5 py-2 rounded-3 shadow-sm fw-bold">บันทึกการแก้ไข</button>
+             </div>
           </div>
-          <div class="grid-2">
-            <!-- Left side labor -->
-            <div class="d-flex flex-column gap-15">
-              <div class="form-group row-group">
-                <label class="form-label req">จำนวน FRT</label>
-                <div class="d-flex gap-10 align-items-center w-100">
-                  <input type="number" step="0.01" class="form-control num" id="labor-frt" value="0.00"> <span class="w-35 d-inline-block flex-shrink-0">ชม.</span>
-                </div>
-              </div>
-              <div class="form-group row-group">
-                <label class="form-label">FRT. Rate/hr</label>
-                <div class="d-flex gap-10 align-items-center w-100">
-                  <input type="number" step="0.01" class="form-control num" id="labor-rate" value="0.00"> <span class="w-35 d-inline-block flex-shrink-0">บาท</span>
-                </div>
-              </div>
-              <div class="form-group row-group">
-                <label class="form-label">รวมค่าแรง</label>
-                <div class="d-flex gap-10 align-items-center w-100">
-                  <input type="text" class="form-control num" id="labor-total" value="0.00" readonly> <span class="w-35 d-inline-block flex-shrink-0">บาท</span>
-                </div>
-              </div>
-              <div class="form-group row-group">
-                <label class="form-label">รวมค่าอะไหล่</label>
-                <div class="d-flex gap-10 align-items-center w-100">
-                  <input type="text" class="form-control num" id="labor-parts-total" value="0.00" readonly> <span class="w-35 d-inline-block flex-shrink-0">บาท</span>
-                </div>
-              </div>
-            </div>
-            <!-- Right side calculation -->
-            <div class="d-flex flex-column gap-15">
-               <div class="form-group row-group">
-                <label class="form-label">อัตราค่าการจัดการ</label>
-                <div class="d-flex gap-10 align-items-center w-100">
-                  <input type="number" step="0.1" class="form-control num" id="manage-pct" value="0.00"> <span class="w-35 d-inline-block flex-shrink-0">%</span>
-                </div>
-              </div>
-               <div class="form-group row-group">
-                <label class="form-label">ค่าการจัดการ</label>
-                <div class="d-flex gap-10 align-items-center w-100">
-                  <input type="text" class="form-control num" id="manage-fee" value="0.00" readonly> <span class="w-35 d-inline-block flex-shrink-0">บาท</span>
-                </div>
-              </div>
-               <div class="form-group row-group">
-                <label class="form-label">ค่าใช้จ่ายอื่นๆ</label>
-                <div class="d-flex gap-10 align-items-center w-100">
-                  <input type="number" step="0.01" class="form-control num" id="other-fee" value="0.00"> <span class="w-35 d-inline-block flex-shrink-0">บาท</span>
-                </div>
-              </div>
-               <div class="form-group row-group">
-                <label class="form-label fw-600 text-primary-orange">รวมเงินเคลมสุทธิ</label>
-                <div class="d-flex gap-10 align-items-center w-100">
-                  <input type="text" class="form-control num" id="grand-total" value="173.09" class="verification-total" readonly> <span class="w-35 d-inline-block flex-shrink-0">บาท</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      <!-- Card 7: การตรวจสอบผลและอนุมัติ (Editor Signature) -->
-      <div class="edit-card" id="verification-section" class="verification-box">
-        <div class="section-title section-title verification-title">
-          ลงชื่อผู้แก้ไขเอกสาร
         </div>
         
-        <div class="grid-2 grid-1 gap-15">
-            <div class="form-group row-group mb-1">
-              <label class="form-label label-50">สถานะ :</label>
-              <select class="form-control form-control verification-select">
-                <option value="">-- กรุณาเลือกสถานะของเคส --</option>
-                <option value="wait" class="text-warning">รอตรวจสอบ</option>
-                <option value="approve" class="text-success">อนุมัติการเคลม</option>
-                <option value="reject" class="text-danger">ไม่อนุมัติ</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label fw-600 mb-1">หมายเหตุ / ความเห็นของผู้แก้ไข</label>
-              <textarea class="form-control" rows="4" placeholder="ระบุเหตุผลการแก้ไข..."></textarea>
-            </div>
-        </div>
-        
-        <div class="grid-2 mt-4 gap-15">
-           <!-- Column 1 -->
-           <div class="d-flex flex-column gap-15">
-             <div class="form-group row-group">
-                <label class="form-label label-100 fw-600">ลงชื่อผู้แก้ไข</label>
-                <input type="text" id="bottom-editor-name" class="form-control" placeholder="ชื่อ-นามสกุล ผู้ตรวจสอบ" class="form-control max-w-250 bg-light-gray">
-             </div>
-             <div class="form-group row-group">
-                <label class="form-label label-100 fw-600">วันที่แก้ไข</label>
-                <input type="date" id="bottom-edit-date" class="form-control max-w-250">
-             </div>
-           </div>
-           
-           <!-- Column 2 Action Buttons -->
-           <div class="d-flex justify-content-end align-items-end gap-15">
-              <a href="history.php" class="btn-action btn-cancel">ยกเลิก</a>
-              <button type="btn-save" class="btn-action btn-save">บันทึกการแก้ไข</button>
-           </div>
-        </div>
-      </div>
-      
-    </div> <!-- /edit-container -->
-    
+      </div> <!-- /edit-container -->
+    </div>
   </div>
 
   <!-- Image Modal Viewer -->
@@ -338,7 +386,7 @@
     <img src="" id="modal-img" class="modal-content" alt="Enlarged view">
   </div>
 
-  <!-- JavaScript interactivty calculations -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const partsTbody = document.getElementById('parts-tbody');
@@ -349,7 +397,6 @@
         let sumTotal = 0;
         
         const rows = document.querySelectorAll('.part-row');
-        // Update row numbers cleanly
         rows.forEach((row, index) => {
            row.cells[0].textContent = index + 1; 
            const price = parseFloat(row.querySelector('.part-price').value) || 0;
@@ -362,14 +409,12 @@
         });
         
         document.getElementById('sum-qty').textContent = sumQty;
-        document.getElementById('sum-money').textContent = sumTotal.toFixed(2);
+        document.getElementById('sum-money').textContent = sumTotal.toLocaleString(undefined, {minimumFractionDigits: 2});
         
-        // Update labor parts total
         document.getElementById('labor-parts-total').value = sumTotal.toFixed(2);
         calculateLaborAndGrandTotal();
       }
 
-      
       // Sync signature inputs
       const bottomEditorName = document.getElementById('bottom-editor-name');
       const bottomEditDate = document.getElementById('bottom-edit-date');
@@ -422,24 +467,21 @@
          });
       }
       
-      // Init existing rows
-      document.querySelectorAll('.part-row').forEach(attachRowEvents);
-      
       // Helper function to create a new row
       function createNewPartRow() {
         const tr = document.createElement('tr');
         tr.className = 'part-row';
         tr.innerHTML = `
            <td></td>
-           <td><input type="text" class="form-control sm" placeholder="รหัสสินค้า"></td>
-           <td><input type="text" class="form-control sm" placeholder="ชื่อสินค้า"></td>
-           <td><input type="text" class="form-control sm"></td>
-           <td class="center"><input type="number" step="0.01" class="form-control sm num part-price" value="0.00"></td>
-           <td class="center"><input type="number" class="form-control sm num part-qty" value="1"></td>
-           <td class="center"><input type="text" class="form-control sm num part-total" value="0.00" readonly></td>
-           <td class="center"><input type="checkbox" class="custom-check"></td>
-           <td class="center"><input type="checkbox" class="custom-check"></td>
-           <td class="center"><button type="button" class="btn-remove-part btn-remove-part-icon">×</button></td>
+           <td><input type="text" class="form-control form-control-sm" placeholder="รหัสสินค้า"></td>
+           <td><input type="text" class="form-control form-control-sm" placeholder="ชื่อสินค้า"></td>
+           <td><input type="text" class="form-control form-control-sm"></td>
+           <td class="text-center"><input type="number" step="0.01" class="form-control form-control-sm text-center part-price" value="0.00"></td>
+           <td class="text-center"><input type="number" class="form-control form-control-sm text-center part-qty" value="1"></td>
+           <td class="text-center"><input type="text" class="form-control form-control-sm text-center bg-light part-total" value="0.00" readonly></td>
+           <td class="text-center"><input type="checkbox" class="form-check-input"></td>
+           <td class="text-center"><input type="checkbox" class="form-check-input"></td>
+           <td class="text-center"><button type="button" class="btn btn-link text-danger btn-remove-part p-0" title="ลบรายการ">×</button></td>
         `;
         attachRowEvents(tr);
         return tr;
@@ -467,13 +509,12 @@
       document.getElementById('manage-pct').addEventListener('input', calculateLaborAndGrandTotal);
       document.getElementById('other-fee').addEventListener('input', calculateLaborAndGrandTotal);
       
-      
-      // --- IMAGE UPLOAD LOGIC ---
+      // IMAGE UPLOAD LOGIC
       const imageUpload = document.getElementById('image-upload');
       const galleryGrid = document.getElementById('gallery-grid');
       const imageModal = document.getElementById('image-modal');
       const modalImg = document.getElementById('modal-img');
-      let imageIndex = 2; // starting counter for dummy names
+      let imageIndex = 2; 
       
       imageUpload.addEventListener('change', function(e) {
         const files = e.target.files;
@@ -485,14 +526,12 @@
            
            reader.onload = function(evt) {
               const ext = file.name.split('.').pop() || 'jpg';
-              // Naming convention as requested: หัวข้อ(รูปภาพปัญหา) + หมายเลขตัวถัง 
               const newFileName = `รูปภาพปัญหา_${vinNumber}_${imageIndex}.${ext}`;
               createImageItem(evt.target.result, newFileName);
               imageIndex++;
            }
            reader.readAsDataURL(file);
         }
-        // Reset input so saem file can be uploaded again if needed
         this.value = '';
       });
       
@@ -500,13 +539,11 @@
         const div = document.createElement('div');
         div.className = 'gallery-item';
         div.innerHTML = `
-          <img src="${src}" alt="uploaded image" class="preview-img cursor-pointer"title="คลิกเพื่อขยาย">
+          <img src="${src}" alt="uploaded image" class="preview-img cursor-pointer" title="คลิกเพื่อขยาย">
           <div class="img-preview-footer">
             <span class="img-preview-title" title="${title}">${title}</span>
             <div class="img-preview-actions">
-              <a href="${src}" download="${title}" class="img-download-link" title="ดาวน์โหลดพร้อมชื่อใหม่">
-              </a>
-              <button type="button" class="btn-remove-img btn-remove-img" title="ลบรูป">×</button>
+              <button type="button" class="btn-remove-img" title="ลบรูป">×</button>
             </div>
           </div>
         `;
@@ -536,7 +573,6 @@
         }
       }
       
-      // Wire up initial gallery item
       document.querySelectorAll('.btn-remove-img').forEach(btn => btn.addEventListener('click', function() {
         this.closest('.gallery-item').remove();
         updateImgCountBadge();
@@ -546,13 +582,11 @@
          imageModal.style.display = 'flex';
       }));
       
-      // Modal close logic
       document.getElementById('modal-close').addEventListener('click', () => imageModal.style.display = 'none');
       imageModal.addEventListener('click', function(e) {
         if(e.target === imageModal) imageModal.style.display = 'none';
       });
       
-      // Initial calculation
       calculateParts();
     });
   </script>
