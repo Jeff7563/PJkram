@@ -1,0 +1,11 @@
+[
+    {
+        "db_error": "SQLSTATE[HY000] [2002] Connection refused"
+    },
+    {
+        "db_error": "SQLSTATE[HY000] [2002] Connection refused"
+    },
+    {
+        "db_error": "SQLSTATE[HY000] [2002] Connection refused"
+    }
+]

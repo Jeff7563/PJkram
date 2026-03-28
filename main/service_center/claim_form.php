@@ -1,99 +1,5 @@
 <?php
-// Simple handler: store uploads to claim_image and append submission JSON to submissions.json
-$message = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $uploadDir = __DIR__ . '/claim_image';
-    if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
-
-    $savedFiles = [];
-    $fileFields = [
-        'imgFullCar' => false,
-        'imgSpot' => true,
-        'imgPart' => true,
-        'parts' => $parts,
-        'partsDelivery' => $_POST['partsDelivery'] ?? '',
-        'recorder' => $_POST['recorder'] ?? '',
-        'files' => $savedFiles
-    ];
-
-      // --- MySQL storage (configure below) ---
-      $dbConfig = [
-        'enabled' => true, // set false to disable DB storage
-        'host' => '127.0.0.1',
-        'port' => 3306,
-        'dbname' => 'service_center',
-        'user' => 'dbuser',
-        'pass' => 'dbpass',
-        'table' => 'claims'
-      ];
-
-      if (!empty($dbConfig['enabled'])) {
-        try {
-          $dsn = sprintf('mysql:host=%s;port=%d;dbname=%s;charset=utf8mb4', $dbConfig['host'], $dbConfig['port'], $dbConfig['dbname']);
-          $pdo = new PDO($dsn, $dbConfig['user'], $dbConfig['pass'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-
-          // create table if not exists
-          $create = "CREATE TABLE IF NOT EXISTS `{$dbConfig['table']}` (
-            `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-            `created_at` DATETIME DEFAULT NULL,
-            `branch` VARCHAR(255) DEFAULT NULL,
-            `claimDate` DATE DEFAULT NULL,
-            `carType` VARCHAR(50) DEFAULT NULL,
-            `carBrand` VARCHAR(100) DEFAULT NULL,
-            `vin` VARCHAR(80) DEFAULT NULL,
-            `ownerName` VARCHAR(255) DEFAULT NULL,
-            `problemDesc` LONGTEXT,
-            `inspectMethod` LONGTEXT,
-            `inspectCause` LONGTEXT,
-            `claimCategory` VARCHAR(100) DEFAULT NULL,
-            `repairBranch` TINYINT(1) DEFAULT 0,
-            `sendHQ` TINYINT(1) DEFAULT 0,
-            `parts` LONGTEXT,
-            `partsDelivery` VARCHAR(50) DEFAULT NULL,
-            `recorder` VARCHAR(255) DEFAULT NULL,
-            `files` LONGTEXT,
-            PRIMARY KEY (`id`)
-          ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
-          $pdo->exec($create);
-
-          $stmt = $pdo->prepare("INSERT INTO `{$dbConfig['table']}` (created_at,branch,claimDate,carType,carBrand,vin,ownerName,problemDesc,inspectMethod,inspectCause,claimCategory,repairBranch,sendHQ,parts,partsDelivery,recorder,files) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
-          $stmt->execute([
-            date('Y-m-d H:i:s'),
-            $entry['branch'],
-            $entry['claimDate'] ? date('Y-m-d', strtotime($entry['claimDate'])) : null,
-            $entry['carType'],
-            $entry['carBrand'],
-            $entry['vin'],
-            $entry['ownerName'],
-            $entry['problemDesc'],
-            $entry['inspectMethod'],
-            $entry['inspectCause'],
-            $entry['claimCategory'],
-            $entry['repairBranch'] ? 1 : 0,
-            $entry['sendHQ'] ? 1 : 0,
-            json_encode($entry['parts'], JSON_UNESCAPED_UNICODE),
-            $entry['partsDelivery'],
-            $entry['recorder'],
-            json_encode($entry['files'], JSON_UNESCAPED_UNICODE)
-          ]);
-          $entry['db_id'] = $pdo->lastInsertId();
-        } catch (Exception $e) {
-          $entry['db_error'] = $e->getMessage();
-        }
-      }
-
-      // also keep local JSON log for backup
-      $subFile = __DIR__ . '/submissions.json';
-      $all = [];
-      if (file_exists($subFile)) {
-        $txt = file_get_contents($subFile);
-        $all = json_decode($txt, true) ?: [];
-      }
-      $all[] = $entry;
-      file_put_contents($subFile, json_encode($all, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-      $message = 'บันทึกข้อมูลเรียบร้อย';
-}
+require_once __DIR__ . '/claim_form_handler.php';
 ?>
 <!doctype html>
 <html lang="th">
@@ -470,12 +376,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <?php include 'includes/sidebar.php'; ?>
   <div class="main-content">
   <main class="container">
-    <?php if ($message): ?>
+    <?php if (!empty($message)): ?>
       <div class="card" style="margin-bottom:12px;padding:10px;background:linear-gradient(90deg,#ff6a00,#ff8f3d);color:#fff;border-radius:8px"><?php echo htmlspecialchars($message); ?></div>
     <?php endif; ?>
 
-
-    <!-- SVG sprite for small UI icons -->
     <svg style="display:none" aria-hidden="true">
       <symbol id="icon-claim" viewBox="0 0 24 24"><path d="M6 2h9a2 2 0 0 1 2 2v3h-2V4H6v16h6v2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/></symbol>
       <symbol id="icon-image" viewBox="0 0 24 24">
@@ -494,7 +398,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <symbol id="icon-close" viewBox="0 0 24 24"><path d="M18.3 5.7L12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3 10.6 10.6 16.9 4.3z"/></symbol>
     </svg>
 
-    <form id="claimForm" class="card p-4" method="post" enctype="multipart/form-data">
+    <form id="claimForm" class="card p-4" method="post" action="claim_form_handler.php" enctype="multipart/form-data" novalidate>
       <div class="container-fluid">
         <div class="tab-content" id="claimFormTabContent">
           <div class="tab-pane fade show active" id="tab-basic" role="tabpanel" aria-labelledby="tab-basic-tab">
@@ -560,7 +464,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <div class="col-12 col-md-6">
                 <div class="form-row-item">
                   <label for="vin" class="form-label">หมายเลขตัวถัง</label>
-                  <input type="text" id="vin" name="VIN Number" class="form-control" placeholder="VIN Number" required>
+                  <input type="text" id="vin" name="vin" class="form-control" placeholder="VIN Number" required>
                 </div>
               </div>
 
@@ -570,9 +474,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                   <input type="text" id="ownerName" name="ownerName" class="form-control" placeholder="ชื่อ นามสกุล" required>
                 </div>
               </div>
+
+              <div class="col-12 col-md-6">
+                <div class="form-row-item">
+                  <label for="ownerPhone" class="form-label">เบอร์โทรศัพท์</label>
+                  <input type="text" id="ownerPhone" name="ownerPhone" class="form-control" placeholder="เบอร์โทรศัพท์" required>
+                </div>
+              </div>
             </div>
 
-            <!-- Problem Description Section -->
             <div class="row g-3 mt-2">
               <div class="col-12">
                 <h5 class="fw-bold mb-3" style="color: #222; font-size: 1rem;">รายละเอียดปัญหาที่ลูกค้าแจ้ง :</h5>
@@ -582,7 +492,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               </div>
             </div>
 
-            <!-- Inspection Result Section -->
             <div class="row g-3">
               <div class="col-12">
                 <h5 class="fw-bold mb-3" style="color: #222; font-size: 1rem;">ผลการตรวจเช็คปัญหา :</h5>
@@ -675,271 +584,254 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="file" id="imgEstimate" name="imgEstimate" accept="image/*">
                     <div class="preview" data-target="imgEstimate"></div>
                   </div>
-            </div>
-          </div>
-        </fieldset>
-      </div>
-
-      <div class="tab-pane fade" id="tab-claim" role="tabpanel" aria-labelledby="tab-claim-tab">
-
-        <!-- Claim Category Section -->
-        <div class="row g-3 mt-2">
-          <div class="col-12">
-            <h5 class="fw-bold mb-3" style="color: #222; font-size: 1rem;">ประเภทการเคลม :</h5>
-          </div>
-          <div class="col-12 col-md-6">
-            <div class="mb-3">
-              <label for="claimCategory" class="form-label fw-semibold">เลือกประเภท</label>
-              <select id="claimCategory" name="claimCategory" class="form-select">
-                <option value="">-- เลือกประเภทการเคลม --</option>
-                <option value="pre-sale">เคลมรถก่อนขาย</option>
-                <option value="technical">เคลมปัญหาทางเทคนิค</option>
-                <option value="customer-sale">เคลมรถลูกค้า</option>
-              </select>
-            </div>
-          </div>
-          
-          <div class="col-12">
-            <div class="mb-3">
-              <label class="form-label fw-semibold">การดำเนินการ</label>
-              <div class="d-flex flex-wrap gap-2">
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="claimAction" id="claim_repair" value="repairBranch">
-                  <label class="form-check-label" for="claim_repair">ซ่อมที่สาขา</label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="claimAction" id="claim_send" value="sendHQ">
-                  <label class="form-check-label" for="claim_send">ส่งซ่อมที่สนญ.</label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="claimAction" id="claim_replace" value="replaceVehicle">
-                  <label class="form-check-label" for="claim_replace">เปลี่ยนคัน</label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="claimAction" id="claim_other" value="other">
-                  <label class="form-check-label" for="claim_other">อื่นๆ</label>
                 </div>
               </div>
-              <input type="text" id="claimOtherText" name="claimOtherText" class="form-control mt-2 d-none" placeholder="ระบุอื่นๆ">
-            </div>
+            </fieldset>
           </div>
-        </div>
 
-        <!-- Parts Section -->
-        <section id="partsSection" class="d-none mt-4">
-          <div class="row g-3">
-            <div class="col-12">
-              <h5 class="fw-bold" style="color: #222; font-size: 1rem;">ระบุรายการอะไหล่ ที่ต้องการเคลม/จำนวน</h5>
-            </div>
-            <div class="col-12">
-              <div class="table-responsive">
-              <table id="partsTable" class="table table-hover">
-                <thead class="table-light">
-                  <tr>
-                    <th style="width:48px">ลำดับ</th>
-                    <th style="width:140px">รหัสอะไหล่</th>
-                    <th>ชื่ออะไหล่</th>
-                    <th style="width:96px">จำนวน</th>
-                    <th style="width:120px">ราคา</th>
-                    <th style="width:160px">หมายเหตุ</th>
-                <th style="width:72px">จัดการ</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-          </div>
-          <div class="parts-actions">
-            <button type="button" id="addPart" class="btn-parts-add">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              เพิ่มรายการ
-            </button>
-            <button type="button" id="btnUploadParts" class="btn-parts-upload">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              อัปโหลดรูปภาพ
-            </button>
-            <input type="file" id="imgPartsUpload" name="imgParts[]" accept="image/*" multiple style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;">
-          </div>
-          <!-- Image preview grid -->
-          <div id="partsImgPreview" class="parts-img-preview" style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 15px;"></div>
-        </section>
-
-        <!-- Parts Delivery Section -->
-        <div id="partsDeliverySection" class="d-none mt-4">
-          <div class="row g-3">
-            <div class="col-12">
-              <h5 class="fw-bold" style="color: #222; font-size: 1rem;">ประเภทการส่ง อะไหล่</h5>
-            </div>
-            <div class="col-12">
-              <div class=" d-flex flex-wrap gap-3">
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="partsDelivery" id="partsDelivery_stock" value="in_stock" checked>
-                  <label class="form-check-label" for="partsDelivery_stock">ซ่อมที่สาขา</label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="partsDelivery" id="partsDelivery_hq" value="wait_hq">
-                  <label class="form-check-label" for="partsDelivery_hq">รอส่งอะไหล่ จากสนญ.</label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="partsDelivery" id="partsDelivery_buy" value="buy_outside">
-                  <label class="form-check-label" for="partsDelivery_buy">ซื้ออะไหล่ร้านนอก</label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" name="partsDelivery" id="partsDeliveryOtherRadio" value="other">
-                  <label class="form-check-label" for="partsDeliveryOtherRadio">อื่นๆ</label>
+          <div class="tab-pane fade" id="tab-claim" role="tabpanel" aria-labelledby="tab-claim-tab">
+            <div class="row g-3 mt-2">
+              <div class="col-12">
+                <h5 class="fw-bold mb-3" style="color: #222; font-size: 1rem;">ประเภทการเคลม :</h5>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="mb-3">
+                  <label for="claimCategory" class="form-label fw-semibold">เลือกประเภท</label>
+                  <select id="claimCategory" name="claimCategory" class="form-select">
+                    <option value="">-- เลือกประเภทการเคลม --</option>
+                    <option value="เคลมรถก่อนขาย">เคลมรถก่อนขาย</option>
+                    <option value="เคลมปัญหาทางเทคนิค">เคลมปัญหาทางเทคนิค</option>
+                    <option value="เคลมรถลูกค้า">เคลมรถลูกค้า</option>
+                  </select>
                 </div>
               </div>
-              <input type="text" id="partsDeliveryOtherText" name="partsDeliveryOtherText" class="form-control mt-2 d-none" placeholder="ระบุอื่นๆ">
+              
+              <div class="col-12">
+                <div class="mb-3">
+                  <label class="form-label fw-semibold">การดำเนินการ</label>
+                  <div class="d-flex flex-wrap gap-2">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="claimAction" id="claim_repair" value="repairBranch">
+                      <label class="form-check-label" for="claim_repair">ซ่อมที่สาขา</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="claimAction" id="claim_send" value="sendHQ">
+                      <label class="form-check-label" for="claim_send">ส่งซ่อมที่สนญ.</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="claimAction" id="claim_replace" value="replaceVehicle">
+                      <label class="form-check-label" for="claim_replace">เปลี่ยนคัน</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="claimAction" id="claim_other" value="other">
+                      <label class="form-check-label" for="claim_other">อื่นๆ</label>
+                    </div>
+                  </div>
+                  <input type="text" id="claimOtherText" name="claimOtherText" class="form-control mt-2 d-none" placeholder="ระบุอื่นๆ">
+                </div>
+              </div>
+            </div>
+
+            <section id="partsSection" class="d-none mt-4">
+              <div class="row g-3">
+                <div class="col-12">
+                  <h5 class="fw-bold" style="color: #222; font-size: 1rem;">ระบุรายการอะไหล่ ที่ต้องการเคลม/จำนวน</h5>
+                </div>
+                <div class="col-12">
+                  <div class="table-responsive">
+                    <table id="partsTable" class="table table-hover">
+                      <thead class="table-light">
+                        <tr>
+                          <th style="width:48px">ลำดับ</th>
+                          <th style="width:140px">รหัสอะไหล่</th>
+                          <th>ชื่ออะไหล่</th>
+                          <th style="width:96px">จำนวน</th>
+                          <th style="width:120px">ราคา</th>
+                          <th style="width:160px">หมายเหตุ</th>
+                          <th style="width:72px">จัดการ</th>
+                        </tr>
+                      </thead>
+                      <tbody></tbody>
+                    </table>
+                  </div>
+                  <div class="parts-actions">
+                    <button type="button" id="addPart" class="btn-parts-add">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                      เพิ่มรายการ
+                    </button>
+                    <button type="button" id="btnUploadParts" class="btn-parts-upload">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                      อัปโหลดรูปภาพ
+                    </button>
+                    <input type="file" id="imgPartsUpload" name="imgParts[]" accept="image/*" multiple style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;">
+                  </div>
+                  <div id="partsImgPreview" class="parts-img-preview" style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 15px;"></div>
+                </div>
+              </div>
+            </section>
+
+            <div id="partsDeliverySection" class="d-none mt-4">
+              <div class="row g-3">
+                <div class="col-12">
+                  <h5 class="fw-bold" style="color: #222; font-size: 1rem;">ประเภทการส่ง อะไหล่</h5>
+                </div>
+                <div class="col-12">
+                  <div class="d-flex flex-wrap gap-3">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="partsDelivery" id="partsDelivery_stock" value="in_stock" checked>
+                      <label class="form-check-label" for="partsDelivery_stock">ซ่อมที่สาขา</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="partsDelivery" id="partsDelivery_hq" value="wait_hq">
+                      <label class="form-check-label" for="partsDelivery_hq">รอส่งอะไหล่ จากสนญ.</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="partsDelivery" id="partsDelivery_buy" value="buy_outside">
+                      <label class="form-check-label" for="partsDelivery_buy">ซื้ออะไหล่ร้านนอก</label>
+                    </div>
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="partsDelivery" id="partsDeliveryOtherRadio" value="other">
+                      <label class="form-check-label" for="partsDeliveryOtherRadio">อื่นๆ</label>
+                    </div>
+                  </div>
+                  <input type="text" id="partsDeliveryOtherText" name="partsDeliveryOtherText" class="form-control mt-2 d-none" placeholder="ระบุอื่นๆ">
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <div class="tab-pane fade" id="tab-replace" role="tabpanel" aria-labelledby="tab-replace-tab">
-
-      <!-- Replacement Details Section -->
-      <div id="replaceBlock" class="card d-none mt-4 p-4">
-        <h5 class="fw-bold mb-4" style="color: #222; font-size: 1rem;">รายละเอียดการเปลี่ยนคันใหม่</h5>
-        
-      
-        <!-- Old Vehicle Down Payment -->
-        <div class="row g-3 mb-3">
-          <div class="col-12">
-            <label class="form-label fw-semibold">รถคันเก่า : คงเหลือเงินดาวน์</label>
-          </div>
-          <div class="col-12 col-md-6">
-            <div class="input-group">
-              <input type="number" class="form-control" name="old_down_balance" placeholder="0.00" step="0.01" min="0">
-              <span class="input-group-text">บาท</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- New Vehicle Details -->
-        <h6 class="fw-bold mb-3 mt-4" style="color: #333; font-size: 0.95rem;">รายละเอียดรถคันใหม่</h6>
-
-        <!-- New Vehicle Down Payment -->
-        <div class="row g-3 mb-3">
-          <div class="col-12 col-md-6">
-            <div class="d-flex gap-3 align-items-center">
-              <div style="flex: 1; min-width: 0;">
-                  <label class="form-label fw-semibold">รถคันใหม่ : คงเหลือเงินดาวน์</label>
+          <div class="tab-pane fade" id="tab-replace" role="tabpanel" aria-labelledby="tab-replace-tab">
+            <div id="replaceBlock" class="card d-none mt-4 p-4">
+              <h5 class="fw-bold mb-4" style="color: #222; font-size: 1rem;">รายละเอียดการเปลี่ยนคันใหม่</h5>
+              
+              <div class="row g-3 mb-3">
+                <div class="col-12">
+                  <label class="form-label fw-semibold">รถคันเก่า : คงเหลือเงินดาวน์</label>
+                </div>
+                <div class="col-12 col-md-6">
                   <div class="input-group">
-                    <input type="number" class="form-control" name="new_down_balance" placeholder="0.00" step="0.01" min="0">
+                    <input type="number" class="form-control" name="old_down_balance" placeholder="0.00" step="0.01" min="0">
                     <span class="input-group-text">บาท</span>
                   </div>
+                </div>
               </div>
-              <div style="flex: 1; min-width: 0;">
-                <label class="form-label fw-semibold">ประเภทรถ</label>
-                <div class="d-flex gap-3 align-items-center" style="height: 30px;">
-                  <div class="form-check m-0">
-                    <input class="form-check-input" type="radio" name="replaceType" id="replaceType_new" value="new">
-                    <label class="form-check-label" for="replaceType_new">รถใหม่</label>
+
+              <h6 class="fw-bold mb-3 mt-4" style="color: #333; font-size: 0.95rem;">รายละเอียดรถคันใหม่</h6>
+
+              <div class="row g-3 mb-3">
+                <div class="col-12 col-md-6">
+                  <div class="d-flex gap-3 align-items-center">
+                    <div style="flex: 1; min-width: 0;">
+                        <label class="form-label fw-semibold">รถคันใหม่ : คงเหลือเงินดาวน์</label>
+                        <div class="input-group">
+                          <input type="number" class="form-control" name="new_down_balance" placeholder="0.00" step="0.01" min="0">
+                          <span class="input-group-text">บาท</span>
+                        </div>
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                      <label class="form-label fw-semibold">ประเภทรถ</label>
+                      <div class="d-flex gap-3 align-items-center" style="height: 30px;">
+                        <div class="form-check m-0">
+                          <input class="form-check-input" type="radio" name="replaceType" id="replaceType_new" value="รถใหม่">
+                          <label class="form-check-label" for="replaceType_new">รถใหม่</label>
+                        </div>
+                        <div class="form-check m-0">
+                          <input class="form-check-input" type="radio" name="replaceType" id="replaceType_used" value="รถมือสอง">
+                          <label class="form-check-label" for="replaceType_used">รถมือสอง</label>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div class="form-check m-0">
-                    <input class="form-check-input" type="radio" name="replaceType" id="replaceType_used" value="used">
-                    <label class="form-check-label" for="replaceType_used">รถมือสอง</label>
+                </div>
+              </div>
+
+              <div class="row g-3 mb-3">
+                <div class="col-12 col-md-6">
+                  <div class="d-flex gap-10" style="gap: 10px;">
+                    <div style="flex: 1; min-width: 0;">
+                      <label for="replaceModel" class="form-label fw-semibold">รุ่น</label>
+                      <input type="text" id="replaceModel" name="replace_model" class="form-control" placeholder="รุ่น">
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                      <label for="replaceColor" class="form-label fw-semibold">สี</label>
+                      <input type="text" id="replaceColor" name="replace_color" class="form-control" placeholder="สี">
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                      <label for="replaceVin" class="form-label fw-semibold">เลขตัวถัง</label>
+                      <input type="text" id="replaceVin" name="replace_vin" class="form-control" placeholder="เลขตัวถัง / VIN">
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-          <!-- New Vehicle Details Grid -->
-
-        <div class="row g-3 mb-3">
-          <div class="col-12 col-md-6">
-            <div class="d-flex gap-10">
-              <div style="flex: 1; min-width: 0;">
-                <label for="replaceModel" class="form-label fw-semibold">รุ่น</label>
-                <input type="text" id="replaceModel" name="replace_model" class="form-control" placeholder="รุ่น">
-              </div>
-              <div style="flex: 1; min-width: 0;">
-                <label for="replaceColor" class="form-label fw-semibold">สี</label>
-                <input type="text" id="replaceColor" name="replace_color" class="form-control" placeholder="สี">
-              </div>
-              <div style="flex: 1; min-width: 0;">
-                <label for="replaceVin" class="form-label fw-semibold">เลขตัวถัง</label>
-                <input type="text" id="replaceVin" name="replace_vin" class="form-control" placeholder="เลขตัวถัง / VIN">
-              </div>
-            </div>
-          </div>
-            
-            <div class="col-12 col-md-6">
-              <label for="replaceReceiveDate" class="form-label fw-semibold">วันที่รับรถ</label>
-              <input type="date" id="replaceReceiveDate" name="replace_receive_date" class="form-control">
-            </div>
-          </div>
-
-          <!-- Replace Reason -->
-          <div class="row g-3 mb-3">
-            <div class="col-12">
-              <label for="replaceReason" class="form-label fw-semibold">สาเหตุที่เปลี่ยนคัน</label>
-                <input type="text" id="replaceReason" name="replace_reason" class="form-control" placeholder="ระบุสาเหตุการเปลี่ยนคัน">
-            </div>
-          </div>
-
-          <!-- Approval -->
-          <div class="row g-3 mb-3">
-            <div class="col-12 col-md-6">
-             <div class="d-flex gap-10">
-                <div style="flex: 1; min-width: 0;">
-                  <label for="replaceid" class="form-label fw-semibold">รหัสพนักงาน</label>
-                  <input type="text" id="replaceid" name="replace_id" class="form-control" placeholder="รหัสพนักงาน">
+                
+                <div class="col-12 col-md-6">
+                  <label for="replaceReceiveDate" class="form-label fw-semibold">วันที่รับรถ</label>
+                  <input type="date" id="replaceReceiveDate" name="replace_receive_date" class="form-control">
                 </div>
-                <div style="flex: 1; min-width: 0;">
-                  <label for="replacename" class="form-label fw-semibold">ชื่อพนักงาน</label>
-                  <input type="text" id="replacename" name="replace_name" class="form-control" placeholder="ชื่อพนักงาน">
+              </div>
+
+              <div class="row g-3 mb-3">
+                <div class="col-12">
+                  <label for="replaceReason" class="form-label fw-semibold">สาเหตุที่เปลี่ยนคัน</label>
+                    <input type="text" id="replaceReason" name="replace_reason" class="form-control" placeholder="ระบุสาเหตุการเปลี่ยนคัน">
                 </div>
-                <div style="flex: 1; min-width: 0;">
-                  <label for="replacesignature" class="form-label fw-semibold">ลายเซ็นต์</label>
-                  <input type="text" id="replacesignature" name="replace_signature" class="form-control" placeholder="ลายเซ็นต์">
+              </div>
+
+              <div class="row g-3 mb-3">
+                <div class="col-12 col-md-6">
+                 <div class="d-flex gap-10" style="gap: 10px;">
+                    <div style="flex: 1; min-width: 0;">
+                      <label for="replaceid" class="form-label fw-semibold">รหัสพนักงาน</label>
+                      <input type="text" id="replaceid" name="replace_id" class="form-control" placeholder="รหัสพนักงาน">
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                      <label for="replacename" class="form-label fw-semibold">ชื่อพนักงาน</label>
+                      <input type="text" id="replacename" name="replace_name" class="form-control" placeholder="ชื่อพนักงาน">
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                      <label for="replacesignature" class="form-label fw-semibold">ลายเซ็นต์</label>
+                      <input type="text" id="replacesignature" name="replace_signature" class="form-control" placeholder="ลายเซ็นต์">
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="col-12 col-md-6">
+                  <label for="replaceApproveDate" class="form-label fw-semibold">วันที่อนุมัติ</label>
+                  <input type="date" id="replaceApproveDate" name="replace_approve_date" class="form-control">
+                </div>
+              </div>
+
+              <div class="row mt-3 mb-0">
+                <div class="col-12">
+                  <p class="text-danger fw-bold" style="font-size:0.95rem; margin-bottom:0;">***หมายเหตุ :</p>
+                  <p class="text-danger" style="font-size:0.95rem; margin-bottom:0.25rem;">1. ลูกค้าแจ้งเปลี่ยนคัน ส่งให้สินเชื่อพร้อมใบอนุมัติทุกครั้งที่มีการเปลี่ยน/ตัวจริงแนบมากับสัญญาส่งให้บัญชี</p>
+                  <p class="text-danger" style="font-size:0.95rem;">2. สินเชื่อเช็คประกันรถหาย / ทะเบียนแก้ไข พ.ร.บ.-ทะเบียน / บริหารสต็อก ตัดแลกเปลี่ยน / ธุรการสินเชื่อ ตรวจรอบการเปิดขาย กลับมาให้หน่อย</p>
                 </div>
               </div>
             </div>
-            
-            <div class="col-12 col-md-6">
-              <label for="replaceApproveDate" class="form-label fw-semibold">วันที่อนุมัติ</label>
-              <input type="date" id="replaceApproveDate" name="replace_approve_date" class="form-control">
-            </div>
           </div>
-
-          <div class="row mt-3 mb-0">
-            <div class="col-12">
-              <p class="text-danger fw-bold" style="font-size:0.95rem; margin-bottom:0;">***หมายเหตุ :</p>
-              <p class="text-danger" style="font-size:0.95rem; margin-bottom:0.25rem;">1. ลูกค้าแจ้งเปลี่ยนคัน ส่งให้สินเชื่อพร้อมใบอนุมัติทุกครั้งที่มีการเปลี่ยน/ตัวจริงแนบมากับสัญญาส่งให้บัญชี</p>
-              <p class="text-danger" style="font-size:0.95rem;">2. สินเชื่อเช็คประกันรถหาย / ทะเบียนแก้ไข พ.ร.บ.-ทะเบียน / บริหารสต็อก ตัดแลกเปลี่ยน / ธุรการสินเชื่อ ตรวจรอบการเปิดขาย กลับมาให้หน่อย</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Recorder Field -->
-        <div class="row g-3 mt-2">
-          <div class="col-12 col-md-6">
-            <div class="mb-3">
-              <label for="recorder" class="form-label fw-semibold">ผู้บันทึกส่งเคลม</label>
-              <input type="text" id="recorder" name="recorder" class="form-control" placeholder="ชื่อผู้บันทึก" required>
-            </div>
+        </div> </div> <hr class="my-4" style="border-color: #ececec;">
+      <div class="row g-3 mb-3" style="padding: 0 12px;">
+        <div class="col-12 col-md-6">
+          <div class="mb-3">
+            <label for="recorder" class="form-label fw-semibold">ผู้บันทึกส่งเคลม <span class="text-danger">*</span></label>
+            <input type="text" id="recorder" name="recorder" class="form-control" placeholder="ชื่อผู้บันทึก" required>
           </div>
         </div>
       </div>
-    </div>
-  </div>
 
-      <!-- Action Buttons -->
-      <div class="row mt-4 mb-3">
+      <div class="row mt-2 mb-3" style="padding: 0 12px;">
         <div class="col-12 d-flex gap-2 justify-content-end">
           <button type="submit" class="btn btn-primary">บันทึกการส่งเคลม</button>
           <button type="reset" class="btn btn-outline-secondary">รีเซ็ต</button>
         </div>
       </div>
 
-      <div id="result" class="result" role="status" aria-live="polite"></div>
+      <div id="result" class="result mt-3" role="status" aria-live="polite" style="display: none; padding: 0 12px;"></div>
     </form>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-cndY3KSa6nw2pNpGFAvZrKpT8829k3KgAC45Eynl0qsnI9qZC6Qys9VbDomvY1vG" crossorigin="anonymous"></script>
-  <script src="js/app.js"></script>
+  
   <script>
     (function(){
       // set claimDate value from placeholder if empty so user can edit it
@@ -954,17 +846,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       // show grade select only for used cars and keep it inline with brand
       const gradeFields = document.querySelectorAll('.grade-field');
       function updateGradeVisibility(){
-        const used = !!document.querySelector('input[name="carType"]:checked') && document.querySelector('input[name="carType"]:checked').value === 'used';
+        const checkedType = document.querySelector('input[name="carType"]:checked');
+        const used = checkedType && checkedType.value === 'used';
         gradeFields.forEach(f => {
           f.classList.toggle('d-none', !used);
         });
       }
       // listen for carType changes
       document.querySelectorAll('input[name="carType"]').forEach(r => r.addEventListener('change', updateGradeVisibility));
-      // init visibility
       updateGradeVisibility();
 
-      // Claim action: single-select radios (repair / send / replace / other)
+      // Claim action: single-select radios
       const claimActionRadios = document.querySelectorAll('input[name="claimAction"]');
       const replaceBlock = document.getElementById('replaceBlock');
       const partsSection = document.getElementById('partsSection');
@@ -984,11 +876,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         const sel = document.querySelector('input[name="claimAction"]:checked');
         const val = sel ? sel.value : '';
         if(replaceBlock) replaceBlock.classList.toggle('d-none', val !== 'replaceVehicle');
-        if(claimOtherTextInit) { claimOtherTextInit.classList.toggle('d-none', val !== 'other'); if(val !== 'other') claimOtherTextInit.value = ''; }
+        if(claimOtherTextInit) { 
+          claimOtherTextInit.classList.toggle('d-none', val !== 'other'); 
+          if(val !== 'other') claimOtherTextInit.value = ''; 
+        }
       }
 
       claimActionRadios.forEach(r=> r.addEventListener('change', ()=>{ updatePartsVisibility(); updateClaimActionVisibility(); updateCheckedClasses(); }));
-      // init
       updatePartsVisibility(); updateClaimActionVisibility();
 
       // show an 'other' input when partsDelivery = other is selected
@@ -1005,7 +899,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         updatePartsDeliveryOther();
       }
 
-      // Add checked-class toggling for checkboxes/radios so labels can be styled
       function updateCheckedClasses(){
         Array.from(form.querySelectorAll('input[type="checkbox"], input[type="radio"]')).forEach(inp => {
           const lab = inp.closest('label');
@@ -1013,16 +906,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           if(inp.checked) lab.classList.add('checked'); else lab.classList.remove('checked');
         });
       }
-      // Attach listeners
       Array.from(form.querySelectorAll('input[type="checkbox"], input[type="radio"]')).forEach(inp => inp.addEventListener('change', updateCheckedClasses));
-      // init
       updateCheckedClasses();
 
       // Parts table dynamic rows
       const partsTableBody = document.querySelector('#partsTable tbody');
       const addPartBtn = document.getElementById('addPart');
       function reindexParts(){
-        // remove any incomplete rows (safety) then update indexes
         cleanPartsRows();
         Array.from(partsTableBody.querySelectorAll('tr')).forEach((r,i)=>{
           const idx = r.querySelector('.idx'); if(idx) idx.textContent = i+1;
@@ -1078,15 +968,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       if(addPartBtn){ addPartBtn.addEventListener('click', ()=>{ createPartRow({}); cleanPartsRows(); }); }
 
-      // Ensure initial rows: clear existing and create three blank rows (make rows 1-2 match template)
       if(partsTableBody){
         partsTableBody.innerHTML = '';
         for(let i=0;i<3;i++) createPartRow({});
-        // ensure no stray/incomplete rows are visible
         cleanPartsRows();
       }
 
-      // remove incomplete rows helper: deletes any TRs with fewer than expected cells
       function cleanPartsRows(){
         if(!partsTableBody) return;
         Array.from(partsTableBody.querySelectorAll('tr')).forEach(tr=>{
@@ -1094,17 +981,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         });
       }
 
-      // map fieldId -> Array<File>
       const filesMap = {};
-
-      // Map fieldId to Thai label prefix for filename
       const fieldLabel = {
-        imgFullCar:   'รถทั้งคัน',
-        imgSpot:       'จุดปัญหา',
-        imgPart:       'ชิ้นส่วน',
-        imgWarranty:   'สมุดรับประกัน',
-        imgOdometer:   'เลขไมล์',
-        imgEstimate:   'ใบประเมิน'
+        imgFullCar:   'รถทั้งคัน', imgSpot:       'จุดปัญหา', imgPart:       'ชิ้นส่วน',
+        imgWarranty:   'สมุดรับประกัน', imgOdometer:   'เลขไมล์', imgEstimate:   'ใบประเมิน'
       };
 
       function getVin() {
@@ -1118,10 +998,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         const preview = card.querySelector('.preview');
         preview.innerHTML = '';
         const list = filesMap[fieldId] || [];
-        // toggle multi / has-preview classes when files present
         if(list.length > 1) card.classList.add('multi'); else card.classList.remove('multi');
         if(list.length > 0) card.classList.add('has-preview'); else card.classList.remove('has-preview');
-        // update attach-count badge
+        
         const countEl = card.querySelector('.attach-count');
         if(countEl){
           if(list.length > 0){
@@ -1132,6 +1011,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             countEl.setAttribute('data-show','false');
           }
         }
+        
         list.forEach((file, idx) => {
           if(!file.type.startsWith('image/')) return;
           const ext = file.name.split('.').pop() || 'jpg';
@@ -1145,14 +1025,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           const reader = new FileReader();
           reader.onload = e => {
             img.src = e.target.result;
-            // update download href after image loads
             const dlLink = wrap.querySelector('.dl-link');
             if (dlLink) dlLink.href = e.target.result;
           };
           reader.readAsDataURL(file);
           wrap.appendChild(img);
 
-          // download button
           const dl = document.createElement('a');
           dl.className = 'dl-link remove-btn';
           dl.title = `ดาวน์โหลด: ${fixedName}`;
@@ -1162,7 +1040,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           dl.style.cssText = 'position:absolute;top:8px;left:8px;width:28px;height:28px;background:rgba(0,0,0,0.5);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;text-decoration:none;';
           wrap.appendChild(dl);
 
-          // delete button
           const del = document.createElement('button'); del.className = 'remove-btn'; del.title = 'ลบรูป';
           del.innerHTML = '<svg class="icon" aria-hidden="true"><use xlink:href="#icon-delete"></use></svg>';
           del.addEventListener('click', ev=>{ ev.stopPropagation(); removeFile(fieldId, idx); });
@@ -1183,7 +1060,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       gallery.querySelectorAll('.upload-card').forEach(card => {
         const field = card.dataset.field;
         const input = card.querySelector('input[type=file]');
-        const preview = card.querySelector('.preview');
         const multiple = input.hasAttribute('multiple');
         filesMap[field] = filesMap[field] || [];
 
@@ -1194,9 +1070,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           if(multiple) filesMap[field] = filesMap[field].concat(chosen);
           else filesMap[field] = chosen.slice(0,1);
           renderPreview(field);
+          input.value = ''; // เคลียร์เพื่อเลือกไฟล์เดิมซ้ำได้
         });
 
-        // drag events
         ['dragenter','dragover'].forEach(ev=>{ card.addEventListener(ev, e=>{ e.preventDefault(); card.classList.add('dragover'); }); });
         ['dragleave','drop'].forEach(ev=>{ card.addEventListener(ev, e=>{ e.preventDefault(); card.classList.remove('dragover'); }); });
         card.addEventListener('drop', e=>{
@@ -1210,14 +1086,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         });
       });
 
-      // attach all opens first input
-      const attachAll = document.getElementById('attachAllBtn');
-      if(attachAll){ attachAll.addEventListener('click', ()=>{ const first = gallery.querySelector('input[type=file]'); if(first) first.click(); }); }
+      // ระบบอัปโหลดรูปภาพอะไหล่
+      const btnUploadParts = document.getElementById('btnUploadParts');
+      const imgPartsUpload = document.getElementById('imgPartsUpload');
+      const partsPreview = document.getElementById('partsImgPreview');
+      const partsFieldId = 'imgParts[]';
+      filesMap[partsFieldId] = [];
 
-      // lightbox viewer with navigation
+      if (btnUploadParts && imgPartsUpload) {
+        btnUploadParts.addEventListener('click', () => imgPartsUpload.click());
+        imgPartsUpload.addEventListener('change', function() {
+          const chosenFiles = Array.from(this.files || []);
+          if (chosenFiles.length > 0) {
+            filesMap[partsFieldId] = filesMap[partsFieldId].concat(chosenFiles);
+            renderPartsPreview();
+          }
+          this.value = ''; 
+        });
+      }
+
+      function renderPartsPreview() {
+        partsPreview.innerHTML = '';
+        const list = filesMap[partsFieldId];
+        const uploadSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`;
+        
+        if (list.length === 0) {
+          btnUploadParts.innerHTML = uploadSvg + ' อัปโหลดรูปภาพ';
+        } else {
+          btnUploadParts.innerHTML = uploadSvg + ` อัปโหลดแล้ว ${list.length} รูป`;
+        }
+
+        list.forEach((file, idx) => {
+          const wrap = document.createElement('div');
+          wrap.style.cssText = 'position: relative; width: 120px; height: 120px; border-radius: 8px; overflow: hidden; border: 1px solid #e0e0e0; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.05);';
+          
+          const img = document.createElement('img');
+          img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; display: block; cursor: pointer;';
+          const reader = new FileReader();
+          reader.onload = e => { img.src = e.target.result; };
+          reader.readAsDataURL(file);
+          
+          const del = document.createElement('button');
+          del.type = 'button';
+          del.innerHTML = '×';
+          del.style.cssText = 'position: absolute; top: 6px; right: 6px; background: rgba(255, 30, 30, 0.85); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; padding: 0;';
+          del.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            filesMap[partsFieldId].splice(idx, 1);
+            renderPartsPreview();
+          });
+
+          img.addEventListener('click', (ev) => { ev.stopPropagation(); openLightbox(partsFieldId, idx); });
+
+          wrap.appendChild(img);
+          wrap.appendChild(del);
+          partsPreview.appendChild(wrap);
+        });
+      }
+
+      // ระบบ Lightbox
       document.body.insertAdjacentHTML('beforeend', '\n        <div id="lightbox" class="lightbox" aria-hidden="true">\n          <div class="imgwrap">\n            <button class="close" aria-label="ปิด">✕</button>\n            <button class="nav prev" aria-label="ก่อนหน้า">‹</button>\n            <div class="imgframe"><img src="" alt="preview"><div class="counter" aria-hidden="true"></div></div>\n            <button class="nav next" aria-label="ถัดไป">›</button>\n          </div>\n        </div>\n      ');
       const lb = document.getElementById('lightbox');
       let lbState = { fieldId: null, index: 0 };
+      
       function openLightbox(fieldId, index){
         const list = filesMap[fieldId] || [];
         if(!list || !list.length) return;
@@ -1230,20 +1161,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         reader.readAsDataURL(file);
         lb.classList.add('open'); lb.setAttribute('aria-hidden','false');
       }
+      
       function closeLightbox(){ lb.classList.remove('open'); lb.setAttribute('aria-hidden','true'); lbState = { fieldId:null, index:0 }; }
       function lbNext(){ if(!lbState.fieldId) return; const list = filesMap[lbState.fieldId]||[]; lbState.index = (lbState.index+1)%list.length; openLightbox(lbState.fieldId, lbState.index); }
       function lbPrev(){ if(!lbState.fieldId) return; const list = filesMap[lbState.fieldId]||[]; lbState.index = (lbState.index-1+list.length)%list.length; openLightbox(lbState.fieldId, lbState.index); }
+      
       lb.addEventListener('click', e=>{ if(e.target.id==='lightbox' || e.target.classList.contains('close')) closeLightbox(); });
       lb.querySelector('.nav.next').addEventListener('click', e=>{ e.stopPropagation(); lbNext(); });
       lb.querySelector('.nav.prev').addEventListener('click', e=>{ e.stopPropagation(); lbPrev(); });
       document.addEventListener('keydown', e=>{ if(!lb.classList.contains('open')) return; if(e.key==='Escape') closeLightbox(); if(e.key==='ArrowRight') lbNext(); if(e.key==='ArrowLeft') lbPrev(); });
 
-      // intercept submit to send filesMap via FormData
+      // ดักการกด Submit แบบสมบูรณ์
       form.addEventListener('submit', function(e){
         e.preventDefault();
-        resultBox.textContent = 'กำลังบันทึก...';
+        
+        resultBox.style.display = 'block';
+        resultBox.innerHTML = '<div style="padding: 10px; background: #fff3cd; color: #856404; border-radius: 8px; font-weight: bold;">⏳ กำลังบันทึกข้อมูล... กรุณารอสักครู่</div>';
+        
         const fd = new FormData();
-        // append non-file fields
         Array.from(form.elements).forEach(el=>{
           if(!el.name) return;
           if(el.type==='file') return;
@@ -1253,93 +1188,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           fd.append(el.name, el.value || '');
         });
 
-        // append files from filesMap
         Object.keys(filesMap).forEach(fieldId=>{
           const cardInput = gallery.querySelector(`.upload-card[data-field="${fieldId}"] input[type=file]`);
           const fieldName = cardInput ? cardInput.name : fieldId;
           (filesMap[fieldId] || []).forEach(f => fd.append(fieldName, f));
         });
 
-        fetch(form.action || window.location.href, {method:'POST', body:fd}).then(r=>r.text()).then(txt=>{
+        fetch(form.action || window.location.href, {
+          method: 'POST', 
+          body: fd
+        })
+        .then(r => r.text())
+        .then(txt => {
           resultBox.innerHTML = txt;
-        }).catch(err=>{ resultBox.textContent = 'เกิดข้อผิดพลาด: '+ err.message });
-      });
-
-      // ==========================================
-      // ระบบอัปโหลดรูปภาพอะไหล่ (เชื่อมเข้ากับระบบ filesMap หลัก)
-      // ==========================================
-      const btnUploadParts = document.getElementById('btnUploadParts');
-      const imgPartsUpload = document.getElementById('imgPartsUpload');
-      const partsPreview = document.getElementById('partsImgPreview');
-
-      // 1. สร้าง key ใน filesMap ให้ชื่อตรงกับ name ของ input (เพื่อส่งไป PHP ได้ถูกต้อง)
-      const partsFieldId = 'imgParts[]';
-      filesMap[partsFieldId] = [];
-
-      if (btnUploadParts && imgPartsUpload) {
-        btnUploadParts.addEventListener('click', () => imgPartsUpload.click());
-        
-        imgPartsUpload.addEventListener('change', function() {
-          const chosenFiles = Array.from(this.files || []);
-          if (chosenFiles.length > 0) {
-            // เอาไฟล์ที่เลือกใหม่ไปต่อท้ายไฟล์เดิมใน filesMap
-            filesMap[partsFieldId] = filesMap[partsFieldId].concat(chosenFiles);
-            renderPartsPreview();
+          if(txt.includes('✅')) {
+             form.reset(); // ล้างข้อมูล Text
+             // ล้างรูปภาพที่ Preview ไว้
+             document.querySelectorAll('.preview').forEach(p => p.innerHTML='');
+             Object.keys(filesMap).forEach(k => filesMap[k] = []);
+             renderPartsPreview(); // ล้างรูปอะไหล่
+             
+             // เคลื่อนหน้าจอลงมาให้เห็นข้อความสำเร็จ
+             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
           }
-          this.value = ''; // เคลียร์ค่า input เพื่อให้กดเลือกไฟล์เดิมซ้ำได้ถ้าต้องการ
+        })
+        .catch(err => { 
+          resultBox.innerHTML = '<div style="padding: 10px; background: #f8d7da; color: #721c24; border-radius: 8px; font-weight: bold;">❌ เกิดข้อผิดพลาด: '+ err.message + '</div>'; 
         });
-      }
-
-      function renderPartsPreview() {
-        partsPreview.innerHTML = '';
-        const list = filesMap[partsFieldId];
-        
-        // อัปเดตข้อความจำนวนรูปบนปุ่ม
-        const uploadSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`;
-        if (list.length === 0) {
-          btnUploadParts.innerHTML = uploadSvg + ' อัปโหลดรูปภาพ';
-        } else {
-          btnUploadParts.innerHTML = uploadSvg + ` อัปโหลดแล้ว ${list.length} รูป`;
-        }
-
-        // วาดรูปทั้งหมดที่อยู่ใน filesMap ออกมา
-        list.forEach((file, idx) => {
-          const wrap = document.createElement('div');
-          wrap.className = 'preview-thumb';
-          // ฝัง Style ย่อขนาดตรงนี้เลย ตัดปัญหา CSS ทับกัน
-          wrap.style.cssText = 'position: relative; width: 120px; height: 120px; border-radius: 8px; overflow: hidden; border: 1px solid #e0e0e0; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.05);';
-          
-          const img = document.createElement('img');
-          img.alt = file.name;
-          img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; display: block; cursor: pointer;';
-          
-          const reader = new FileReader();
-          reader.onload = e => { img.src = e.target.result; };
-          reader.readAsDataURL(file);
-          
-          // ปุ่มลบรูป
-          const del = document.createElement('button');
-          del.type = 'button';
-          del.title = 'ลบรูป';
-          del.innerHTML = '×';
-          del.style.cssText = 'position: absolute; top: 6px; right: 6px; background: rgba(255, 30, 30, 0.85); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; padding: 0;';
-          del.addEventListener('click', (ev) => {
-            ev.stopPropagation();
-            filesMap[partsFieldId].splice(idx, 1); // ลบไฟล์ออกจากตัวแปร
-            renderPartsPreview(); // วาดรูปใหม่
-          });
-
-          // 2. ฟีเจอร์พิเศษ: คลิกที่รูปเพื่อเปิด Lightbox ขยายดูได้เหมือนกลุ่มด้านบน!
-          img.addEventListener('click', (ev) => {
-            ev.stopPropagation();
-            openLightbox(partsFieldId, idx);
-          });
-
-          wrap.appendChild(img);
-          wrap.appendChild(del);
-          partsPreview.appendChild(wrap);
-        });
-      }
+      });
 
     })();
   </script>

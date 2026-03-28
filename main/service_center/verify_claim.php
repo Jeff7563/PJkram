@@ -11,7 +11,7 @@
 <body>
 
   <?php 
-    $current_page = 'check.php';
+    $current_page = 'claim_form_check.php';
     include 'includes/sidebar.php'; 
     $doc_id = isset($_GET['id']) ? htmlspecialchars($_GET['id']) : 'TS01-001';
   ?>
@@ -28,7 +28,7 @@
           <div class="col-12 col-md-6 text-md-end">
             <div class="d-flex gap-2 justify-content-md-end">
               <a href="#verification-section" class="btn-action bg-primary-orange text-decoration-none px-3 py-1 color-fff rounded-3 shadow-sm">ไปยังส่วนอนุมัติ</a>
-              <a href="check.php" class="btn-action bg-secondary text-decoration-none px-3 py-1 color-fff rounded-3 shadow-sm">ย้อนกลับ</a>
+              <a href="claim_form_check.php" class="btn-action bg-secondary text-decoration-none px-3 py-1 color-fff rounded-3 shadow-sm">ย้อนกลับ</a>
             </div>
           </div>
         </div>
@@ -395,7 +395,7 @@
              </div>
              
              <div class="col-12 col-lg-6 d-flex flex-column flex-sm-row justify-content-end align-items-stretch align-items-sm-end gap-3 mt-4 mt-lg-0">
-                <a href="check.php" class="btn btn-secondary px-5 py-2 rounded-3 shadow-sm text-decoration-none text-center color-fff">ยกเลิก</a>
+                <a href="claim_form_check.php" class="btn btn-secondary px-5 py-2 rounded-3 shadow-sm text-decoration-none text-center color-fff">ยกเลิก</a>
                 <button type="button" class="btn-action bg-primary-orange color-fff border-0 px-5 py-2 rounded-3 shadow-sm fw-bold">บันทึกผลการตรวจสอบ</button>
              </div>
           </div>

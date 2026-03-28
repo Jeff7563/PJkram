@@ -18,32 +18,27 @@
     <div class="container-fluid p-0">
     
       <div class="filter-bar mb-4">
-        <div class="row w-100 align-items-center g-3">
-          <div class="col-12 col-md-4">
-            <input type="text" placeholder="ค้นหาเอกสาร..." class="form-control">
+        <div class="row w-100 g-3 align-items-center">
+          <div class="col-12 col-lg-auto flex-grow-1">
+            <div class="d-flex flex-wrap gap-2">
+              <input type="text" placeholder="ค้นหาเอกสาร..." class="form-control" style="width: 250px;">
+              <select class="form-select" style="width: auto; min-width: 140px;">
+                <option value="">สาขา</option>
+                <option value="sakon">สกลนคร</option>
+              </select>
+              <select class="form-select" style="width: auto; min-width: 140px;">
+                <option value="" selected>สถานะ</option>
+                <option value="wait">รอสั่งอะไหล่</option>
+                <option value="complete">ซ่อมเสร็จสิ้น</option>
+              </select>
+              <input type="date" class="form-control" style="width: auto;" value="2026-03-24">
+            </div>
           </div>
-          <div class="col-12 col-md-2">
-            <select class="form-select">
-              <option value="">สาขา</option>
-              <option value="bangkok">กรุงเทพฯ</option>
-              <option value="chiangmai">เชียงใหม่</option>
-              <option value="khonkaen">ขอนแก่น</option>
-            </select>
-          </div>
-          <div class="col-12 col-md-2">
-            <select class="form-select">
-              <option value="" selected>สถานะ</option>
-              <option value="pending">รอการตรวจสอบ</option>
-              <option value="approve">อนุมัติแล้ว</option>
-              <option value="reject">ไม่อนุมัติ</option>
-            </select>
-          </div>
-          <div class="col-12 col-md-2">
-            <input type="date" class="form-control" value="2026-03-24">
-          </div>
-          <div class="col-12 col-md-2 d-flex gap-2">
-            <button class="btn btn-search flex-grow-1">ค้นหา</button>
-            <button class="btn btn-reset btn-light border flex-grow-1">รีเซ็ต</button>
+          <div class="col-12 col-lg-auto">
+            <div class="d-flex gap-2 justify-content-lg-end">
+              <button class="btn-search px-4">ค้นหา</button>
+              <button class="btn-reset px-4">รีเซ็ต</button>
+            </div>
           </div>
         </div>
       </div>
@@ -60,8 +55,8 @@
                 <th>สาขา</th>
                 <th>หมายเลขตัวถัง</th>
                 <th>ประเภทรถ</th>
-                <th>อาการเสีย</th>
-                <th>สาเหตุ</th>
+                <th>ประเภทการเคลม</th>
+                <th>การดำเนินการ</th>
                 <th class="text-center" width="150">สถานะ</th>
                 <th class="text-center pe-3" width="120">จัดการ</th>
               </tr>
@@ -75,8 +70,8 @@
                 <td>สำนักงานใหญ่</td>
                 <td>AGAS651ASG5</td>
                 <td>รถลูกค้า/Honda/A</td>
-                <td>เครื่องยนต์สตาร์ทติดยาก</td>
-                <td>ตรวจสอบระบบน้ำมัน</td>
+                <td>เคลมรถก่อนขาย</td>
+                <td>ซ่อมที่สาขา</td>
                 <td class="text-center">
                   <span class="badge bg-success px-3 fs-xs fw-normal">ตรวจสอบแล้ว</span>
                 </td>
@@ -92,10 +87,10 @@
                 <td>สำนักงานใหญ่</td>
                 <td>AHQHD52HA4A</td>
                 <td>รถลูกค้า/Honda/C</td>
-                <td>มีเสียงดังผิดปกติบริเวณห้องเครื่อง</td>
-                <td>เฟืองแคมชาร์ฟเสื่อมสภาพ</td>
+                <td>เคลมปัญหาทางเทคนิค</td>
+                <td>ส่งซ่อมที่สนญ</td>
                 <td class="text-center">
-                  <span class="badge bg-warning text-dark px-3 fs-xs fw-normal">รอการตรวจสอบ</span>
+                  <span class="badge bg-warning px-3 fs-xs fw-normal">รอการตรวจสอบ</span>
                 </td>
                 <td class="text-center pe-3">
                   <a href="verify_claim.php" class="btn btn-sm btn-outline-primary px-3">ตรวจสอบ</a>
@@ -109,8 +104,8 @@
                 <td>สำนักงานใหญ่</td>
                 <td>GHAHRTYK588</td>
                 <td>รถสาธิต/Honda/A</td>
-                <td>ปุ่มควบคุมระดับน้ำมันทำงานผิดปกติ</td>
-                <td>แผงสวิตช์ควบคุมชำรุด</td>
+                <td>เคลมรถลูกค้า</td>
+                <td>เปลี่ยนคัน</td>
                 <td class="text-center">
                   <span class="badge bg-danger px-3 fs-xs fw-normal">ไม่อนุมัติ</span>
                 </td>
