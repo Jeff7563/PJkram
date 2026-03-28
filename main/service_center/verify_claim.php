@@ -27,8 +27,8 @@
           </div>
           <div class="col-12 col-md-6 text-md-end">
             <div class="d-flex gap-2 justify-content-md-end">
-              <a href="#verification-section" class="btn-action bg-primary-orange text-decoration-none px-3 py-1 color-fff">ไปยังส่วนอนุมัติ</a>
-              <a href="check.php" class="btn-action bg-secondary text-decoration-none px-3 py-1 color-fff">ย้อนกลับ</a>
+              <a href="#verification-section" class="btn-action bg-primary-orange text-decoration-none px-3 py-1 color-fff rounded-3 shadow-sm">ไปยังส่วนอนุมัติ</a>
+              <a href="check.php" class="btn-action bg-secondary text-decoration-none px-3 py-1 color-fff rounded-3 shadow-sm">ย้อนกลับ</a>
             </div>
           </div>
         </div>
@@ -37,7 +37,7 @@
       <!-- Main Form blocks -->
       <div class="edit-container mb-5">
         
-        <!-- Card 1: Main Info -->
+        <!-- Card 1: ข้อมูลเอกสาร (Read Only) -->
         <div class="edit-card mb-4 border-0 shadow-sm rounded-4 p-4">
           <div class="section-title mb-4 pb-2 border-bottom fw-bold fs-5">ข้อมูลเอกสาร</div>
           <div class="row g-4">
@@ -47,17 +47,15 @@
                 <div class="row align-items-center">
                   <label class="col-sm-4 col-form-label fw-600">สาขา</label>
                   <div class="col-sm-8">
-                    <select class="form-select border-2" disabled>
-                      <option>สำนักงานใหญ่</option>
-                    </select>
+                    <input type="text" class="form-control bg-light border-0" value="สำนักงานใหญ่" readonly>
                   </div>
                 </div>
                 <div class="row align-items-center">
                   <label class="col-sm-4 col-form-label fw-600">ประเภทการเคลม</label>
                   <div class="col-sm-8">
                     <div class="row g-2">
-                       <div class="col-6"><select class="form-select border-2" disabled><option>รถลูกค้า</option></select></div>
-                       <div class="col-6"><select class="form-select border-2" disabled><option>เคลมปกติ</option></select></div>
+                       <div class="col-6"><input type="text" class="form-control bg-light border-0" value="รถลูกค้า" readonly></div>
+                       <div class="col-6"><input type="text" class="form-control bg-light border-0" value="เคลมปกติ" readonly></div>
                     </div>
                   </div>
                 </div>
@@ -102,7 +100,7 @@
           </div>
         </div>
         
-        <!-- Card 2: ข้อมูลผู้ใช้ & หมายเลขตัวถัง -->
+        <!-- Card 2: ข้อมูลผู้ใช้ & หมายเลขตัวถัง (Read Only) -->
         <div class="edit-card mb-4 border-0 shadow-sm rounded-4 p-4">
           <div class="section-title mb-4 pb-2 border-bottom fw-bold fs-5">ข้อมูลผู้ใช้</div>
           <div class="row g-4">
@@ -116,8 +114,10 @@
               <div class="row mb-3">
                 <label class="col-sm-4 col-form-label fw-600">ที่อยู่</label>
                 <div class="col-sm-8">
-                  <input type="text" class="form-control bg-light border-0 mb-2" value="123/45 หมู่ 6 ต.ห้วยขวาง" readonly>
-                  <input type="text" class="form-control bg-light border-0" value="จ.สกลนคร 47000" readonly>
+                  <div class="d-flex flex-column gap-2">
+                    <input type="text" class="form-control bg-light border-0" value="123/45 หมู่ 6 ต.ห้วยขวาง" readonly>
+                    <input type="text" class="form-control bg-light border-0" value="จ.สกลนคร 47000" readonly>
+                  </div>
                 </div>
               </div>
             </div>
@@ -139,7 +139,7 @@
           </div>
         </div>
         
-        <!-- Card 4: ปัญหา -->
+        <!-- Card 4: ปัญหา (Read Only) -->
         <div class="edit-card mb-4 border-0 shadow-sm rounded-4 p-4">
           <div class="section-title mb-4 pb-2 border-bottom fw-bold fs-5">ปัญหา</div>
           <div class="mb-4">
@@ -154,29 +154,27 @@
 
         <!-- Card 6: รูปภาพปัญหา -->
         <div class="edit-card mb-4 border-0 shadow-sm rounded-4 p-4">
-          <div class="section-title d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-            <div class="d-flex align-items-center fw-bold fs-5">
-              รูปภาพปัญหา
-              <span id="img-count-badge" class="badge rounded-pill bg-primary-orange ms-2 px-3">2 รูป</span>
-            </div>
+          <div class="section-title d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom fw-bold fs-5">
+            รูปภาพปัญหา
+            <span id="img-count-badge" class="badge rounded-pill bg-primary-orange px-3">2 รูป</span>
           </div>
           <div class="gallery-grid" id="gallery-grid">
              <div class="gallery-item">
-               <img src="https://via.placeholder.com/300x200?text=Problem+1" class="preview-img cursor-pointer">
+               <img src="https://via.placeholder.com/300x200?text=Problem+1" class="preview-img cursor-pointer" title="คลิกเพื่อขยาย">
                <div class="img-preview-footer">
-                 <span class="img-preview-title">รูปภาพปัญหา_MLH1234567890_1.jpg</span>
+                 <span class="img-preview-title" title="รูปภาพปัญหา_MLH1234567890_1.jpg">รูปภาพปัญหา_MLH1234567890_1.jpg</span>
                </div>
              </div>
              <div class="gallery-item">
-               <img src="https://via.placeholder.com/300x200?text=Problem+2" class="preview-img cursor-pointer">
+               <img src="https://via.placeholder.com/300x200?text=Problem+2" class="preview-img cursor-pointer" title="คลิกเพื่อขยาย">
                <div class="img-preview-footer">
-                 <span class="img-preview-title">รูปภาพปัญหา_MLH1234567890_2.jpg</span>
+                 <span class="img-preview-title" title="รูปภาพปัญหา_MLH1234567890_2.jpg">รูปภาพปัญหา_MLH1234567890_2.jpg</span>
                </div>
              </div>
           </div>
         </div>
         
-        <!-- Card 5: อะไหล่ -->
+        <!-- Card 5: อะไหล่ (Read Only Table) -->
         <div class="edit-card p-0 overflow-hidden mb-4 border-0 shadow-sm rounded-4">
             <div class="p-4">
               <div class="section-title mb-3 pb-2 border-bottom fw-bold fs-5">รายการอะไหล่</div>
@@ -214,7 +212,7 @@
                     <tr class="group-header bg-light">
                       <td colspan="9" class="text-danger fw-bold py-3 ps-3">อะไหล่ที่เคลมร่วมกัน</td>
                     </tr>
-                     <tr class="part-row">
+                    <tr class="part-row">
                       <td>1</td>
                       <td>G-002</td>
                       <td>ชุดปะเก็นเครื่องยนต์</td>
@@ -238,7 +236,7 @@
             </div>
         </div>
 
-        <!-- Card 6: ค่าแรง & สรุปเงิน -->
+        <!-- Card 6: ค่าแรง & สรุปเงิน (Read Only) -->
         <div class="edit-card p-4 border-0 shadow-sm rounded-4 mb-4" style="background-color: #fafafa;">
             <div class="section-title mb-4 pb-2 border-bottom fw-bold fs-5">ค่าแรงและสรุปเงินประจำเคส</div>
             <div class="row g-4">
@@ -277,7 +275,7 @@
                       <label class="col-sm-5 col-form-label fw-600">รวมค่าอะไหล่</label>
                       <div class="col-sm-7">
                         <div class="input-group">
-                          <input type="text" class="form-control border-0 bg-light fw-bold" value="1150.00" readonly>
+                          <input type="text" class="form-control border-0 bg-light fw-bold" value="1,150.00" readonly>
                           <span class="input-group-text border-0 bg-light">บาท</span>
                         </div>
                       </div>
@@ -331,7 +329,7 @@
             </div>
           </div>
 
-        <!-- Card 7: การตรวจสอบผลและอนุมัติ -->
+        <!-- Card 7: การตรวจสอบผลและอนุมัติ (Editable) -->
         <div class="edit-card border-0 shadow-sm rounded-4 p-4" id="verification-section" style="border: 2px solid var(--primary-orange) !important;">
           <div class="section-title verification-title d-flex align-items-center mb-4 pb-2 border-bottom fw-bold fs-5 color-primary-orange">
             <svg class="me-2" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
@@ -345,38 +343,36 @@
                   <div class="d-flex flex-column gap-3">
                     <div class="form-check custom-checkbox-lg">
                       <input class="form-check-input border-2" type="checkbox" id="check1" style="width: 22px; height: 22px;">
-                      <label class="form-check-label fs-md ms-2 pt-1" for="check1">ตรวจสอบความถูกต้องของข้อมูลลูกค้าและหมายเลขตัวถัง</label>
+                      <label class="form-check-label fs-md ms-2 pt-1 cursor-pointer" for="check1">ตรวจสอบความถูกต้องของข้อมูลลูกค้าและหมายเลขตัวถัง</label>
                     </div>
                     <div class="form-check custom-checkbox-lg">
                       <input class="form-check-input border-2" type="checkbox" id="check2" style="width: 22px; height: 22px;">
-                      <label class="form-check-label fs-md ms-2 pt-1" for="check2">ตรวจสอบรายละเอียดและการแนบรูปภาพประกอบปัญหา</label>
+                      <label class="form-check-label fs-md ms-2 pt-1 cursor-pointer" for="check2">ตรวจสอบรายละเอียดและการแนบรูปภาพประกอบปัญหา</label>
                     </div>
                     <div class="form-check custom-checkbox-lg">
                       <input class="form-check-input border-2" type="checkbox" id="check3" style="width: 22px; height: 22px;">
-                      <label class="form-check-label fs-md ms-2 pt-1" for="check3">ตรวจสอบรายการอะไหล่ ค่าแรง และยอดเคลมสุทธิว่าถูกต้องเหมาะสม</label>
+                      <label class="form-check-label fs-md ms-2 pt-1 cursor-pointer" for="check3">ตรวจสอบรายการอะไหล่ ค่าแรง และยอดเคลมสุทธิว่าถูกต้องเหมาะสม</label>
                     </div>
                   </div>
                 </div>
               </div>
               
               <div class="col-12 col-lg-6">
-                <div class="d-flex flex-column gap-3 h-100">
-                  <div class="bg-white p-4 rounded-4 shadow-sm h-100 border border-secondary border-opacity-10">
-                    <div class="row align-items-center mb-3">
-                      <label class="col-sm-4 col-form-label fw-bold text-dark">ผลพิจารณา</label>
-                      <div class="col-sm-8">
-                        <select class="form-select border-primary-orange border-2 fw-bold text-primary-orange">
-                          <option value="">-- กรุณาเลือกผลการตรวจสอบ --</option>
-                          <option value="approve" class="text-success">อนุมัติการเคลม</option>
-                          <option value="reject" class="text-danger">ไม่อนุมัติ</option>
-                          <option value="return" class="text-warning">ตีกลับไปแก้ไข</option>
-                        </select>
-                      </div>
+                <div class="bg-white p-4 rounded-4 shadow-sm h-100 border border-secondary border-opacity-10">
+                  <div class="row align-items-center mb-3">
+                    <label class="col-sm-4 col-form-label fw-bold text-dark">ผลพิจารณา</label>
+                    <div class="col-sm-8">
+                      <select class="form-select border-primary-orange border-2 fw-bold text-primary-orange">
+                        <option value="">-- กรุณาเลือกผลการตรวจสอบ --</option>
+                        <option value="approve" class="text-success">อนุมัติการเคลม</option>
+                        <option value="reject" class="text-danger">ไม่อนุมัติ</option>
+                        <option value="return" class="text-warning">ตีกลับไปแก้ไข</option>
+                      </select>
                     </div>
-                    <div class="mb-0">
-                      <label class="form-label fw-bold mb-2">หมายเหตุ / ความเห็นผู้ตรวจสอบ</label>
-                      <textarea class="form-control border-2" rows="4" placeholder="ระบุเหตุผล หากไม่อนุมัติหรือตีกลับ..."></textarea>
-                    </div>
+                  </div>
+                  <div class="mb-0">
+                    <label class="form-label fw-bold mb-2">หมายเหตุ / ความเห็นผู้ตรวจสอบ</label>
+                    <textarea class="form-control border-2" rows="4" placeholder="ระบุเหตุผล หากไม่อนุมัติหรือตีกลับ..."></textarea>
                   </div>
                 </div>
               </div>
@@ -441,137 +437,6 @@
           if(e.target === imageModal) imageModal.style.display = 'none';
         });
       }
-    });
-  </script>
-</body>
-</html>
-er = new FileReader();
-           
-           reader.onload = function(evt) {
-              const ext = file.name.split('.').pop() || 'jpg';
-              const newFileName = `รูปภาพปัญหา_${vinNumber}_${imageIndex}.${ext}`;
-              createImageItem(evt.target.result, newFileName);
-              imageIndex++;
-           }
-           reader.readAsDataURL(file);
-        }
-        this.value = '';
-      });
-      
-      function createImageItem(src, title) {
-        const div = document.createElement('div');
-        div.className = 'gallery-item';
-        div.innerHTML = `
-          <img src="${src}" alt="uploaded image" class="preview-img cursor-pointer" title="คลิกเพื่อขยาย">
-          <div class="img-preview-footer">
-            <span class="img-preview-title" title="${title}">${title}</span>
-            <div class="img-preview-actions">
-              <button type="button" class="btn-remove-img" title="ลบรูป">×</button>
-            </div>
-          </div>
-        `;
-        
-        div.querySelector('.btn-remove-img').addEventListener('click', function() { div.remove(); updateImgCountBadge(); });
-        div.querySelector('.preview-img').addEventListener('click', function() {
-           modalImg.src = this.src;
-           imageModal.style.display = 'flex';
-        });
-        
-        galleryGrid.appendChild(div);
-        updateImgCountBadge();
-      }
-
-      function updateImgCountBadge() {
-        const badge = document.getElementById('img-count-badge');
-        if (!badge) return;
-        const count = document.querySelectorAll('#gallery-grid .gallery-item').length;
-        if (count > 0) {
-          badge.textContent = count + ' รูป';
-          badge.style.display = 'inline-block';
-        } else {
-          badge.style.display = 'none';
-        }
-      }
-      
-      document.querySelectorAll('.btn-remove-img').forEach(btn => btn.addEventListener('click', function() {
-        this.closest('.gallery-item').remove();
-        updateImgCountBadge();
-      }));
-      document.querySelectorAll('.preview-img').forEach(img => img.addEventListener('click', function() {
-         modalImg.src = this.src;
-         imageModal.style.display = 'flex';
-      }));
-      
-      document.getElementById('modal-close').addEventListener('click', () => imageModal.style.display = 'none');
-      imageModal.addEventListener('click', function(e) {
-        if(e.target === imageModal) imageModal.style.display = 'none';
-      });
-      
-      calculateParts();
-    });
-  </script>
-</body>
-</html>
-eeded
-        this.value = '';
-      });
-      
-      function createImageItem(src, title) {
-        const div = document.createElement('div');
-        div.className = 'gallery-item';
-        div.innerHTML = `
-          <img src="${src}" alt="uploaded image" class="preview-img cursor-pointer"title="คลิกเพื่อขยาย">
-          <div class="img-preview-footer">
-            <span class="img-preview-title" title="${title}">${title}</span>
-            <div class="img-preview-actions">
-              <a href="${src}" download="${title}" class="img-download-link" title="ดาวน์โหลดพร้อมชื่อใหม่">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-              </a>
-              <button type="button" class="btn-remove-img btn-remove-img" title="ลบรูป">×</button>
-            </div>
-          </div>
-        `;
-        
-        div.querySelector('.btn-remove-img').addEventListener('click', function() { div.remove(); });
-        div.querySelector('.preview-img').addEventListener('click', function() {
-           modalImg.src = this.src;
-           imageModal.style.display = 'flex';
-        });
-        
-        galleryGrid.appendChild(div);
-        updateImgCountBadge();
-      }
-
-      function updateImgCountBadge() {
-        const badge = document.getElementById('img-count-badge');
-        if (!badge) return;
-        const count = document.querySelectorAll('#gallery-grid .gallery-item').length;
-        if (count > 0) {
-          badge.textContent = count + ' รูป';
-          badge.style.display = 'inline-block';
-        } else {
-          badge.style.display = 'none';
-        }
-      }
-      
-      // Wire up initial gallery item
-      document.querySelectorAll('.btn-remove-img').forEach(btn => btn.addEventListener('click', function() {
-        this.closest('.gallery-item').remove();
-        updateImgCountBadge();
-      }));
-      document.querySelectorAll('.preview-img').forEach(img => img.addEventListener('click', function() {
-         modalImg.src = this.src;
-         imageModal.style.display = 'flex';
-      }));
-      
-      // Modal close logic
-      document.getElementById('modal-close').addEventListener('click', () => imageModal.style.display = 'none');
-      imageModal.addEventListener('click', function(e) {
-        if(e.target === imageModal) imageModal.style.display = 'none';
-      });
-      
-      // Initial calculation
-      calculateParts();
     });
   </script>
 </body>

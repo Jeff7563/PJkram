@@ -217,15 +217,15 @@
                     </tr>
                     
                     <tr id="add-assoc-row">
-                      <td colspan="10" class="p-2 text-center">
-                        <button type="button" class="btn btn-outline-orange btn-sm text-primary-orange" id="btn-add-assoc" style="border-style: dashed;">+ เพิ่มอะไหล่เคลมร่วม</button>
+                      <td colspan="10" class="p-3 text-center">
+                        <button type="button" class="btn btn-outline-orange btn-sm text-primary-orange w-100 py-3 border-dashed" id="btn-add-assoc" style="border-style: dashed !important; border-width: 2px;">+ เพิ่มอะไหล่เคลมร่วม</button>
                       </td>
                     </tr>
 
                     <tr class="summary-row fw-bold bg-light">
                       <td colspan="5" class="py-3 ps-4">ยอดรวม</td>
-                      <td class="text-center" id="sum-qty">0</td>
-                      <td class="text-center" id="sum-money">0.00</td>
+                      <td class="text-center text-primary-orange fw-bold" id="sum-qty">0</td>
+                      <td class="text-center text-primary-orange fw-bold" id="sum-money">0.00</td>
                       <td colspan="3"></td>
                     </tr>
                   </tbody>
