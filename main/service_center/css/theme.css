@@ -436,7 +436,7 @@ body {
   .main-content { 
     margin-left: 0; 
     width: 100%; 
-    padding: 20px; 
+    padding: 70px 20px 20px 20px; 
   }
 
   /* Mobile filter bar */
