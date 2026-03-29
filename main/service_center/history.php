@@ -74,9 +74,9 @@ try {
               </select>
               <select name="status" class="form-select" style="width: auto; min-width: 140px;">
                 <option value="">ทุกสถานะ</option>
-                <option value="Pending" <?= $status == 'Pending' ? 'selected' : '' ?>>Pending (รอดำเนินการ)</option>
-                <option value="Approved" <?= $status == 'Approved' ? 'selected' : '' ?>>Approved (อนุมัติ)</option>
-                <option value="Rejected" <?= $status == 'Rejected' ? 'selected' : '' ?>>Rejected (ปฏิเสธ)</option>
+                <option value="Pending" <?= $status == 'Pending' ? 'selected' : '' ?>>รอดำเนินการ</option>
+                <option value="Approved" <?= $status == 'Approved' ? 'selected' : '' ?>>อนุมัติ</option>
+                <option value="Rejected" <?= $status == 'Rejected' ? 'selected' : '' ?>>ปฏิเสธ</option>
               </select>
               <input type="date" name="date" class="form-control" style="width: auto;" value="<?= htmlspecialchars($date) ?>">
             </div>
@@ -108,14 +108,22 @@ try {
                 }
                 $docId = $idPart . "-" . $datePart;
                 
-                // เช็คสถานะเพื่อปรับสี Badge
-                $statusText = $row['status'] ?? 'Pending';
+                // เช็คสถานะเพื่อปรับสี Badge และแปลเป็นภาษาไทย
+                $dbStatus = $row['status'] ?? 'Pending';
                 $badgeClass = 'hc-badge'; 
-                if ($statusText === 'Approved') {
+                $statusDisplay = 'รอดำเนินการ'; // ค่าเริ่มต้น
+
+                if ($dbStatus === 'Approved') {
                     $badgeClass .= ' bg-success text-white';
-                } elseif ($statusText === 'Rejected') {
+                    $statusDisplay = 'อนุมัติ';
+                } elseif ($dbStatus === 'Rejected') {
                     $badgeClass .= ' bg-danger text-white';
+                    $statusDisplay = 'ปฏิเสธ';
+                } elseif ($dbStatus === 'Pending') {
+                    $badgeClass .= ' bg-warning text-white'; // เพิ่มสีเหลืองให้สถานะรอดำเนินการ
+                    $statusDisplay = 'รอดำเนินการ';
                 }
+                
             ?>
             <div class="col">
               <div class="history-card">
@@ -125,7 +133,7 @@ try {
                     <div class="hc-doc fw-bold">เลขที่เอกสาร : <?= $docId ?></div>
                   </div>
                   <div class="d-flex gap-2 align-items-center">
-                    <div class="<?= $badgeClass ?>">สถานะ : <?= htmlspecialchars($statusText) ?></div>
+                    <div class="<?= $badgeClass ?>">สถานะ : <?= htmlspecialchars($statusDisplay) ?></div>
                     <a href="edit_claim.php?id=<?= $row['id'] ?>" class="hc-btn">ดู/แก้ไข</a>
                   </div>
                 </div>
@@ -140,7 +148,11 @@ try {
                   <div class="col-12 col-md-6">
                     <div class="hc-field-group">
                       <div class="hc-label">ประเภทการเคลม :</div>
-                      <input type="text" class="hc-input form-control" value="<?= htmlspecialchars($row['claimCategory']) ?>" readonly>
+                      <?php 
+                        $cat = !empty($row['claimCategory']) ? $row['claimCategory'] : '- ไม่ระบุ -';
+                      $catTH = ($cat == 'pre-sale') ? 'เคลมรถก่อนขาย' : (($cat == 'technical') ? 'เคลมปัญหาทางเทคนิค' : (($cat == 'customer-sale' || $cat == 'customer') ? 'เคลมรถลูกค้า' : $cat));
+                      ?>
+                      <input type="text" class="hc-input form-control" value="<?= htmlspecialchars($catTH) ?>" readonly>
                     </div>
                   </div>
                   

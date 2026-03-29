@@ -776,29 +776,30 @@ require_once __DIR__ . '/claim_form_handler.php';
                 </div>
               </div>
 
-              <div class="row g-3 mb-3">
+
+                <div class="row g-3 mb-3">
                 <div class="col-12 col-md-6">
-                 <div class="d-flex gap-10" style="gap: 10px;">
-                    <div style="flex: 1; min-width: 0;">
-                      <label for="replaceid" class="form-label fw-semibold">รหัสพนักงาน</label>
-                      <input type="text" id="replaceid" name="replace_id" class="form-control" placeholder="รหัสพนักงาน">
+                    <div class="d-flex gap-2" style="gap: 10px;">
+                        <div style="flex: 1; min-width: 0;">
+                            <label for="replace_id" class="form-label fw-semibold">รหัสพนักงาน</label>
+                            <input type="text" id="replace_id" name="replace_id" class="form-control" placeholder="รหัสพนักงาน">
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <label for="replace_name" class="form-label fw-semibold">ชื่อพนักงาน</label>
+                            <input type="text" id="replace_name" name="replace_name" class="form-control" placeholder="ชื่อพนักงาน">
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <label for="replace_signature" class="form-label fw-semibold">ลายเซ็นต์</label>
+                            <input type="text" id="replace_signature" name="replace_signature" class="form-control" placeholder="ลายเซ็นต์">
+                        </div>
                     </div>
-                    <div style="flex: 1; min-width: 0;">
-                      <label for="replacename" class="form-label fw-semibold">ชื่อพนักงาน</label>
-                      <input type="text" id="replacename" name="replace_name" class="form-control" placeholder="ชื่อพนักงาน">
-                    </div>
-                    <div style="flex: 1; min-width: 0;">
-                      <label for="replacesignature" class="form-label fw-semibold">ลายเซ็นต์</label>
-                      <input type="text" id="replacesignature" name="replace_signature" class="form-control" placeholder="ลายเซ็นต์">
-                    </div>
-                  </div>
                 </div>
                 
                 <div class="col-12 col-md-6">
-                  <label for="replaceApproveDate" class="form-label fw-semibold">วันที่อนุมัติ</label>
-                  <input type="date" id="replaceApproveDate" name="replace_approve_date" class="form-control">
+                    <label for="replace_approve_date" class="form-label fw-semibold">วันที่อนุมัติ</label>
+                    <input type="date" id="replace_approve_date" name="replace_approve_date" class="form-control">
                 </div>
-              </div>
+            </div>
 
               <div class="row mt-3 mb-0">
                 <div class="col-12">
@@ -1171,54 +1172,67 @@ require_once __DIR__ . '/claim_form_handler.php';
       lb.querySelector('.nav.prev').addEventListener('click', e=>{ e.stopPropagation(); lbPrev(); });
       document.addEventListener('keydown', e=>{ if(!lb.classList.contains('open')) return; if(e.key==='Escape') closeLightbox(); if(e.key==='ArrowRight') lbNext(); if(e.key==='ArrowLeft') lbPrev(); });
 
-      // ดักการกด Submit แบบสมบูรณ์
+      // ==============================================
+      // ดักการกด Submit แบบสมบูรณ์ (ดูดข้อมูลทุกช่อง 100%)
+      // ==============================================
       form.addEventListener('submit', function(e){
         e.preventDefault();
         
         resultBox.style.display = 'block';
-        resultBox.innerHTML = '<div style="padding: 10px; background: #fff3cd; color: #856404; border-radius: 8px; font-weight: bold;">⏳ กำลังบันทึกข้อมูล... กรุณารอสักครู่</div>';
+        resultBox.innerHTML = '<div style="padding: 10px; background: #fff3cd; color: #856404; border-radius: 8px; font-weight: bold; margin-bottom: 10px;">⏳ กำลังบันทึกข้อมูลเคลม... กรุณารอสักครู่</div>';
         
-        const fd = new FormData();
-        Array.from(form.elements).forEach(el=>{
-          if(!el.name) return;
-          if(el.type==='file') return;
-          if(el.type==='checkbox') { if(el.checked) fd.append(el.name, el.value || 'on'); return; }
-          if(el.type==='radio') { if(el.checked) fd.append(el.name, el.value); return; }
-          if(el.tagName==='SELECT' && el.multiple){ Array.from(el.selectedOptions).forEach(opt=> fd.append(el.name, opt.value)); return; }
-          fd.append(el.name, el.value || '');
+        // ใช้ FormData กวาดข้อมูลจากหน้าเว็บ "ทุกช่อง" โดยอัตโนมัติ
+        const fd = new FormData(this);
+
+        // วนลูปเอารูปภาพจาก 6 กล่องด้านบน ยัดใส่ลงไปใน FormData
+        gallery.querySelectorAll('.upload-card').forEach(card => {
+            const fieldId = card.dataset.field;
+            const inputEl = card.querySelector('input[type="file"]');
+            if(inputEl && filesMap[fieldId]) {
+                const inputName = inputEl.getAttribute('name');
+                filesMap[fieldId].forEach(file => {
+                    fd.append(inputName, file);
+                });
+            }
         });
 
-        Object.keys(filesMap).forEach(fieldId=>{
-          const cardInput = gallery.querySelector(`.upload-card[data-field="${fieldId}"] input[type=file]`);
-          const fieldName = cardInput ? cardInput.name : fieldId;
-          (filesMap[fieldId] || []).forEach(f => fd.append(fieldName, f));
-        });
+        // เอารูปภาพจากตารางอะไหล่ ยัดใส่ลงไปใน FormData ด้วย (ถ้ามี)
+        const partsFieldId = 'imgParts[]';
+        if(filesMap[partsFieldId]) {
+            filesMap[partsFieldId].forEach(file => {
+                fd.append(partsFieldId, file);
+            });
+        }
 
-        fetch(form.action || window.location.href, {
+        // ยิงข้อมูลไปที่ claim_form_handler.php
+        fetch(form.action, {
           method: 'POST', 
           body: fd
         })
         .then(r => r.text())
         .then(txt => {
-          resultBox.innerHTML = txt;
+          resultBox.innerHTML = txt; // โชว์ข้อความที่ส่งกลับมาจาก Handler
+          
           if(txt.includes('✅')) {
-             form.reset(); // ล้างข้อมูล Text
-             // ล้างรูปภาพที่ Preview ไว้
+             // ถ้าสำเร็จ ให้เคลียร์รูปภาพในหน้าเว็บเตรียมรอเคสต่อไป
              document.querySelectorAll('.preview').forEach(p => p.innerHTML='');
-             Object.keys(filesMap).forEach(k => filesMap[k] = []);
-             renderPartsPreview(); // ล้างรูปอะไหล่
+             const partsPreview = document.getElementById('partsImgPreview');
+             if(partsPreview) partsPreview.innerHTML = '';
              
-             // เคลื่อนหน้าจอลงมาให้เห็นข้อความสำเร็จ
+             Object.keys(filesMap).forEach(k => filesMap[k] = []);
+             
+             const btnUploadParts = document.getElementById('btnUploadParts');
+             if(btnUploadParts) btnUploadParts.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> อัปโหลดรูปภาพ`;
+
              window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
           }
         })
         .catch(err => { 
-          resultBox.innerHTML = '<div style="padding: 10px; background: #f8d7da; color: #721c24; border-radius: 8px; font-weight: bold;">❌ เกิดข้อผิดพลาด: '+ err.message + '</div>'; 
+          resultBox.innerHTML = '<div style="padding: 10px; background: #f8d7da; color: #721c24; border-radius: 8px; font-weight: bold; margin-bottom: 10px;">❌ เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์: '+ err.message + '</div>'; 
         });
       });
 
     })();
   </script>
-  </div>
 </body>
 </html>

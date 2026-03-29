@@ -1,126 +1,326 @@
+<?php
+// 1. เชื่อมต่อฐานข้อมูล
+require_once __DIR__ . '/conn/db_connect.php';
+
+try {
+    $pdo = getServiceCenterPDO();
+    $table = getServiceCenterTable();
+
+    // 2. รับค่าจากฟอร์มค้นหา (Filter)
+    $search = $_GET['search'] ?? '';
+    $branch = $_GET['branch'] ?? '';
+    $status = $_GET['status'] ?? '';
+    $date = $_GET['date'] ?? '';
+
+    // 3. สร้างเงื่อนไข SQL
+    $whereConditions = ["1=1"];
+    $params = [];
+
+    if (!empty($search)) {
+        $whereConditions[] = "(ownerName LIKE ? OR vin LIKE ? OR id LIKE ?)";
+        $params[] = "%$search%";
+        $params[] = "%$search%";
+        $params[] = "%$search%";
+    }
+    if (!empty($branch)) {
+        $whereConditions[] = "branch = ?";
+        $params[] = $branch;
+    }
+    if (!empty($status)) {
+        $whereConditions[] = "status = ?";
+        $params[] = $status;
+    }
+    if (!empty($date)) {
+        $whereConditions[] = "claimDate = ?";
+        $params[] = $date;
+    }
+
+    $whereSql = implode(' AND ', $whereConditions);
+    
+    // ดึงข้อมูลเรียงจากใหม่ไปเก่า
+    $stmt = $pdo->prepare("SELECT * FROM `$table` WHERE $whereSql ORDER BY id DESC");
+    $stmt->execute($params);
+    $claims = $stmt->fetchAll();
+
+} catch (Exception $e) {
+    die("เกิดข้อผิดพลาดในการดึงข้อมูล: " . $e->getMessage());
+}
+?>
 <!DOCTYPE html>
 <html lang="th">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ตรวจเช็ค - ระบบจัดการฟอร์มส่งเคลม</title>
+  <title>ตรวจเช็คและรายงาน - ระบบจัดการฟอร์มส่งเคลม</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/styles-check.css">
+  <style>
+    /* ปรับแต่ง UI เพิ่มเติม */
+    body { font-family: 'Kanit', sans-serif; background-color: #f8f9fa; }
+    .page-header { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid #eee; }
+    
+    /* Filter Bar */
+    .filter-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        margin-bottom: 25px;
+    }
+    .filter-card .form-control, .filter-card .form-select {
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        padding: 10px 15px;
+        font-size: 0.95rem;
+    }
+    .filter-card .form-control:focus, .filter-card .form-select:focus {
+        border-color: var(--primary-orange);
+        box-shadow: 0 0 0 0.2rem rgba(242, 114, 43, 0.25);
+    }
+    .btn-search {
+        background: var(--primary-orange);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 25px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+    .btn-search:hover { background: #d96220; color: white; transform: translateY(-2px); }
+    .btn-reset {
+        background: #f1f3f5;
+        color: #495057;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 25px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+    .btn-reset:hover { background: #e2e6ea; color: #212529; }
+
+    /* Table Styles */
+    .table-container {
+        background: #fff;
+        border-radius: 12px;
+        padding: 0;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        overflow: hidden; /* ให้ขอบมนมีผลกับตารางด้านใน */
+    }
+    .table { margin-bottom: 0; }
+    .table thead th {
+        background-color: #f8f9fa;
+        color: #495057;
+        font-weight: 600;
+        border-bottom: 2px solid #dee2e6;
+        padding: 15px;
+        white-space: nowrap;
+    }
+    .table tbody td {
+        padding: 15px;
+        vertical-align: middle;
+        color: #333;
+        border-bottom: 1px solid #f1f3f5;
+    }
+    .table tbody tr:hover { background-color: #fcfcfc; }
+    
+    .doc-id-text { color: var(--primary-orange); font-weight: 600; }
+    .car-info-text { font-size: 0.9rem; color: #6c757d; }
+    
+    /* Action Buttons */
+    .btn-verify {
+        background-color: transparent;
+        color: var(--primary-orange);
+        border: 1px solid var(--primary-orange);
+        border-radius: 6px;
+        padding: 6px 15px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    .btn-verify:hover {
+        background-color: var(--primary-orange);
+        color: white;
+    }
+  </style>
 </head>
 <body>
 
-  <!-- Sidebar -->
   <?php include 'includes/sidebar.php'; ?>
 
-  <!-- Main Content -->
   <div class="main-content">
     <div class="container-fluid p-0">
     
-      <div class="filter-bar mb-4">
-        <div class="row w-100 g-3 align-items-center">
-          <div class="col-12 col-lg-auto flex-grow-1">
-            <div class="d-flex flex-wrap gap-2">
-              <input type="text" placeholder="ค้นหาเอกสาร..." class="form-control" style="width: 250px;">
-              <select class="form-select" style="width: auto; min-width: 140px;">
-                <option value="">สาขา</option>
-                <option value="sakon">สกลนคร</option>
-              </select>
-              <select class="form-select" style="width: auto; min-width: 140px;">
-                <option value="" selected>สถานะ</option>
-                <option value="wait">รอสั่งอะไหล่</option>
-                <option value="complete">ซ่อมเสร็จสิ้น</option>
-              </select>
-              <input type="date" class="form-control" style="width: auto;" value="2026-03-24">
+      <div class="filter-card">
+        <form method="GET" action="check.php">
+            <div class="row w-100 g-3 align-items-center">
+            <div class="col-12 col-lg-auto flex-grow-1">
+                <div class="d-flex flex-wrap gap-2">
+                <input type="text" name="search" placeholder="ค้นหาชื่อ, ทะเบียน, เลขเอกสาร..." class="form-control" style="width: 250px;" value="<?= htmlspecialchars($search) ?>">
+                
+                <select name="branch" class="form-select" style="width: auto; min-width: 140px;">
+                    <option value="">ทุกสาขา</option>
+                    <option value="สาขา สกลนคร" <?= $branch == 'สาขา สกลนคร' ? 'selected' : '' ?>>สกลนคร</option>
+                    <option value="เชียงใหม่" <?= $branch == 'เชียงใหม่' ? 'selected' : '' ?>>เชียงใหม่</option>
+                    <option value="ภูเก็ต" <?= $branch == 'ภูเก็ต' ? 'selected' : '' ?>>ภูเก็ต</option>
+                    <option value="โคราช" <?= $branch == 'โคราช' ? 'selected' : '' ?>>โคราช</option>
+                </select>
+                
+                <select name="status" class="form-select" style="width: auto; min-width: 140px;">
+                    <option value="">ทุกสถานะ</option>
+                    <option value="Pending" <?= $status == 'Pending' ? 'selected' : '' ?>>รอดำเนินการ</option>
+                    <option value="Approved" <?= $status == 'Approved' ? 'selected' : '' ?>>อนุมัติ</option>
+                    <option value="Rejected" <?= $status == 'Rejected' ? 'selected' : '' ?>>ปฏิเสธ</option>
+                </select>
+                
+                <input type="date" name="date" class="form-control" style="width: auto;" value="<?= htmlspecialchars($date) ?>">
+                </div>
             </div>
-          </div>
-          <div class="col-12 col-lg-auto">
-            <div class="d-flex gap-2 justify-content-lg-end">
-              <button class="btn-search px-4">ค้นหา</button>
-              <button class="btn-reset px-4">รีเซ็ต</button>
+            <div class="col-12 col-lg-auto">
+                <div class="d-flex gap-2 justify-content-lg-end">
+                <button type="submit" class="btn-search">ค้นหา</button>
+                <a href="check.php" class="btn-reset text-decoration-none text-center">รีเซ็ต</a>
+                </div>
             </div>
-          </div>
-        </div>
+            </div>
+        </form>
       </div>
 
-      <div class="card border-0 shadow-sm overflow-hidden">
+      <div class="table-container">
         <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0">
-            <thead class="bg-light">
+          <table class="table table-hover align-middle">
+            <thead>
               <tr>
-                <th class="export-col text-center" style="display: none; width: 40px;">
-                  <input type="checkbox" id="selectAll" class="form-check-input">
+                <th class="export-col text-center" style="display: none; width: 50px;">
+                  <input type="checkbox" id="selectAll" class="form-check-input shadow-none">
                 </th>
-                <th class="ps-3" width="140">เลขที่เอกสาร</th>
+                <th class="ps-4">เลขที่เอกสาร</th>
                 <th>สาขา</th>
+                <th>ข้อมูลรถ</th>
                 <th>หมายเลขตัวถัง</th>
-                <th>ประเภทรถ</th>
                 <th>ประเภทการเคลม</th>
-                <th>การดำเนินการ</th>
-                <th class="text-center" width="150">สถานะ</th>
-                <th class="text-center pe-3" width="120">จัดการ</th>
+                <th>การดำเนินการ</th> <th class="text-center">สถานะ</th>
+                <th class="text-center pe-4">จัดการ</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td class="export-col text-center" style="display: none;">
-                  <input type="checkbox" class="row-checkbox form-check-input" value="C001-270369">
-                </td>
-                <td class="ps-3 fw-bold">C001-270369</td>
-                <td>สำนักงานใหญ่</td>
-                <td>AGAS651ASG5</td>
-                <td>รถลูกค้า/Honda/A</td>
-                <td>เคลมรถก่อนขาย</td>
-                <td>ซ่อมที่สาขา</td>
-                <td class="text-center">
-                  <span class="badge bg-success px-3 fs-xs fw-normal">ตรวจสอบแล้ว</span>
-                </td>
-                <td class="text-center pe-3">
-                  <a href="verify_claim.php" class="btn btn-sm btn-outline-primary px-3">ตรวจสอบ</a>
-                </td>
-              </tr>
-              <tr>
-                <td class="export-col text-center" style="display: none;">
-                  <input type="checkbox" class="row-checkbox form-check-input" value="C002-270369">
-                </td>
-                <td class="ps-3 fw-bold">C002-270369</td>
-                <td>สำนักงานใหญ่</td>
-                <td>AHQHD52HA4A</td>
-                <td>รถลูกค้า/Honda/C</td>
-                <td>เคลมปัญหาทางเทคนิค</td>
-                <td>ส่งซ่อมที่สนญ</td>
-                <td class="text-center">
-                  <span class="badge bg-warning px-3 fs-xs fw-normal">รอการตรวจสอบ</span>
-                </td>
-                <td class="text-center pe-3">
-                  <a href="verify_claim.php" class="btn btn-sm btn-outline-primary px-3">ตรวจสอบ</a>
-                </td>
-              </tr>
-              <tr>
-                <td class="export-col text-center" style="display: none;">
-                  <input type="checkbox" class="row-checkbox form-check-input" value="C003-270369">
-                </td>
-                <td class="ps-3 fw-bold">C003-270369</td>
-                <td>สำนักงานใหญ่</td>
-                <td>GHAHRTYK588</td>
-                <td>รถสาธิต/Honda/A</td>
-                <td>เคลมรถลูกค้า</td>
-                <td>เปลี่ยนคัน</td>
-                <td class="text-center">
-                  <span class="badge bg-danger px-3 fs-xs fw-normal">ไม่อนุมัติ</span>
-                </td>
-                <td class="text-center pe-3">
-                  <a href="verify_claim.php" class="btn btn-sm btn-outline-primary px-3">ตรวจสอบ</a>
-                </td>
-              </tr>
+              <?php if (count($claims) > 0): ?>
+                  <?php foreach ($claims as $row): 
+                      // 1. จัดรูปแบบวันที่
+                      $claimDateFormatted = $row['claimDate'] ? date('d/m/Y', strtotime($row['claimDate'])) : '-';
+                      
+                      // 2. จัดรูปแบบเลขเอกสาร C001-280369
+                      $idPart = "C" . str_pad($row['id'], 3, '0', STR_PAD_LEFT);
+                      $datePart = "000000";
+                      if (!empty($row['claimDate']) && $row['claimDate'] !== '0000-00-00') {
+                          $timestamp = strtotime($row['claimDate']);
+                          if ($timestamp !== false) {
+                              $buddhistYearShort = substr((date('Y', $timestamp) + 543), -2);
+                              $datePart = date('dm', $timestamp) . $buddhistYearShort;
+                          }
+                      }
+                      $docId = $idPart . "-" . $datePart;
+
+                      // 3. กำหนด Class ของ Badge สถานะตาม CSS
+                      $dbStatus = $row['status'] ?? 'Pending';
+                      $badgeClass = 'status-badge '; 
+                      $statusDisplay = 'รอดำเนินการ';
+
+                      if ($dbStatus === 'Approved') {
+                          $badgeClass .= 'status-approve';
+                          $statusDisplay = 'อนุมัติ';
+                      } elseif ($dbStatus === 'Rejected') {
+                          $badgeClass .= 'status-reject';
+                          $statusDisplay = 'ปฏิเสธ';
+                      } elseif ($dbStatus === 'Pending') {
+                          $badgeClass .= 'status-pending'; 
+                          $statusDisplay = 'รอดำเนินการ';
+                      }
+
+                      // 4. เช็คข้อมูล การดำเนินการ (Action)
+                      $actionDisplay = '-';
+                      if ($row['repairBranch'] == 1) {
+                          $actionDisplay = 'ซ่อมที่สาขา';
+                      } elseif ($row['sendHQ'] == 1) {
+                          $actionDisplay = 'ส่งซ่อมที่สนญ.';
+                      } elseif (!empty($row['claimCategory'])) { 
+                          $actionDisplay = 'เปลี่ยนคัน/อื่นๆ';
+                      }
+
+                      // 5. แปลงประเภทรถเป็นภาษาไทย
+                      $carTypeDisplay = '-';
+                      if ($row['carType'] === 'new') {
+                          $carTypeDisplay = 'รถใหม่';
+                      } elseif ($row['carType'] === 'used') {
+                          $carTypeDisplay = 'รถมือสอง';
+                      } else {
+                          $carTypeDisplay = htmlspecialchars($row['carType']); 
+                      }
+
+                      // 6. เตรียมข้อความยี่ห้อ + เกรด (สำหรับรถมือสอง)
+                      $brandDisplay = htmlspecialchars($row['carBrand']);
+                      if ($row['carType'] === 'used' && !empty($row['usedGrade'])) {
+                          $gradeMap = [
+                              'A_premium' => 'A พรีเมี่ยม',
+                              'A_w6' => 'A (ประกัน 6 ด.)',
+                              'C_w1' => 'C (ประกัน 1 ด.)',
+                              'C_as_is' => 'C (ตามสภาพ)'
+                          ];
+                          $gradeText = $gradeMap[$row['usedGrade']] ?? $row['usedGrade'];
+                          $brandDisplay .= ' / เกรด: ' . $gradeText;
+                      }
+
+                      // 7. แปลงประเภทการเคลมเป็นภาษาไทย
+                      $claimCatDisplay = htmlspecialchars($row['claimCategory']);
+                      if ($claimCatDisplay === 'pre-sale') $claimCatDisplay = 'เคลมรถก่อนขาย';
+                      if ($claimCatDisplay === 'technical') $claimCatDisplay = 'เคลมปัญหาทางเทคนิค';
+                      if ($claimCatDisplay === 'customer' || $claimCatDisplay === 'customer-sale') $claimCatDisplay = 'เคลมรถลูกค้า';
+                  ?>
+                  <tr>
+                    <td class="export-col text-center" style="display: none;">
+                      <input type="checkbox" class="row-checkbox form-check-input shadow-none" value="<?= $row['id'] ?>" data-doc="<?= $docId ?>">
+                    </td>
+                    <td class="ps-4">
+                        <div class="doc-id-text"><?= $docId ?></div>
+                        <div class="car-info-text"><small><?= $claimDateFormatted ?></small></div>
+                    </td>
+                    <td><?= htmlspecialchars($row['branch']) ?></td>
+                    <td>
+                        <div class="fw-medium text-dark"><?= $carTypeDisplay ?></div>
+                        <div class="car-info-text"><?= $brandDisplay ?></div>
+                    </td>
+                    <td class="fw-medium"><?= htmlspecialchars($row['vin']) ?></td>
+                    
+                    <td><span class="text-dark"><?= $claimCatDisplay ?></span></td>
+                    
+                    <td><span class="text-secondary fw-medium"><?= $actionDisplay ?></span></td> 
+                    <td class="text-center">
+                      <span class="<?= $badgeClass ?>"><?= $statusDisplay ?></span>
+                    </td>
+                    <td class="text-center pe-4">
+                      <a href="verify_claim.php?id=<?= $row['id'] ?>" class="btn-verify text-decoration-none">ตรวจสอบ</a>
+                    </td>
+                  </tr>
+                  <?php endforeach; ?>
+              <?php else: ?>
+                  <tr>
+                      <td colspan="9" class="text-center py-5"> 
+                          <div class="text-muted fs-5">ไม่มีข้อมูลเอกสารการเคลม</div>
+                          <p class="text-muted mb-0">ลองเปลี่ยนเงื่อนไขการค้นหาดูอีกครั้ง</p>
+                      </td>
+                  </tr>
+              <?php endif; ?>
             </tbody>
           </table>
         </div>
       </div>
+      
+      <div style="height: 100px;"></div>
+
     </div>
   </div>
 
-  <!-- Floating Export -->
   <div class="floating-export">
     <button id="btnCancelExport" class="btn-floating-cancel" style="display: none;">ยกเลิก</button>
     <button id="btnExportToggle" class="btn-floating-export d-flex align-items-center gap-2">
@@ -129,11 +329,10 @@
         <polyline points="7 10 12 15 17 10"></polyline>
         <line x1="12" y1="15" x2="12" y2="3"></line>
       </svg>
-      <span id="exportBtnText">Export</span>
+      <span id="exportBtnText">ส่งออกรายงาน</span>
     </button>
   </div>
 
-  <!-- Export Modal -->
   <div id="exportModal" class="export-modal-overlay">
     <div class="export-modal-box">
       <button class="export-modal-close" id="closeExportModal">&times;</button>
@@ -167,21 +366,16 @@
       </div>
     </div>
   </div>
+  
+  <form id="realExportForm" method="POST" style="display: none;">
+    <input type="hidden" name="export_ids" id="export_ids">
+  </form>
+
+  <iframe name="export_iframe" style="display:none;"></iframe>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Reset functionality
-      const btnReset = document.querySelector('.btn-reset');
-      if (btnReset) {
-        btnReset.addEventListener('click', function() {
-          const filterBar = this.closest('.filter-bar');
-          filterBar.querySelectorAll('input[type="text"]').forEach(input => input.value = '');
-          filterBar.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
-          filterBar.querySelectorAll('input[type="date"]').forEach(input => input.value = '');
-        });
-      }
-
       // Export System
       const btnExportToggle = document.getElementById('btnExportToggle');
       const btnCancelExport = document.getElementById('btnCancelExport');
@@ -224,51 +418,66 @@
         });
       }
 
-      if (btnCancelExport) {
-        btnCancelExport.addEventListener('click', function() {
-          isExportMode = false;
-          exportCols.forEach(col => col.style.display = 'none');
-          this.style.display = 'none';
-          exportBtnText.textContent = 'Export';
-          btnExportToggle.style.background = 'linear-gradient(135deg, #1D6F42, #27ae60)';
-          exportIcon.style.display = 'block';
-          if (selectAll) selectAll.checked = false;
-          rowCheckboxes.forEach(cb => cb.checked = false);
+      if (btnExportToggle) {
+        btnExportToggle.addEventListener('click', function() {
+          if (!isExportMode) {
+            isExportMode = true;
+            exportCols.forEach(col => col.style.display = 'table-cell');
+            btnCancelExport.style.display = 'block';
+            exportBtnText.textContent = 'ยืนยันการส่งออก';
+            this.style.background = 'linear-gradient(135deg, #f39c12, #e67e22)';
+            exportIcon.style.display = 'none';
+          } else {
+            // ดึง Checkbox ที่ถูกติ๊กเลือก
+            const selectedCheckboxes = Array.from(rowCheckboxes).filter(cb => cb.checked);
+            
+            if (selectedCheckboxes.length === 0) {
+              alert('กรุณาเลือกเอกสารที่ต้องการส่งออกอย่างน้อย 1 รายการ!');
+              return;
+            }
+
+            // แยกค่า ID ส่งให้ PHP และแยกชื่อเอกสารไว้แสดงในหน้าต่าง
+            const selectedIds = selectedCheckboxes.map(cb => cb.value);
+            const selectedDocs = selectedCheckboxes.map(cb => cb.getAttribute('data-doc'));
+
+            // นำ ID ไปใส่ในฟอร์มซ่อนเพื่อเตรียมส่งค่า
+            document.getElementById('export_ids').value = selectedIds.join(',');
+
+            let docText = selectedDocs.join(', ');
+            if (selectedDocs.length > 2) {
+                docText = selectedDocs[0] + ', ' + selectedDocs[1] + ' และอีก ' + (selectedDocs.length - 2) + ' รายการ';
+            }
+            const exportDocList = document.getElementById('exportDocList');
+            if (exportDocList) exportDocList.textContent = docText;
+            exportModal.classList.add('show');
+          }
         });
       }
 
-      const closeExportModal = document.getElementById('closeExportModal');
-      if (closeExportModal) {
-        closeExportModal.addEventListener('click', () => exportModal.classList.remove('show'));
-      }
-      
+      // เมื่อกดปุ่ม PDF
       const exportPDFBtn = document.getElementById('exportPDFBtn');
       if (exportPDFBtn) {
         exportPDFBtn.addEventListener('click', function() {
-          alert('กำลังเตรียมไฟล์ PDF...');
+          const form = document.getElementById('realExportForm');
+          form.action = 'export_pdf.php'; 
+          form.target = '_blank'; // <--- เปลี่ยนกลับเป็น _blank เพื่อเปิดแท็บใหม่ที่มีหน้าโหลด
+          form.submit();                  
+          
           exportModal.classList.remove('show');
-          btnCancelExport.click();
+          btnCancelExport.click();        
         });
       }
 
+      // เมื่อกดปุ่ม Excel
       const exportExcelBtn = document.getElementById('exportExcelBtn');
       if (exportExcelBtn) {
         exportExcelBtn.addEventListener('click', function() {
-          alert('กำลังเตรียมไฟล์ Excel...');
+          const form = document.getElementById('realExportForm');
+          form.action = 'export_excel.php'; 
+          form.target = '_self'; // <--- เพิ่มบรรทัดนี้: ดาวน์โหลดในหน้าเดิม จะได้ไม่เด้งหน้าขาว
+          form.submit();                    
           exportModal.classList.remove('show');
-          btnCancelExport.click();
-        });
-      }
-
-      if (exportModal) {
-        exportModal.addEventListener('click', function(e) {
-          if (e.target === this) this.classList.remove('show');
-        });
-      }
-
-      if (selectAll) {
-        selectAll.addEventListener('change', function() {
-          rowCheckboxes.forEach(cb => cb.checked = this.checked);
+          btnCancelExport.click();          
         });
       }
     });
