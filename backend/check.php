@@ -1,6 +1,6 @@
 <?php
 // 1. เชื่อมต่อฐานข้อมูล
-require_once __DIR__ . '/conn/db_connect.php';
+require_once __DIR__ . '/../shared/config/db_connect.php';
 
 try {
     $pdo = getServiceCenterPDO();
@@ -54,8 +54,8 @@ try {
   <title>ตรวจเช็คและรายงาน - ระบบจัดการฟอร์มส่งเคลม</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/theme.css">
-  <link rel="stylesheet" href="css/styles-check.css">
+  <link rel="stylesheet" href="../shared/assets/css/theme.css">
+  <link rel="stylesheet" href="../shared/assets/css/styles-check.css">
   <style>
     /* ปรับแต่ง UI เพิ่มเติม */
     body { font-family: 'Kanit', sans-serif; background-color: #f8f9fa; }
@@ -147,7 +147,7 @@ try {
 </head>
 <body>
 
-  <?php include 'includes/sidebar.php'; ?>
+  <?php include __DIR__ . '/../shared/assets/includes/sidebar.php'; ?>
 
   <div class="main-content">
     <div class="container-fluid p-0">
@@ -299,7 +299,7 @@ try {
                       <span class="<?= $badgeClass ?>"><?= $statusDisplay ?></span>
                     </td>
                     <td class="text-center pe-4">
-                      <a href="verify_claim.php?id=<?= $row['id'] ?>" class="btn-verify text-decoration-none">ตรวจสอบ</a>
+                      <a href="verify.php?id=<?= $row['id'] ?>" class="btn-verify text-decoration-none">ตรวจสอบ</a>
                     </td>
                   </tr>
                   <?php endforeach; ?>

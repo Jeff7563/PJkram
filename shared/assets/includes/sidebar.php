@@ -10,9 +10,9 @@
     <img src="https://i.ibb.co/svxDp4Y7/image.png" alt="อึ้งกุ่ยเฮง Logo">
   </div>
   <div class="nav-menu">
-    <a href="claim_form.php" class="nav-btn <?= ($current_page == 'claim_form.php') ? 'active' : '';?>">ฟอร์มส่งเคลม</a>
-    <a href="history.php" class="nav-btn <?= ($current_page == 'history.php') ? 'active' : '';?>">ประวัติเคลม</a>
-    <a href="check.php" class="nav-btn <?= ($current_page == 'check.php') ? 'active' : '';?>">ตรวจเช็ค</a>
+    <a href="<?= BASE_URL_FRONTEND ?>/index.php" class="nav-btn <?= ($current_page == 'index.php') ? 'active' : '';?>">ฟอร์มส่งเคลม</a>
+    <a href="<?= BASE_URL_BACKEND ?>/history.php" class="nav-btn <?= ($current_page == 'history.php') ? 'active' : '';?>">ประวัติเคลม</a>
+    <a href="<?= BASE_URL_BACKEND ?>/check.php" class="nav-btn <?= ($current_page == 'check.php') ? 'active' : '';?>">ตรวจเช็ค</a>
   </div>
 </div>
 

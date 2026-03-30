@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/conn/db_connect.php';
+require_once __DIR__ . '/../shared/config/db_connect.php';
 
 $id = $_GET['id'] ?? null;
 if (!$id) {
@@ -47,14 +47,14 @@ try {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>แก้ไขข้อมูลเคลม - ระบบจัดการฟอร์มส่งเคลม</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="css/theme.css">
-  <link rel="stylesheet" href="css/styles-edit_claim.css">
+  <link rel="stylesheet" href="../shared/assets/css/theme.css">
+  <link rel="stylesheet" href="../shared/assets/css/styles-edit_claim.css">
 </head>
 <body>
 
   <?php 
     $current_page = 'history.php'; 
-    include 'includes/sidebar.php'; 
+    include __DIR__ . '/../shared/assets/includes/sidebar.php'; 
   ?>
 
   <div class="main-content">
@@ -74,7 +74,7 @@ try {
         </div>
       </div>
 
-      <form method="POST" action="edit_claim_handler.php" enctype="multipart/form-data">
+      <form method="POST" action="edit_handler.php" enctype="multipart/form-data">
         <input type="hidden" name="claim_id" value="<?= $claim['id'] ?>">
         <input type="hidden" name="claimDate" value="<?= $claim['claimDate'] ?>">
         <input type="hidden" name="carType" value="<?= $claim['carType'] ?>">
@@ -362,11 +362,11 @@ try {
                   <div class="gallery-item existing-item">
                     <input type="hidden" name="existing_images[]" value="<?= htmlspecialchars($imgPath) ?>">
                     
-                    <img src="<?= htmlspecialchars($imgPath) ?>" class="preview-img cursor-pointer" style="width:100%; height:120px; object-fit:cover; border-radius:8px;" title="คลิกเพื่อขยาย">
+                    <img src="../<?= htmlspecialchars($imgPath) ?>" class="preview-img cursor-pointer" style="width:100%; height:120px; object-fit:cover; border-radius:8px;" title="คลิกเพื่อขยาย">
                     <div class="img-preview-footer" style="padding:5px; text-align:center;">
                       <span class="img-preview-title" title="<?= htmlspecialchars($fileName) ?>" style="font-size:12px; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"><?= htmlspecialchars($fileName) ?></span>
                       <div class="img-preview-actions mt-1 d-flex justify-content-center gap-1">
-                        <a href="<?= htmlspecialchars($imgPath) ?>" download="<?= htmlspecialchars($fileName) ?>" class="btn btn-sm btn-success" style="font-size:12px; padding:2px 8px; text-decoration:none;" title="ดาวน์โหลดรูปภาพ">⬇️</a>
+                        <a href="../<?= htmlspecialchars($imgPath) ?>" download="<?= htmlspecialchars($fileName) ?>" class="btn btn-sm btn-success" style="font-size:12px; padding:2px 8px; text-decoration:none;" title="ดาวน์โหลดรูปภาพ">⬇️</a>
                         <button type="button" class="btn btn-sm btn-danger btn-remove-existing" style="font-size:12px; padding:2px 8px;" title="ลบรูป">❌</button>
                       </div>
                     </div>
@@ -799,7 +799,7 @@ try {
             const fd = new FormData(this);
             uploadedFiles.forEach(file => { if (file !== null) fd.append('claim_images[]', file); });
 
-            fetch('edit_claim_handler.php', { method: 'POST', body: fd })
+            fetch('edit_handler.php', { method: 'POST', body: fd })
             .then(res => res.text())
             .then(text => {
                 if (text.includes('✅')) {

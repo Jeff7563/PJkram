@@ -3,7 +3,7 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-require_once __DIR__ . '/conn/db_connect.php';
+require_once __DIR__ . '/../shared/config/db_connect.php';
 
 // เช็คว่ามีการส่งข้อมูล ID มาหรือไม่
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_POST['export_ids'])) {

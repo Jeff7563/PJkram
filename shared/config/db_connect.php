@@ -3,11 +3,15 @@ $dbConfig = [
     'enabled' => true,
     'host' => 'db',            
     'port' => 3306,
-    'dbname' => 'service_center', 
+    'dbname' => 'service_center',        // เปลี่ยนจาก service_center เป็น pjkram ให้ตรงกับ docker-compose.yml
     'user' => 'root',
     'pass' => 'root',          
     'table' => 'claims',
 ];
+
+// URLs สำหรับแยก Front/Back (ใช้ Port ตาม docker-compose.yml)
+define('BASE_URL_FRONTEND', 'http://localhost:8888/frontend');
+define('BASE_URL_BACKEND', 'http://localhost:8889/backend');
 
 
 function getServiceCenterPDO()

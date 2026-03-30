@@ -1,6 +1,6 @@
 <?php
 // 1. เชื่อมต่อฐานข้อมูล
-require_once __DIR__ . '/conn/db_connect.php';
+require_once __DIR__ . '/../shared/config/db_connect.php';
 
 try {
     $pdo = getServiceCenterPDO();
@@ -53,12 +53,12 @@ try {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ประวัติเคลม - ระบบจัดการฟอร์มส่งเคลม</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="css/theme.css">
-  <link rel="stylesheet" href="css/styles-history.css">
+  <link rel="stylesheet" href="../shared/assets/css/theme.css">
+  <link rel="stylesheet" href="../shared/assets/css/styles-history.css">
 </head>
 <body>
 
-  <?php include 'includes/sidebar.php'; ?>
+  <?php include __DIR__ . '/../shared/assets/includes/sidebar.php'; ?>
 
   <div class="main-content">
     <div class="container-fluid p-0">
@@ -134,7 +134,7 @@ try {
                   </div>
                   <div class="d-flex gap-2 align-items-center">
                     <div class="<?= $badgeClass ?>">สถานะ : <?= htmlspecialchars($statusDisplay) ?></div>
-                    <a href="edit_claim.php?id=<?= $row['id'] ?>" class="hc-btn">ดู/แก้ไข</a>
+                    <a href="edit.php?id=<?= $row['id'] ?>" class="hc-btn">ดู/แก้ไข</a>
                   </div>
                 </div>
                 

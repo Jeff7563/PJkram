@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // จัดการรูปภาพใหม่ที่ถูกอัปโหลดเพิ่มเข้ามา
     $finalImages = $_POST['existing_images'] ?? []; 
-    $uploadDir = __DIR__ . '/uploads/claims/';
+    $uploadDir = __DIR__ . '/../uploads/claims/';
     if (!is_dir($uploadDir)) { mkdir($uploadDir, 0777, true); }
 
     $vin = $_POST['vin'] ?? 'UnknownVIN';
@@ -99,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $editor = $_POST['editor'] ?? '';
     $updated_at = date('Y-m-d H:i:s'); 
 
-    require_once __DIR__ . '/conn/db_connect.php';
+    require_once __DIR__ . '/../shared/config/db_connect.php';
 
     try {
         $pdo = getServiceCenterPDO();

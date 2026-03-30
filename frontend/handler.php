@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../shared/config/db_connect.php';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 1. จัดการข้อมูลอะไหล่
     $parts = [];
@@ -17,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // 2. จัดการอัปโหลดรูปภาพ และตั้งชื่อไฟล์แบบฉลาด (Smart Naming)
-    $uploadDir = __DIR__ . '/uploads/claims/';
+    $uploadDir = __DIR__ . '/../uploads/claims/';
     if (!is_dir($uploadDir)) { mkdir($uploadDir, 0777, true); }
 
     // ดึงเลขตัวถังมาทำเป็นชื่อไฟล์ (ตัดอักขระแปลกๆ ออกป้องกันไฟล์พัง)
@@ -114,7 +116,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $status = 'Pending'; 
     $created_at = date('Y-m-d H:i:s');
 
-    require_once __DIR__ . '/conn/db_connect.php';
 
     try {
         $pdo = getServiceCenterPDO();
@@ -147,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
         
         echo '<div style="color: #06b957; font-weight: bold; padding: 10px; border-radius: 8px; background: #e8f5e9;">✅ บันทึกข้อมูลการเคลมเรียบร้อยแล้ว!</div>';
-        echo '<script>setTimeout(function(){ window.location.href = "check.php"; }, 1500);</script>';
+        echo '<script>setTimeout(function(){ window.location.href = "' . BASE_URL_BACKEND . '/check.php"; }, 1500);</script>';
     } catch (Exception $e) {
         echo '<div style="color: #dc3545; font-weight: bold; padding: 10px; border-radius: 8px; background: #fdedea;">❌ เกิดข้อผิดพลาดในฐานข้อมูล: ' . $e->getMessage() . '</div>';
     }

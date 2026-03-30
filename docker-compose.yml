@@ -1,22 +1,40 @@
 version: "3.8"
 
 services:
-  web:
-    build: .
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
     ports:
       - "8888:80"
     volumes:
       - ./:/var/www/html/
     depends_on:
       - db
+    environment:
+      - APP_ROLE=frontend
+      - PMA_HOST=db
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    ports:
+      - "8889:80"
+    volumes:
+      - ./:/var/www/html/
+    depends_on:
+      - db
+    environment:
+      - APP_ROLE=backend
 
   db:
     image: mysql:8.0
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: pjkram
-      MYSQL_USER: appuser
-      MYSQL_PASSWORD: apppass
+      MYSQL_DATABASE: service_center
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
     ports:
       - "3306:3306"
     volumes:
@@ -25,7 +43,7 @@ services:
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     ports:
-      - "8889:80"  
+      - "8080:80"  
     environment:
       PMA_HOST: db 
     depends_on:

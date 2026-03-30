@@ -2,7 +2,7 @@
 // เปิดโหมดโชว์ Error
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
-require_once __DIR__ . '/conn/db_connect.php';
+require_once __DIR__ . '/../shared/config/db_connect.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_POST['export_ids'])) {
     die("<h2 style='color:red; text-align:center; padding: 50px;'>❌ ไม่มีข้อมูลสำหรับส่งออก กรุณาปิดหน้านี้แล้วลองใหม่</h2>");

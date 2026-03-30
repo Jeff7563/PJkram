@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/claim_form_handler.php';
+require_once __DIR__ . '/handler.php';
 ?>
 <!doctype html>
 <html lang="th">
@@ -8,9 +8,9 @@ require_once __DIR__ . '/claim_form_handler.php';
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>ฟอร์มส่งเคลม</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-dxz0OFf2LjA5efXKwBlenuMxS9IIrLs+1E1iY1p6RhJHciAPxsBHo/djC6AmlL0I" crossorigin="anonymous">
-  <link rel="stylesheet" href="css/theme.css">
-  <link rel="stylesheet" href="css/styles.css"> 
-  <link rel="stylesheet" href="css/styles-claim_form.css"> 
+  <link rel="stylesheet" href="../shared/assets/css/theme.css">
+  <link rel="stylesheet" href="../shared/assets/css/styles.css"> 
+  <link rel="stylesheet" href="../shared/assets/css/styles-claim_form.css"> 
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
     :root{--orange:#e65100;--orange-600:#ff7a1a;--black:#121212;--muted:#6b6b6b;--bg:#f7f8fb;--surface:#ffffff;--soft-shadow:rgba(16,24,40,0.06);--icon-card-grad:linear-gradient(135deg,#ff7a1a,#ff8a3d)}
@@ -373,7 +373,7 @@ require_once __DIR__ . '/claim_form_handler.php';
   </style>
 </head>
 <body>
-  <?php include 'includes/sidebar.php'; ?>
+  <?php include __DIR__ . '/../shared/assets/includes/sidebar.php'; ?>
   <div class="main-content">
   <main class="container">
     <?php if (!empty($message)): ?>
@@ -398,7 +398,7 @@ require_once __DIR__ . '/claim_form_handler.php';
       <symbol id="icon-close" viewBox="0 0 24 24"><path d="M18.3 5.7L12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3 10.6 10.6 16.9 4.3z"/></symbol>
     </svg>
 
-    <form id="claimForm" class="card p-4" method="post" action="claim_form_handler.php" enctype="multipart/form-data" novalidate>
+    <form id="claimForm" class="card p-4" method="post" action="handler.php" enctype="multipart/form-data" novalidate>
       <div class="container-fluid">
         <div class="tab-content" id="claimFormTabContent">
           <div class="tab-pane fade show active" id="tab-basic" role="tabpanel" aria-labelledby="tab-basic-tab">

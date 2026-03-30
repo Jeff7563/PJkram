@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // อัปเดตเวลาเพื่อให้รู้ว่ามีการอัปเดตสถานะล่าสุดเมื่อไหร่
     $updated_at = date('Y-m-d H:i:s'); 
 
-    require_once __DIR__ . '/conn/db_connect.php';
+    require_once __DIR__ . '/../shared/config/db_connect.php';
 
     try {
         $pdo = getServiceCenterPDO();
