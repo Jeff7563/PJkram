@@ -12,7 +12,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'name' => $_POST['parts_name'][$i],
                     'qty' => $_POST['parts_qty'][$i] ?? 1,
                     'price' => $_POST['parts_price'][$i] ?? '',
-                    'note' => $_POST['parts_note'][$i] ?? ''
+                    'note' => $_POST['parts_note'][$i] ?? '',
+                    'type' => $_POST['parts_type'][$i] ?? 'main'
                 ];
             }
         }
@@ -36,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             for ($i = 0; $i < count($fileData['name']); $i++) {
                 if ($fileData['error'][$i] === UPLOAD_ERR_OK && !empty($fileData['name'][$i])) {
                     $ext = pathinfo($fileData['name'][$i], PATHINFO_EXTENSION);
-                    $newFileName = $prefix . '_' . $safeVin . '_' . date('His') . '_' . rand(1000,9999) . '.' . $ext;
+                    $newFileName = $prefix . '_' . $safeVin . '.' . $ext;
                     if (move_uploaded_file($fileData['tmp_name'][$i], $uploadDir . $newFileName)) {
                         $finalImages[] = 'uploads/claims/' . $newFileName; 
                     }
@@ -45,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             if ($fileData['error'] === UPLOAD_ERR_OK && !empty($fileData['name'])) {
                 $ext = pathinfo($fileData['name'], PATHINFO_EXTENSION);
-                $newFileName = $prefix . '_' . $safeVin . '_' . date('His') . '_' . rand(1000,9999) . '.' . $ext;
+                $newFileName = $prefix . '_' . $safeVin . '.' . $ext;
                 if (move_uploaded_file($fileData['tmp_name'], $uploadDir . $newFileName)) {
                     $finalImages[] = 'uploads/claims/' . $newFileName; 
                 }

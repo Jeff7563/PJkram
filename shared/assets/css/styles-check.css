@@ -7,16 +7,19 @@
       box-shadow: 0 6px 20px rgba(0,0,0,0.03);
       overflow-x: auto;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
       min-width: 800px;
     }
+    
     th, td {
       padding: 15px;
       text-align: left;
       border-bottom: 1px solid #eee;
     }
+    
     th {
       background-color: #f2f2f2;
       font-weight: 600;
@@ -195,5 +198,93 @@
     .status-reject  { background-color: #ff2a2a; } /* สีแดง */
     .status-return  { background-color: #ffc107; } /* สีเหลือง */
     .status-pending { background-color: #a3a3a3; } /* สีเทา */
+
+    body { font-family: 'Kanit', sans-serif; }
+    
+    .page-header { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid #eee; }
+    
+    /* Filter Bar */
+    .filter-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        margin-bottom: 25px;
+    }
+    .filter-card .form-control, .filter-card .form-select {
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        padding: 10px 15px;
+        font-size: 0.95rem;
+    }
+    .filter-card .form-control:focus, .filter-card .form-select:focus {
+        border-color: var(--primary-orange);
+        box-shadow: 0 0 0 0.2rem rgba(242, 114, 43, 0.25);
+    }
+    .btn-search {
+        background: var(--primary-orange);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 25px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+    .btn-search:hover { background: #d96220; color: white; transform: translateY(-2px); }
+    
+    .btn-reset {
+        background: #f60303;
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 25px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+    .btn-reset:hover { background: #eae2e2; color: #212529; }
+
+    /* Table Styles */
+    .table-container {
+        background: #fff;
+        border-radius: 12px;
+        padding: 0;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        overflow: hidden; /* ให้ขอบมนมีผลกับตารางด้านใน */
+    }
+    .table { margin-bottom: 0; }
+    .table thead th {
+        background-color: #f8f9fa;
+        color: #495057;
+        font-weight: 600;
+        border-bottom: 2px solid #dee2e6;
+        padding: 15px;
+        white-space: nowrap;
+    }
+    .table tbody td {
+        padding: 15px;
+        vertical-align: middle;
+        color: #333;
+        border-bottom: 1px solid #f1f3f5;
+    }
+    .table tbody tr:hover { background-color: #fcfcfc; }
+    
+    .doc-id-text { color: var(--primary-orange); font-weight: 600; }
+    .car-info-text { font-size: 0.9rem; color: #6c757d; }
+    
+    /* Action Buttons */
+    .btn-verify {
+        background-color: transparent;
+        color: var(--primary-orange);
+        border: 1px solid var(--primary-orange);
+        border-radius: 6px;
+        padding: 6px 15px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    .btn-verify:hover {
+        background-color: var(--primary-orange);
+        color: white;
+    }
 
  

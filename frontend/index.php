@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/handler.php';
+require_once __DIR__ . '/../backend/index_handler.php';
 ?>
 <!doctype html>
 <html lang="th">
@@ -398,7 +398,7 @@ require_once __DIR__ . '/handler.php';
       <symbol id="icon-close" viewBox="0 0 24 24"><path d="M18.3 5.7L12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3 10.6 10.6 16.9 4.3z"/></symbol>
     </svg>
 
-    <form id="claimForm" class="card p-4" method="post" action="handler.php" enctype="multipart/form-data" novalidate>
+    <form id="claimForm" class="card p-4" method="post" action="../backend/index_handler.php" enctype="multipart/form-data" novalidate>
       <div class="container-fluid">
         <div class="tab-content" id="claimFormTabContent">
           <div class="tab-pane fade show active" id="tab-basic" role="tabpanel" aria-labelledby="tab-basic-tab">
@@ -448,7 +448,7 @@ require_once __DIR__ . '/handler.php';
                 </div>
               </div>
 
-              <div class="col-12 col-md-6 grade-field d-none" id="gradeLabel">
+              <div class="col-12 col-md-6" id="gradeLabel">
                 <div class="form-row-item">
                   <label for="usedGrade" class="form-label">เกรด</label>
                   <select id="usedGrade" name="usedGrade" class="form-select">
@@ -929,7 +929,8 @@ require_once __DIR__ . '/handler.php';
         const inCode = document.createElement('input'); inCode.type='text'; inCode.name='parts_code[]'; inCode.value = data && data.code ? data.code : ''; inCode.placeholder='รหัสอะไหล่';
         const wrapCode = document.createElement('div'); wrapCode.className = 'field';
         const lblCode = document.createElement('span'); lblCode.className = 'label-text'; lblCode.textContent = 'รหัสอะไหล่';
-        wrapCode.appendChild(lblCode); wrapCode.appendChild(inCode); tdCode.appendChild(wrapCode); tr.appendChild(tdCode);
+        const inType = document.createElement('input'); inType.type = 'hidden'; inType.name = 'parts_type[]'; inType.value = data && data.type ? data.type : 'main';
+        wrapCode.appendChild(lblCode); wrapCode.appendChild(inCode); wrapCode.appendChild(inType); tdCode.appendChild(wrapCode); tr.appendChild(tdCode);
 
         // name
         const tdName = document.createElement('td');
@@ -1172,14 +1173,17 @@ require_once __DIR__ . '/handler.php';
       lb.querySelector('.nav.prev').addEventListener('click', e=>{ e.stopPropagation(); lbPrev(); });
       document.addEventListener('keydown', e=>{ if(!lb.classList.contains('open')) return; if(e.key==='Escape') closeLightbox(); if(e.key==='ArrowRight') lbNext(); if(e.key==='ArrowLeft') lbPrev(); });
 
-      // ==============================================
-      // ดักการกด Submit แบบสมบูรณ์ (ดูดข้อมูลทุกช่อง 100%)
-      // ==============================================
+      // ดักการกด Submit 
       form.addEventListener('submit', function(e){
         e.preventDefault();
         
         resultBox.style.display = 'block';
         resultBox.innerHTML = '<div style="padding: 10px; background: #fff3cd; color: #856404; border-radius: 8px; font-weight: bold; margin-bottom: 10px;">⏳ กำลังบันทึกข้อมูลเคลม... กรุณารอสักครู่</div>';
+
+        if (!this.checkValidity()) {
+          this.reportValidity();
+          return;
+        }
         
         // ใช้ FormData กวาดข้อมูลจากหน้าเว็บ "ทุกช่อง" โดยอัตโนมัติ
         const fd = new FormData(this);
@@ -1204,7 +1208,7 @@ require_once __DIR__ . '/handler.php';
             });
         }
 
-        // ยิงข้อมูลไปที่ claim_form_handler.php
+        // ยิงข้อมูลไปที่ index_handler.php
         fetch(form.action, {
           method: 'POST', 
           body: fd

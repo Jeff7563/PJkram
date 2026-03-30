@@ -74,7 +74,7 @@ try {
         </div>
       </div>
 
-      <form method="POST" action="edit_handler.php" enctype="multipart/form-data">
+      <form method="POST" action="../backend/edit_handler.php" enctype="multipart/form-data">
         <input type="hidden" name="claim_id" value="<?= $claim['id'] ?>">
         <input type="hidden" name="claimDate" value="<?= $claim['claimDate'] ?>">
         <input type="hidden" name="carType" value="<?= $claim['carType'] ?>">
@@ -92,9 +92,6 @@ try {
                     <div class="col-sm-8">
                       <select name="branch" class="form-select border-2" required>
                         <option value="สาขา สกลนคร" <?= $claim['branch'] == 'สาขา สกลนคร' ? 'selected' : '' ?>>สาขา สกลนคร</option>
-                        <option value="เชียงใหม่" <?= $claim['branch'] == 'เชียงใหม่' ? 'selected' : '' ?>>เชียงใหม่</option>
-                        <option value="ภูเก็ต" <?= $claim['branch'] == 'ภูเก็ต' ? 'selected' : '' ?>>ภูเก็ต</option>
-                        <option value="โคราช" <?= $claim['branch'] == 'โคราช' ? 'selected' : '' ?>>โคราช</option>
                       </select>
                     </div>
                   </div>
@@ -102,8 +99,11 @@ try {
                   <label class="col-sm-4 col-form-label fw-600">ประเภทการเคลม</label>
                   <div class="col-sm-8">
                     <div class="row g-2">
-                       <div class="col-6"><input type="text" class="form-control bg-light border-0" value="<?= $claimCategoryDisplay ?>" readonly></div>
-                       <div class="col-6"><input type="text" class="form-control bg-light border-0" value="<?= $carTypeDisplay ?>" readonly></div>
+                      <select id="claimCategory" name="claimCategory" class="col-6 form-select" required>
+                        <option value="เคลมรถก่อนขาย" <?= $claim['claimCategory'] == 'เคลมรถก่อนขาย' ? 'selected' : '' ?>>เคลมรถก่อนขาย</option>
+                        <option value="เคลมปัญหาทางเทคนิค" <?= $claim['claimCategory'] == 'เคลมปัญหาทางเทคนิค' ? 'selected' : '' ?>>เคลมปัญหาทางเทคนิค</option>
+                        <option value="เคลมรถลูกค้า" <?= $claim['claimCategory'] == 'เคลมรถลูกค้า' ? 'selected' : '' ?>>เคลมรถลูกค้า</option>
+                      </select>
                     </div>
                   </div>
                 </div>
@@ -380,27 +380,32 @@ try {
           
           <div class="edit-card p-0 overflow-hidden mb-4 border-0 shadow-sm rounded-4">
               <div class="p-4">
-                <div class="section-title mb-3 pb-2 border-bottom fw-bold fs-5">รายการอะไหล่</div>
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                  <div class="section-title fw-bold fs-5 mb-0">รายการอะไหล่</div>
+                    <div class="parts-actions">
+                      <button type="button" id="btnUploadParts" class="btn-action btn-green ...">อัปโหลดรูปภาพ</button>
+                      <input type="file" id="imgPartsUpload" name="imgParts[]" accept="image/*" multiple class="d-none">
+                    </div>
+                </div>
                 <div class="table-responsive">
                   <table class="edit-table table table-hover align-middle mb-0">
                     <thead class="table-light">
                       <tr>
-                        <th width="40">#</th>
+                        <th>#</th>
                         <th>รหัสสินค้า</th>
                         <th>ชื่อสินค้า</th>
-                        <th width="100">Lot No.</th>
-                        <th width="120" class="text-center">ราคา/หน่วย</th>
-                        <th width="90" class="text-center">จำนวน</th>
-                        <th width="120" class="text-center">เป็นเงิน</th>
-                        <th width="70" class="text-center">ส่งDCS</th>
-                        <th width="70" class="text-center">พิเศษ</th>
-                        <th width="50" class="text-center">ลบ</th>
+                        <th>Lot No.</th>
+                        <th>ราคา/หน่วย</th>
+                        <th>จำนวน</th>
+                        <th>เป็นเงิน</th>
+                        <th>ส่งDCS</th>
+                        <th>พิเศษ</th>
+                        <th>ลบ</th>
                       </tr>
                     </thead>
-                    <tbody id="parts-tbody">
+                    <tbody id="parts-main-tbody">
                       <tr class="group-header bg-light">
-                        <td colspan="7" class="text-danger fw-bold py-3 ps-3">อะไหล่หลัก</td>
-                        <td colspan="3" class="text-end pe-3"></td>
+                        <td colspan="10" class="text-danger fw-bold py-3 ps-3">อะไหล่หลัก</td>
                       </tr>
                       
                       <tr id="add-main-row">
@@ -408,22 +413,29 @@ try {
                           <button type="button" class="btn btn-outline-orange btn-sm text-primary-orange w-100 py-3 border-dashed" id="btn-add-main" style="border-style: dashed !important; border-width: 2px;">+ เพิ่มอะไหล่หลัก</button>
                         </td>
                       </tr>
+                    </tbody>
 
+                    <tbody id="parts-assoc-tbody">
                       <tr class="group-header bg-light">
                         <td colspan="10" class="text-danger fw-bold">อะไหล่ที่เคลมร่วมกัน</td>
                       </tr>
                       
                       <tr id="add-assoc-row">
                         <td colspan="10" class="p-3 text-center">
-                          <button type="button" class="btn btn-outline-orange btn-sm text-primary-orange w-100 py-3 border-dashed" id="btn-add-assoc" style="border-style: dashed !important; border-width: 2px;">+ เพิ่มอะไหล่เคลมร่วม</button>
+                          <button type="button" class="btn btn-btn-outline-orange btn-sm text-primary-orange w-100 py-3 border-dashed" id="btn-add-assoc" style="border-style: dashed !important; border-width: 2px;">+ เพิ่มอะไหล่เคลมร่วม</button>
                         </td>
                       </tr>
+                    </tbody>
 
+                    <tbody id="parts-summary-tbody">
                       <tr class="summary-row fw-bold bg-light">
                         <td colspan="5" class="py-3 ps-4">ยอดรวม</td>
                         <td class="text-center text-primary-orange fw-bold" id="sum-qty">0</td>
                         <td class="text-center text-primary-orange fw-bold" id="sum-money">0.00</td>
-                        <td colspan="3"></td>
+                      </tr>
+                      <tr>
+                          <div id="partsImgPreview" class="d-flex flex-wrap gap-3 mt-3"></div>
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -632,12 +644,62 @@ try {
               updateImgCountBadge();
           }
       });
+
+      function updateImgCountBadge() {
+          const badge = document.getElementById('img-count-badge');
+          if (!badge) return;
+          const count = document.querySelectorAll('#gallery-grid .gallery-item').length;
+          badge.textContent = count + ' รูป';
+          badge.style.display = count > 0 ? 'inline-block' : 'none';
+      }
+
+      function createImageItem(src, title, fileIndex) {
+          const galleryGrid = document.getElementById('gallery-grid');
+          if (!galleryGrid) return;
+
+          const div = document.createElement('div');
+          div.className = 'gallery-item';
+          div.dataset.fileIndex = fileIndex;
+          div.innerHTML = `
+            <img src="${src}" class="preview-img cursor-pointer" style="width:100%; height:120px; object-fit:cover; border-radius:8px;" title="${title}">
+            <div class="img-preview-footer" style="padding:5px; text-align:center;">
+              <span class="img-preview-title" title="${title}" style="font-size:12px; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${title}</span>
+              <div class="img-preview-actions mt-1 d-flex justify-content-center gap-1">
+                <button type="button" class="btn btn-sm btn-danger btn-remove-new" style="font-size:12px; padding:2px 8px;">❌</button>
+              </div>
+            </div>
+          `;
+
+          const imgEl = div.querySelector('.preview-img');
+          const removeBtn = div.querySelector('.btn-remove-new');
+
+          if (removeBtn) {
+              removeBtn.addEventListener('click', function(e) {
+                  e.stopPropagation();
+                  uploadedFiles[fileIndex] = null;
+                  div.remove();
+                  updateImgCountBadge();
+              });
+          }
+
+          if (imgEl) {
+              imgEl.addEventListener('click', function() {
+                  if (modalImg && imageModal) {
+                      modalImg.src = src;
+                      imageModal.style.display = 'flex';
+                  }
+              });
+          }
+
+          galleryGrid.appendChild(div);
+          updateImgCountBadge();
+      }
+
       updateImgCountBadge();
 
-      // ==========================================
       // ตารางคำนวณอะไหล่และเงิน
-      // ==========================================
-      const partsTbody = document.getElementById('parts-tbody');
+      const mainPartsTbody = document.getElementById('parts-main-tbody');
+      const assocPartsTbody = document.getElementById('parts-assoc-tbody');
       
       function calculateParts() {
         let sumQty = 0; let sumTotal = 0;
@@ -692,39 +754,157 @@ try {
       function createNewPartRow(data = {}) {
         const tr = document.createElement('tr');
         tr.className = 'part-row';
-        tr.innerHTML = `
-           <td></td>
-           <td><input type="text" name="parts_code[]" class="form-control form-control-sm" value="${data.code || ''}"></td>
-           <td><input type="text" name="parts_name[]" class="form-control form-control-sm" value="${data.name || ''}"></td>
-           <td><input type="text" name="parts_note[]" class="form-control form-control-sm" value="${data.note || ''}"></td>
-           <td class="text-center"><input type="number" name="parts_price[]" step="0.01" class="form-control form-control-sm text-center part-price" value="${data.price || '0.00'}"></td>
-           <td class="text-center"><input type="number" name="parts_qty[]" class="form-control form-control-sm text-center part-qty" value="${data.qty || '1'}"></td>
-           <td class="text-center"><input type="text" class="form-control form-control-sm text-center bg-light part-total" value="0.00" readonly></td>
-           <td class="text-center"><input type="checkbox" class="form-check-input"></td>
-           <td class="text-center"><input type="checkbox" class="form-check-input"></td>
-           <td class="text-center"><button type="button" class="btn btn-link text-danger btn-remove-part p-0">❌</button></td>
-        `;
+
+        const tdIdx = document.createElement('td');
+        tdIdx.className = 'idx';
+        tdIdx.style.textAlign = 'center';
+        tr.appendChild(tdIdx);
+
+        const tdCode = document.createElement('td');
+        const inCode = document.createElement('input');
+        inCode.type = 'text';
+        inCode.name = 'parts_code[]';
+        inCode.className = 'form-control form-control-sm';
+        inCode.value = data.code || '';
+        const wrapCode = document.createElement('div');
+        wrapCode.className = 'field';
+        const lblCode = document.createElement('span');
+        lblCode.className = 'label-text';
+        wrapCode.appendChild(lblCode);
+        wrapCode.appendChild(inCode);
+        tdCode.appendChild(wrapCode);
+        tr.appendChild(tdCode);
+
+        const tdName = document.createElement('td');
+        const inName = document.createElement('input');
+        inName.type = 'text';
+        inName.name = 'parts_name[]';
+        inName.className = 'form-control form-control-sm';
+        inName.value = data.name || '';
+        const wrapName = document.createElement('div');
+        wrapName.className = 'field';
+        const lblName = document.createElement('span');
+        lblName.className = 'label-text';
+        wrapName.appendChild(lblName);
+        wrapName.appendChild(inName);
+        tdName.appendChild(wrapName);
+        tr.appendChild(tdName);
+
+        const tdNote = document.createElement('td');
+        const inNote = document.createElement('input');
+        inNote.type = 'text';
+        inNote.name = 'parts_note[]';
+        inNote.className = 'form-control form-control-sm';
+        inNote.value = data.note || '';
+        const wrapNote = document.createElement('div');
+        wrapNote.className = 'field';
+        const lblNote = document.createElement('span');
+        lblNote.className = 'label-text';
+        wrapNote.appendChild(lblNote);
+        wrapNote.appendChild(inNote);
+
+        const inType = document.createElement('input');
+        inType.type = 'hidden';
+        inType.name = 'parts_type[]';
+        inType.value = data.type ? data.type : 'main';
+        wrapNote.appendChild(inType);
+        tdNote.appendChild(wrapNote);
+        tr.appendChild(tdNote);
+
+        const tdPrice = document.createElement('td');
+        tdPrice.className = 'text-center';
+        const inPrice = document.createElement('input');
+        inPrice.type = 'number';
+        inPrice.name = 'parts_price[]';
+        inPrice.step = '0.01';
+        inPrice.min = '0';
+        inPrice.className = 'form-control form-control-sm text-center part-price';
+        inPrice.value = data.price || '0.00';
+        tdPrice.appendChild(inPrice);
+        tr.appendChild(tdPrice);
+
+        const tdQty = document.createElement('td');
+        tdQty.className = 'text-center';
+        const inQty = document.createElement('input');
+        inQty.type = 'number';
+        inQty.name = 'parts_qty[]';
+        inQty.min = '0';
+        inQty.className = 'form-control form-control-sm text-center part-qty';
+        inQty.value = data.qty || '1';
+        tdQty.appendChild(inQty);
+        tr.appendChild(tdQty);
+
+        const tdTotal = document.createElement('td');
+        tdTotal.className = 'text-center';
+        const inTotal = document.createElement('input');
+        inTotal.type = 'text';
+        inTotal.className = 'form-control form-control-sm text-center bg-light part-total';
+        inTotal.value = '0.00';
+        inTotal.readOnly = true;
+        tdTotal.appendChild(inTotal);
+        tr.appendChild(tdTotal);
+
+        const tdSendDcs = document.createElement('td');
+        tdSendDcs.className = 'text-center';
+        const inSendDcs = document.createElement('input');
+        inSendDcs.type = 'checkbox';
+        inSendDcs.className = 'form-check-input';
+        tdSendDcs.appendChild(inSendDcs);
+        tr.appendChild(tdSendDcs);
+
+        const tdSpecial = document.createElement('td');
+        tdSpecial.className = 'text-center';
+        const inSpecial = document.createElement('input');
+        inSpecial.type = 'checkbox';
+        inSpecial.className = 'form-check-input';
+        tdSpecial.appendChild(inSpecial);
+        tr.appendChild(tdSpecial);
+
+        const tdAct = document.createElement('td');
+        tdAct.style.textAlign = 'center';
+        const del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'btn btn-link text-danger btn-remove-part p-0';
+        del.innerHTML = '❌';
+        del.addEventListener('click', () => { tr.remove(); calculateParts(); });
+        tdAct.appendChild(del);
+        tr.appendChild(tdAct);
+
         attachRowEvents(tr);
         return tr;
       }
 
+      function movePartRowByType(row, type) {
+        if (type === 'assoc' && assocPartsTbody && addAssocRow) {
+          assocPartsTbody.insertBefore(row, addAssocRow);
+        } else if (mainPartsTbody && addMainRow) {
+          mainPartsTbody.insertBefore(row, addMainRow);
+        }
+        calculateParts();
+      }
+
       const existingParts = <?= !empty($partsArray) ? json_encode($partsArray) : '[]' ?>;
       const addMainRow = document.getElementById('add-main-row');
-      if (existingParts && existingParts.length > 0 && partsTbody && addMainRow) {
-          existingParts.forEach(part => partsTbody.insertBefore(createNewPartRow(part), addMainRow));
-      }
-      document.getElementById('btn-add-main')?.addEventListener('click', () => { partsTbody.insertBefore(createNewPartRow(), addMainRow); calculateParts(); });
       const addAssocRow = document.getElementById('add-assoc-row');
-      document.getElementById('btn-add-assoc')?.addEventListener('click', () => { partsTbody.insertBefore(createNewPartRow(), addAssocRow); calculateParts(); });
+      if (existingParts && existingParts.length > 0) {
+          existingParts.forEach(part => {
+              const partData = Object.assign({ type: part.type || 'main' }, part);
+              if (partData.type === 'assoc' && assocPartsTbody && addAssocRow) {
+                  assocPartsTbody.insertBefore(createNewPartRow(partData), addAssocRow);
+              } else if (mainPartsTbody && addMainRow) {
+                  mainPartsTbody.insertBefore(createNewPartRow(partData), addMainRow);
+              }
+          });
+      }
+      document.getElementById('btn-add-main')?.addEventListener('click', () => { if (mainPartsTbody && addMainRow) { mainPartsTbody.insertBefore(createNewPartRow({ type: 'main' }), addMainRow); calculateParts(); }});
+      document.getElementById('btn-add-assoc')?.addEventListener('click', () => { if (assocPartsTbody && addAssocRow) { assocPartsTbody.insertBefore(createNewPartRow({ type: 'assoc' }), addAssocRow); calculateParts(); }});
       
       ['labor-frt', 'labor-rate', 'manage-pct', 'other-fee'].forEach(id => {
           document.getElementById(id)?.addEventListener('input', calculateLaborAndGrandTotal);
       });
       calculateParts();
 
-      // ==========================================
       // ระบบจัดการรูปภาพใหม่
-      // ==========================================
       const imageUpload = document.getElementById('image-upload');
       const galleryGrid = document.getElementById('gallery-grid');
       const imageModal = document.getElementById('image-modal');
@@ -751,43 +931,120 @@ try {
             this.value = ''; 
           });
       }
-      
-      function createImageItem(src, title, fileIndex) {
-        const div = document.createElement('div');
-        div.className = 'gallery-item';
-        div.setAttribute('data-file-index', fileIndex); 
-        div.innerHTML = `
-          <img src="${src}" class="preview-img cursor-pointer" style="width:100%; height:120px; object-fit:cover; border-radius:8px;" title="คลิกเพื่อขยาย">
-          <div class="img-preview-footer" style="padding:5px; text-align:center;">
-            <span class="img-preview-title" title="${title}" style="font-size:12px; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${title}</span>
-            <div class="img-preview-actions mt-1 d-flex justify-content-center gap-1">
-              <a href="${src}" download="${title}" class="btn btn-sm btn-success" style="font-size:12px; padding:2px 8px; text-decoration:none;">⬇️</a>
-              <button type="button" class="btn btn-sm btn-danger btn-remove-img" style="font-size:12px; padding:2px 8px;">❌</button>
-            </div>
-          </div>
-        `;
-        div.querySelector('.btn-remove-img').addEventListener('click', () => { uploadedFiles[div.getAttribute('data-file-index')] = null; div.remove(); updateImgCountBadge(); });
-        div.querySelector('.preview-img').addEventListener('click', () => { if(modalImg && imageModal) { modalImg.src = src; imageModal.style.display = 'flex'; } });
-        galleryGrid.appendChild(div);
-        updateImgCountBadge();
+
+      if (galleryGrid && imageModal && modalImg) {
+          galleryGrid.addEventListener('click', function(e) {
+              const target = e.target;
+              if (target && target.classList.contains('preview-img')) {
+                  modalImg.src = target.src;
+                  imageModal.style.display = 'flex';
+              }
+          });
       }
 
-      function updateImgCountBadge() {
-        const badge = document.getElementById('img-count-badge');
-        if (!badge) return;
-        const count = document.querySelectorAll('#gallery-grid .gallery-item').length;
-        badge.textContent = count + ' รูป';
-        badge.style.display = count > 0 ? 'inline-block' : 'none';
-      }
-      
-      if(modalClose && imageModal) {
-          modalClose.addEventListener('click', () => imageModal.style.display = 'none');
-          imageModal.addEventListener('click', (e) => { if(e.target === imageModal) imageModal.style.display = 'none'; });
+      if (modalClose && imageModal) {
+          modalClose.addEventListener('click', function() {
+              imageModal.style.display = 'none';
+          });
       }
 
-      // ==========================================
+      if (imageModal) {
+          imageModal.addEventListener('click', function(e) {
+              if (e.target === this) {
+                  imageModal.style.display = 'none';
+              }
+          });
+      }
+      
+      const filesMap = {};
+
+
+      // ระบบอัปโหลดรูปภาพอะไหล่
+      const btnUploadParts = document.getElementById('btnUploadParts');
+      const imgPartsUpload = document.getElementById('imgPartsUpload');
+      const partsPreview = document.getElementById('partsImgPreview');
+      const partsFieldId = 'imgParts[]';
+      filesMap[partsFieldId] = [];
+
+      if (btnUploadParts && imgPartsUpload) {
+        btnUploadParts.addEventListener('click', () => imgPartsUpload.click());
+        imgPartsUpload.addEventListener('change', function() {
+          const chosenFiles = Array.from(this.files || []);
+          if (chosenFiles.length > 0) {
+            filesMap[partsFieldId] = filesMap[partsFieldId].concat(chosenFiles);
+            renderPartsPreview();
+          }
+          this.value = ''; 
+        });
+      }
+
+      function renderPartsPreview() {
+        partsPreview.innerHTML = '';
+        const list = filesMap[partsFieldId];
+        const uploadSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`;
+        
+        if (list.length === 0) {
+          btnUploadParts.innerHTML = uploadSvg + ' อัปโหลดรูปภาพ';
+        } else {
+          btnUploadParts.innerHTML = uploadSvg + ` อัปโหลดแล้ว ${list.length} รูป`;
+        }
+
+        list.forEach((file, idx) => {
+          const wrap = document.createElement('div');
+          wrap.style.cssText = 'position: relative; width: 120px; height: 120px; border-radius: 8px; overflow: hidden; border: 1px solid #e0e0e0; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.05);';
+          
+          const img = document.createElement('img');
+          img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; display: block; cursor: pointer;';
+          const reader = new FileReader();
+          reader.onload = e => { img.src = e.target.result; };
+          reader.readAsDataURL(file);
+          
+          const del = document.createElement('button');
+          del.type = 'button';
+          del.innerHTML = '×';
+          del.style.cssText = 'position: absolute; top: 6px; right: 6px; background: rgba(255, 30, 30, 0.85); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; padding: 0;';
+          del.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            filesMap[partsFieldId].splice(idx, 1);
+            renderPartsPreview();
+          });
+
+          img.addEventListener('click', (ev) => { ev.stopPropagation(); openLightbox(partsFieldId, idx); });
+
+          wrap.appendChild(img);
+          wrap.appendChild(del);
+          partsPreview.appendChild(wrap);
+        });
+      }
+
+      // ระบบ Lightbox
+      document.body.insertAdjacentHTML('beforeend', '\n        <div id="lightbox" class="lightbox" aria-hidden="true">\n          <div class="imgwrap">\n            <button class="close" aria-label="ปิด">✕</button>\n            <button class="nav prev" aria-label="ก่อนหน้า">‹</button>\n            <div class="imgframe"><img src="" alt="preview"><div class="counter" aria-hidden="true"></div></div>\n            <button class="nav next" aria-label="ถัดไป">›</button>\n          </div>\n        </div>\n      ');
+      const lb = document.getElementById('lightbox');
+      let lbState = { fieldId: null, index: 0 };
+      
+      function openLightbox(fieldId, index){
+        const list = filesMap[fieldId] || [];
+        if(!list || !list.length) return;
+        lbState.fieldId = fieldId; lbState.index = index || 0;
+        const file = list[lbState.index];
+        const img = lb.querySelector('.imgframe img');
+        const counter = lb.querySelector('.counter');
+        const reader = new FileReader();
+        reader.onload = e => { img.src = e.target.result; counter.textContent = (lbState.index+1) + ' / ' + list.length; };
+        reader.readAsDataURL(file);
+        lb.classList.add('open'); lb.setAttribute('aria-hidden','false');
+      }
+      
+      function closeLightbox(){ lb.classList.remove('open'); lb.setAttribute('aria-hidden','true'); lbState = { fieldId:null, index:0 }; }
+      function lbNext(){ if(!lbState.fieldId) return; const list = filesMap[lbState.fieldId]||[]; lbState.index = (lbState.index+1)%list.length; openLightbox(lbState.fieldId, lbState.index); }
+      function lbPrev(){ if(!lbState.fieldId) return; const list = filesMap[lbState.fieldId]||[]; lbState.index = (lbState.index-1+list.length)%list.length; openLightbox(lbState.fieldId, lbState.index); }
+      
+      lb.addEventListener('click', e=>{ if(e.target.id==='lightbox' || e.target.classList.contains('close')) closeLightbox(); });
+      lb.querySelector('.nav.next').addEventListener('click', e=>{ e.stopPropagation(); lbNext(); });
+      lb.querySelector('.nav.prev').addEventListener('click', e=>{ e.stopPropagation(); lbPrev(); });
+      document.addEventListener('keydown', e=>{ if(!lb.classList.contains('open')) return; if(e.key==='Escape') closeLightbox(); if(e.key==='ArrowRight') lbNext(); if(e.key==='ArrowLeft') lbPrev(); });
+
       // ส่งข้อมูลเข้าเซิร์ฟเวอร์
-      // ==========================================
       const editForm = document.querySelector('form');
       if(editForm) {
           editForm.addEventListener('submit', function(e) {
@@ -796,10 +1053,19 @@ try {
             const originalText = submitBtn ? submitBtn.innerHTML : 'บันทึกข้อมูล';
             if(submitBtn) { submitBtn.innerHTML = '⏳ กำลังบันทึกข้อมูล...'; submitBtn.disabled = true; }
 
+            if (!this.checkValidity()) {
+              this.reportValidity();
+              return;
+            }
+
             const fd = new FormData(this);
             uploadedFiles.forEach(file => { if (file !== null) fd.append('claim_images[]', file); });
+            const partsFieldId = 'imgParts[]';
+            if (filesMap[partsFieldId]) {
+                filesMap[partsFieldId].forEach(file => { if (file !== null) fd.append(partsFieldId, file); });
+            }
 
-            fetch('edit_handler.php', { method: 'POST', body: fd })
+            fetch('../backend/edit_handler.php', { method: 'POST', body: fd })
             .then(res => res.text())
             .then(text => {
                 if (text.includes('✅')) {

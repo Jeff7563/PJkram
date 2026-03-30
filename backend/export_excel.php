@@ -47,7 +47,11 @@ try {
         'ยี่ห้อรถ (เกรด)', 
         'หมายเลขตัวถัง', 
         'ปัญหาที่ลูกค้าแจ้ง',
+        'ยอดรวมอะไหล่หลัก (บาท)',
+        'ยอดรวมอะไหล่ที่เคลมร่วมกัน (บาท)',
         'ยอดรวมค่าอะไหล่ (บาท)',
+        'รายการอะไหล่หลัก',
+        'รายการอะไหล่ที่เคลมร่วมกัน',
         'สถานะการพิจารณา',
         'หมายเหตุ (ผู้ตรวจสอบ)',
         'ผู้ตรวจสอบ', 
@@ -83,10 +87,22 @@ try {
         // คำนวณยอดรวมอะไหล่เฉพาะเคสนั้นๆ
         $partsArray = json_decode($row['parts'], true) ?: [];
         $sumMoney = 0;
+        $mainSum = 0;
+        $assocSum = 0;
+        $mainPartsDesc = [];
+        $assocPartsDesc = [];
         foreach($partsArray as $part) {
             $qty = floatval($part['qty'] ?? 0);
             $price = floatval($part['price'] ?? 0);
-            $sumMoney += ($qty * $price);
+            $total = $qty * $price;
+            $sumMoney += $total;
+            if (isset($part['type']) && $part['type'] === 'assoc') {
+                $assocSum += $total;
+                $assocPartsDesc[] = trim(($part['code'] ?? '-') . ' : ' . ($part['name'] ?? '-') . ' x' . $qty);
+            } else {
+                $mainSum += $total;
+                $mainPartsDesc[] = trim(($part['code'] ?? '-') . ' : ' . ($part['name'] ?? '-') . ' x' . $qty);
+            }
         }
 
         // จัดการลบการขึ้นบรรทัดใหม่ในช่องปัญหา (ป้องกัน Excel แถวพัง)
@@ -105,7 +121,11 @@ try {
             $brandText,
             $row['vin'],
             $cleanProblemDesc,
+            number_format($mainSum, 2, '.', ''),
+            number_format($assocSum, 2, '.', ''),
             number_format($sumMoney, 2, '.', ''), // ใส่ยอดรวมอะไหล่
+            $mainPartsDesc ? implode(' | ', $mainPartsDesc) : '-',
+            $assocPartsDesc ? implode(' | ', $assocPartsDesc) : '-',
             $statusText,
             $cleanRemarks,
             $row['verifier'] ?? '-',

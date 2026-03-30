@@ -60,6 +60,12 @@ try {
         .parts-table th { background-color: #e6e6e6; text-align: center; font-weight: bold; }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
+        #pdf-content { width: 210mm; }
+        .claim-page { padding: 15mm 20mm; }
+        .html2pdf__page-break { display: block; page-break-after: always; page-break-before: always; }
+        .parts-table { page-break-inside: auto; }
+        .parts-table tr { page-break-inside: avoid; }
+        .section-title, .problem-box { page-break-inside: avoid; }
     </style>
 </head>
 <body>
@@ -149,6 +155,18 @@ try {
                 </table>
 
                 <div class="section-title">4. รายการอะไหล่ที่เคลม</div>
+                <?php
+                    $mainParts = array_values(array_filter($partsArray, function($part) {
+                        return !isset($part['type']) || $part['type'] !== 'assoc';
+                    }));
+                    $assocParts = array_values(array_filter($partsArray, function($part) {
+                        return isset($part['type']) && $part['type'] === 'assoc';
+                    }));
+                    $sumQty = 0;
+                    $sumMoney = 0;
+                    $mainTotal = 0;
+                    $assocTotal = 0;
+                ?>
                 <table class="parts-table">
                     <thead>
                         <tr>
@@ -161,27 +179,56 @@ try {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php 
-                        $sumQty = 0; $sumMoney = 0;
-                        if (count($partsArray) > 0): 
-                            foreach($partsArray as $idx => $part):
+                        <tr>
+                            <td colspan="6" class="text-center" style="font-weight:bold; background:#eee;">อะไหล่หลัก</td>
+                        </tr>
+                        <?php if (count($mainParts) > 0): ?>
+                            <?php foreach ($mainParts as $idx => $part):
                                 $qty = floatval($part['qty'] ?? 0);
                                 $price = floatval($part['price'] ?? 0);
                                 $total = $qty * $price;
                                 $sumQty += $qty;
                                 $sumMoney += $total;
-                        ?>
-                        <tr>
-                            <td class="text-center"><?= $idx + 1 ?></td>
-                            <td><?= htmlspecialchars($part['code'] ?? '') ?></td>
-                            <td><?= htmlspecialchars($part['name'] ?? '') ?></td>
-                            <td class="text-right"><?= number_format($price, 2) ?></td>
-                            <td class="text-center"><?= $qty ?></td>
-                            <td class="text-right" style="font-weight: bold;"><?= number_format($total, 2) ?></td>
-                        </tr>
-                        <?php endforeach; else: ?>
-                        <tr><td colspan="6" class="text-center text-muted">ไม่มีการระบุอะไหล่</td></tr>
+                                $mainTotal += $total;
+                            ?>
+                            <tr>
+                                <td class="text-center"><?= $idx + 1 ?></td>
+                                <td><?= htmlspecialchars($part['code'] ?? '') ?></td>
+                                <td><?= htmlspecialchars($part['name'] ?? '') ?></td>
+                                <td class="text-right"><?= number_format($price, 2) ?></td>
+                                <td class="text-center"><?= $qty ?></td>
+                                <td class="text-right" style="font-weight: bold;"><?= number_format($total, 2) ?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr><td colspan="6" class="text-center text-muted">ไม่มีอะไหล่หลัก</td></tr>
                         <?php endif; ?>
+
+                        <tr>
+                            <td colspan="6" class="text-center" style="font-weight:bold; background:#eee;">อะไหล่ที่เคลมร่วมกัน</td>
+                        </tr>
+                        <?php if (count($assocParts) > 0): ?>
+                            <?php foreach ($assocParts as $idx => $part):
+                                $qty = floatval($part['qty'] ?? 0);
+                                $price = floatval($part['price'] ?? 0);
+                                $total = $qty * $price;
+                                $sumQty += $qty;
+                                $sumMoney += $total;
+                                $assocTotal += $total;
+                            ?>
+                            <tr>
+                                <td class="text-center"><?= count($mainParts) + $idx + 1 ?></td>
+                                <td><?= htmlspecialchars($part['code'] ?? '') ?></td>
+                                <td><?= htmlspecialchars($part['name'] ?? '') ?></td>
+                                <td class="text-right"><?= number_format($price, 2) ?></td>
+                                <td class="text-center"><?= $qty ?></td>
+                                <td class="text-right" style="font-weight: bold;"><?= number_format($total, 2) ?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr><td colspan="6" class="text-center text-muted">ไม่มีอะไหล่ที่เคลมร่วมกัน</td></tr>
+                        <?php endif; ?>
+
                         <tr>
                             <td colspan="4" class="text-right" style="font-weight: bold; padding-right: 15px;">รวมยอดอะไหล่สุทธิ</td>
                             <td class="text-center" style="font-weight: bold;"><?= $sumQty ?></td>
@@ -189,6 +236,10 @@ try {
                         </tr>
                     </tbody>
                 </table>
+                <div style="margin-top: 10px; font-size: 14px;">
+                    <div><strong>ยอดรวมอะไหล่หลัก:</strong> <?= number_format($mainTotal, 2) ?> บาท</div>
+                    <div><strong>ยอดรวมอะไหล่ที่เคลมร่วมกัน:</strong> <?= number_format($assocTotal, 2) ?> บาท</div>
+                </div>
 
                 <div class="section-title">5. สรุปผลการพิจารณาอนุมัติ</div>
                 <div class="problem-box" style="background-color: #f9f9f9; padding: 15px;">
@@ -218,11 +269,12 @@ try {
             setTimeout(function() {
                 var element = document.getElementById('pdf-content');
                 var opt = {
-                    margin:       [0, 0, 0, 0],
+                    margin:       [10, 10, 10, 10],
                     filename:     'Export_Claims_<?= date("Ymd_His") ?>.pdf',
                     image:        { type: 'jpeg', quality: 0.98 },
                     html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
-                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                    pagebreak:    { mode: ['css', 'legacy'] }
                 };
                 
                 // สั่งโหลด PDF เมื่อโหลดเสร็จแล้ว สั่งปิดแท็บนี้ทันที!

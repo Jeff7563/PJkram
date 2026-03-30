@@ -53,97 +53,8 @@ try {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ตรวจเช็คและรายงาน - ระบบจัดการฟอร์มส่งเคลม</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../shared/assets/css/theme.css">
   <link rel="stylesheet" href="../shared/assets/css/styles-check.css">
-  <style>
-    /* ปรับแต่ง UI เพิ่มเติม */
-    body { font-family: 'Kanit', sans-serif; background-color: #f8f9fa; }
-    .page-header { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid #eee; }
-    
-    /* Filter Bar */
-    .filter-card {
-        background: #fff;
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-        margin-bottom: 25px;
-    }
-    .filter-card .form-control, .filter-card .form-select {
-        border-radius: 8px;
-        border: 1px solid #e0e0e0;
-        padding: 10px 15px;
-        font-size: 0.95rem;
-    }
-    .filter-card .form-control:focus, .filter-card .form-select:focus {
-        border-color: var(--primary-orange);
-        box-shadow: 0 0 0 0.2rem rgba(242, 114, 43, 0.25);
-    }
-    .btn-search {
-        background: var(--primary-orange);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 10px 25px;
-        font-weight: 600;
-        transition: all 0.2s;
-    }
-    .btn-search:hover { background: #d96220; color: white; transform: translateY(-2px); }
-    .btn-reset {
-        background: #f1f3f5;
-        color: #495057;
-        border: none;
-        border-radius: 8px;
-        padding: 10px 25px;
-        font-weight: 600;
-        transition: all 0.2s;
-    }
-    .btn-reset:hover { background: #e2e6ea; color: #212529; }
-
-    /* Table Styles */
-    .table-container {
-        background: #fff;
-        border-radius: 12px;
-        padding: 0;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-        overflow: hidden; /* ให้ขอบมนมีผลกับตารางด้านใน */
-    }
-    .table { margin-bottom: 0; }
-    .table thead th {
-        background-color: #f8f9fa;
-        color: #495057;
-        font-weight: 600;
-        border-bottom: 2px solid #dee2e6;
-        padding: 15px;
-        white-space: nowrap;
-    }
-    .table tbody td {
-        padding: 15px;
-        vertical-align: middle;
-        color: #333;
-        border-bottom: 1px solid #f1f3f5;
-    }
-    .table tbody tr:hover { background-color: #fcfcfc; }
-    
-    .doc-id-text { color: var(--primary-orange); font-weight: 600; }
-    .car-info-text { font-size: 0.9rem; color: #6c757d; }
-    
-    /* Action Buttons */
-    .btn-verify {
-        background-color: transparent;
-        color: var(--primary-orange);
-        border: 1px solid var(--primary-orange);
-        border-radius: 6px;
-        padding: 6px 15px;
-        font-size: 0.9rem;
-        font-weight: 500;
-        transition: all 0.2s;
-    }
-    .btn-verify:hover {
-        background-color: var(--primary-orange);
-        color: white;
-    }
-  </style>
 </head>
 <body>
 
@@ -162,9 +73,6 @@ try {
                 <select name="branch" class="form-select" style="width: auto; min-width: 140px;">
                     <option value="">ทุกสาขา</option>
                     <option value="สาขา สกลนคร" <?= $branch == 'สาขา สกลนคร' ? 'selected' : '' ?>>สกลนคร</option>
-                    <option value="เชียงใหม่" <?= $branch == 'เชียงใหม่' ? 'selected' : '' ?>>เชียงใหม่</option>
-                    <option value="ภูเก็ต" <?= $branch == 'ภูเก็ต' ? 'selected' : '' ?>>ภูเก็ต</option>
-                    <option value="โคราช" <?= $branch == 'โคราช' ? 'selected' : '' ?>>โคราช</option>
                 </select>
                 
                 <select name="status" class="form-select" style="width: auto; min-width: 140px;">
@@ -459,7 +367,7 @@ try {
       if (exportPDFBtn) {
         exportPDFBtn.addEventListener('click', function() {
           const form = document.getElementById('realExportForm');
-          form.action = 'export_pdf.php'; 
+          form.action = '/../backend/export_pdf.php'; 
           form.target = '_blank'; // <--- เปลี่ยนกลับเป็น _blank เพื่อเปิดแท็บใหม่ที่มีหน้าโหลด
           form.submit();                  
           
@@ -473,7 +381,7 @@ try {
       if (exportExcelBtn) {
         exportExcelBtn.addEventListener('click', function() {
           const form = document.getElementById('realExportForm');
-          form.action = 'export_excel.php'; 
+          form.action = '/../backend/export_excel.php'; 
           form.target = '_self'; // <--- เพิ่มบรรทัดนี้: ดาวน์โหลดในหน้าเดิม จะได้ไม่เด้งหน้าขาว
           form.submit();                    
           exportModal.classList.remove('show');

@@ -63,32 +63,34 @@ try {
   <div class="main-content">
     <div class="container-fluid p-0">
       
-      <form method="GET" action="history.php" class="filter-bar mb-4">
-        <div class="row w-100 g-3 align-items-center">
-          <div class="col-12 col-lg-auto flex-grow-1">
-            <div class="d-flex flex-wrap gap-2">
-              <input type="text" name="search" placeholder="ค้นหาชื่อ, ทะเบียน, ปัญหา..." class="form-control" style="width: 250px;" value="<?= htmlspecialchars($search) ?>">
-              <select name="branch" class="form-select" style="width: auto; min-width: 140px;">
-                <option value="">ทุกสาขา</option>
-                <option value="สาขา สกลนคร" <?= $branch == 'สาขา สกลนคร' ? 'selected' : '' ?>>สกลนคร</option>
-              </select>
-              <select name="status" class="form-select" style="width: auto; min-width: 140px;">
-                <option value="">ทุกสถานะ</option>
-                <option value="Pending" <?= $status == 'Pending' ? 'selected' : '' ?>>รอดำเนินการ</option>
-                <option value="Approved" <?= $status == 'Approved' ? 'selected' : '' ?>>อนุมัติ</option>
-                <option value="Rejected" <?= $status == 'Rejected' ? 'selected' : '' ?>>ปฏิเสธ</option>
-              </select>
-              <input type="date" name="date" class="form-control" style="width: auto;" value="<?= htmlspecialchars($date) ?>">
+      <div class="filter-card">
+        <form method="GET" action="history.php">
+            <div class="row w-100 g-3 align-items-center">
+            <div class="col-12 col-lg-auto flex-grow-1">
+                <div class="d-flex flex-wrap gap-2">
+                <input type="text" name="search" placeholder="ค้นหาชื่อ, ทะเบียน, เลขเอกสาร..." class="form-control" style="width: 250px;" value="<?= htmlspecialchars($search) ?>">
+                <select name="branch" class="form-select" style="width: auto; min-width: 140px;">
+                  <option value="">ทุกสาขา</option>
+                  <option value="สาขา สกลนคร" <?= $branch == 'สาขา สกลนคร' ? 'selected' : '' ?>>สกลนคร</option>
+                </select>
+                <select name="status" class="form-select" style="width: auto; min-width: 140px;">
+                  <option value="">ทุกสถานะ</option>
+                  <option value="Pending" <?= $status == 'Pending' ? 'selected' : '' ?>>รอดำเนินการ</option>
+                  <option value="Approved" <?= $status == 'Approved' ? 'selected' : '' ?>>อนุมัติ</option>
+                  <option value="Rejected" <?= $status == 'Rejected' ? 'selected' : '' ?>>ปฏิเสธ</option>
+                </select>
+                <input type="date" name="date" class="form-control" style="width: auto;" value="<?= htmlspecialchars($date) ?>">
+                </div>
             </div>
-          </div>
-          <div class="col-12 col-lg-auto">
-            <div class="d-flex gap-2 justify-content-lg-end">
-              <button type="submit" class="btn-search px-4">ค้นหา</button>
-              <a href="history.php" class="btn-reset px-4 text-decoration-none text-center">รีเซ็ต</a>
+            <div class="col-12 col-lg-auto">
+                <div class="d-flex gap-2 justify-content-lg-end">
+                <button type="submit" class="btn-search">ค้นหา</button>
+                <a href="history.php" class="btn-reset text-decoration-none text-center">รีเซ็ต</a>
+                </div>
             </div>
-          </div>
-        </div>
-      </form>
+            </div>
+        </form>
+      </div>
 
       <div class="row row-cols-1 row-cols-lg-2 g-4">
         
@@ -128,7 +130,7 @@ try {
             <div class="col">
               <div class="history-card">
                 <div class="hc-header d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-                  <div class="d-flex gap-3 align-items-center">
+                  <div class="col d-flex flex-column">
                     <div class="hc-date"><?= $claimDateFormatted ?></div>
                     <div class="hc-doc fw-bold">เลขที่เอกสาร : <?= $docId ?></div>
                   </div>
@@ -150,7 +152,7 @@ try {
                       <div class="hc-label">ประเภทการเคลม :</div>
                       <?php 
                         $cat = !empty($row['claimCategory']) ? $row['claimCategory'] : '- ไม่ระบุ -';
-                      $catTH = ($cat == 'pre-sale') ? 'เคลมรถก่อนขาย' : (($cat == 'technical') ? 'เคลมปัญหาทางเทคนิค' : (($cat == 'customer-sale' || $cat == 'customer') ? 'เคลมรถลูกค้า' : $cat));
+                        $catTH = ($cat == 'pre-sale') ? 'เคลมรถก่อนขาย' : (($cat == 'technical') ? 'เคลมปัญหาทางเทคนิค' : (($cat == 'customer-sale' || $cat == 'customer') ? 'เคลมรถลูกค้า' : $cat));
                       ?>
                       <input type="text" class="hc-input form-control" value="<?= htmlspecialchars($catTH) ?>" readonly>
                     </div>
@@ -207,7 +209,7 @@ try {
             </div>
             <?php endforeach; ?>
         <?php else: ?>
-            <div class="col-12 text-center py-5">
+            <div class="col-6 offset-3 text-center py-5">
                 <h5 class="text-muted">ไม่มีข้อมูลการส่งเคลมในระบบ</h5>
             </div>
         <?php endif; ?>
