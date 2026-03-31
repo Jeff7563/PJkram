@@ -334,7 +334,7 @@ try {
                                 <div class="row align-items-center mb-3">
                                     <label class="col-sm-4 col-form-label fw-600 req">ชื่อ-นามสกุล</label>
                                     <div class="col-sm-8">
-                                        <input type="text" name="ownerName" class="form-control border-2" value="<?= htmlspecialchars($claim['owner_name']) ?>" required>
+                                        <input type="text" name="ownerName" class="form-control border-2" value="<?= htmlspecialchars($claim['owner_name'] ?? '') ?>" required>
                                     </div>
                                 </div>
                                 <div class="row align-items-center mb-3">
@@ -355,7 +355,7 @@ try {
                                 <div class="row align-items-center mb-3">
                                     <label class="col-sm-4 col-form-label fw-600 req">เลขตัวถัง (VIN)</label>
                                     <div class="col-sm-8">
-                                        <input type="text" name="vin" id="vin_number" class="form-control border-2" value="<?= htmlspecialchars($claim['vin']) ?>" required>
+                                        <input type="text" name="vin" id="vin_number" class="form-control border-2" value="<?= htmlspecialchars($claim['vin'] ?? '') ?>" required>
                                     </div>
                                 </div>
                                 <div class="row align-items-center mb-3">
@@ -370,7 +370,7 @@ try {
                                 <div class="row align-items-center mb-3">
                                     <label class="col-sm-4 col-form-label fw-600">วันที่ขาย</label>
                                     <div class="col-sm-8">
-                                        <input type="date" name="sale_date" id="sale_date" class="form-control border-2" value="<?= $claim['sale_date'] ?>">
+                                        <input type="date" name="sale_date" id="sale_date" class="form-control border-2" value="<?= htmlspecialchars($claim['sale_date'] ?? '') ?>">
                                     </div>
                                 </div>
                                 <div class="row align-items-center">
@@ -389,15 +389,15 @@ try {
                         <div class="row g-4">
                             <div class="col-12">
                                 <label class="form-label fw-600">อาการปัญหาที่ลูกค้าแจ้ง</label>
-                                <textarea name="problemDesc" class="form-control border-2" rows="3" required><?= htmlspecialchars($claim['problem_desc']) ?></textarea>
+                                <textarea name="problemDesc" class="form-control border-2" rows="3" required><?= htmlspecialchars($claim['problem_desc'] ?? '') ?></textarea>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-600">วิธีการตรวจเช็ค</label>
-                                <textarea name="inspectMethod" class="form-control border-2" rows="3"><?= htmlspecialchars($claim['inspect_method']) ?></textarea>
+                                <textarea name="inspectMethod" class="form-control border-2" rows="3"><?= htmlspecialchars($claim['inspect_method'] ?? '') ?></textarea>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-600">สาเหตุของปัญหา</label>
-                                <textarea name="inspectCause" class="form-control border-2" rows="3"><?= htmlspecialchars($claim['inspect_cause']) ?></textarea>
+                                <textarea name="inspectCause" class="form-control border-2" rows="3"><?= htmlspecialchars($claim['inspect_cause'] ?? '') ?></textarea>
                             </div>
                         </div>
 
@@ -462,9 +462,9 @@ try {
                                     ?>
                                         <tr class="part-row">
                                             <td class="idx text-center"><?= $index + 1 ?></td>
-                                            <td><input type="text" name="parts_code[]" class="form-control form-control-sm" value="<?= htmlspecialchars($item['part_code']) ?>"></td>
-                                            <td><input type="text" name="parts_name[]" class="form-control form-control-sm" value="<?= htmlspecialchars($item['part_name']) ?>" required></td>
-                                            <td><input type="text" name="parts_note[]" class="form-control form-control-sm" value="<?= htmlspecialchars($item['note']) ?>"></td>
+                                            <td><input type="text" name="parts_code[]" class="form-control form-control-sm" value="<?= htmlspecialchars($item['part_code'] ?? '') ?>"></td>
+                                            <td><input type="text" name="parts_name[]" class="form-control form-control-sm" value="<?= htmlspecialchars($item['part_name'] ?? '') ?>" required></td>
+                                            <td><input type="text" name="parts_note[]" class="form-control form-control-sm" value="<?= htmlspecialchars($item['note'] ?? '') ?>"></td>
                                             <td><input type="number" step="0.01" name="parts_price[]" class="form-control form-control-sm part-price text-end" value="<?= $item['unit_price'] ?>"></td>
                                             <td><input type="number" step="0.1" name="parts_qty[]" class="form-control form-control-sm part-qty text-center" value="<?= $item['quantity'] ?>"></td>
                                             <td><input type="text" class="form-control form-control-sm part-total text-end bg-light" value="<?= number_format($item['quantity'] * $item['unit_price'], 2) ?>" readonly></td>
