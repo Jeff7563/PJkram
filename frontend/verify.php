@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../backend/auth.php';
+requireLogin();
 require_once __DIR__ . '/../shared/config/db_connect.php';
 
 $id = $_GET['id'] ?? null;
@@ -10,7 +12,15 @@ try {
     $pdo = getServiceCenterPDO();
     $table = getServiceCenterTable();
     
-    $stmt = $pdo->prepare("SELECT * FROM `$table` WHERE id = ?");
+    $stmt = $pdo->prepare("
+        SELECT c.*, 
+               rd.parts_delivery, rd.approver_id as repair_app_id, rd.approver_name as repair_app_name, rd.approver_signature as repair_app_sig,
+               rp.old_down_balance, rp.new_down_balance, rp.replace_vin, rp.replace_brand as rp_brand, rp.replace_model as rp_model, rp.replace_color as rp_color, rp.replace_type as rp_type, rp.replace_used_grade as rp_used_grade, rp.replace_receive_date as rp_receive_date, rp.replace_reason as rp_reason, rp.approver_id as rp_app_id, rp.approver_name as rp_app_name, rp.approver_signature as rp_app_sig, rp.approve_date as rp_app_date
+        FROM claims c
+        LEFT JOIN claim_repair_details rd ON c.id = rd.claim_id
+        LEFT JOIN claim_replacement_details rp ON c.id = rp.claim_id
+        WHERE c.id = ?
+    ");
     $stmt->execute([$id]);
     $claim = $stmt->fetch();
 
@@ -18,26 +28,46 @@ try {
         die("<div style='padding:20px; color:red; text-align:center;'>❌ ไม่พบข้อมูลการเคลมเลขที่ $id ในระบบ</div>");
     }
 
+    // ดึงรายการอะไหล่จากตารางแยก
+    $stmtItems = $pdo->prepare("SELECT * FROM claim_items WHERE claim_id = ?");
+    $stmtItems->execute([$id]);
+    $items = $stmtItems->fetchAll();
+
     // จัดรูปแบบเลขเอกสาร (C001-280369)
     $idPart = "C" . str_pad($claim['id'], 3, '0', STR_PAD_LEFT);
     $datePart = "000000";
-    if (!empty($claim['claimDate']) && $claim['claimDate'] !== '0000-00-00') {
-        $timestamp = strtotime($claim['claimDate']);
+    if (!empty($claim['claim_date']) && $claim['claim_date'] !== '0000-00-00') {
+        $timestamp = strtotime($claim['claim_date']);
         if ($timestamp !== false) {
             $buddhistYearShort = substr((date('Y', $timestamp) + 543), -2);
             $datePart = date('dm', $timestamp) . $buddhistYearShort;
         }
     }
     $doc_id = $idPart . "-" . $datePart;
-    $claimDateFormatted = $claim['claimDate'] ? date('d/m/Y', strtotime($claim['claimDate'])) : '-';
+    $claimDateFormatted = $claim['claim_date'] ? date('d/m/Y', strtotime($claim['claim_date'])) : '-';
     $updatedAtFormatted = !empty($claim['updated_at']) ? date('d/m/Y H:i', strtotime($claim['updated_at'])) : '-';
 
-    // แปลงข้อมูล Parts เป็น Array
-    $partsArray = json_decode($claim['parts'], true) ?: [];
+    // คำนวณอายุรถ
+    $carAgeDisplay = '-';
+    if (!empty($claim['sale_date'])) {
+        $saleDate = new DateTime($claim['sale_date']);
+        $now = new DateTime();
+        $interval = $saleDate->diff($now);
+        
+        $parts = [];
+        if ($interval->y > 0) $parts[] = $interval->y . " ปี";
+        if ($interval->m > 0) $parts[] = $interval->m . " เดือน";
+        if ($interval->d > 0) $parts[] = $interval->d . " วัน";
+        $parts[] = $interval->h . " ชั่วโมง";
+        
+        $carAgeDisplay = implode(" ", $parts);
+    }
     
     // แปลงประเภทรถ และการดำเนินการ
-    $carTypeDisplay = $claim['carType'] === 'new' ? 'รถใหม่' : ($claim['carType'] === 'used' ? 'รถมือสอง' : $claim['carType']);
-    $claimCategoryDisplay = $claim['claimCategory'] === 'pre-sale' ? 'เคลมรถก่อนขาย' : ($claim['claimCategory'] === 'technical' ? 'เคลมปัญหาทางเทคนิค' : 'เคลมรถลูกค้า');
+    $carTypeDisplay = $claim['car_type'] === 'new' ? 'รถใหม่' : ($claim['car_type'] === 'used' ? 'รถมือสอง' : $claim['car_type']);
+    $claimCategoryDisplay = $claim['claim_category'] === 'pre-sale' ? 'เคลมรถก่อนขาย' : ($claim['claim_category'] === 'technical' ? 'เคลมปัญหาทางเทคนิค' : 'เคลมรถลูกค้า');
+    
+    $cType = $claim['claim_type'] ?? '';
 
 } catch (Exception $e) {
     die("เกิดข้อผิดพลาด: " . $e->getMessage());
@@ -110,13 +140,13 @@ try {
             
             <div class="col-12 col-lg-6">
               <div class="d-flex flex-column gap-3">
-                <div class="row align-items-center">
+                <div class="row align-items-center mb-3">
                   <label class="col-sm-4 col-form-label fw-600 color-555">ผู้บันทึกส่งเคลม</label>
-                  <div class="col-sm-8"><input type="text" class="form-control bg-light border-0" value="<?= htmlspecialchars($claim['recorder']) ?>" readonly></div>
+                  <div class="col-sm-8"><input type="text" class="form-control bg-light border-0" value="<?= htmlspecialchars($claim['recorder_id']) ?>" readonly></div>
                 </div>
-                <div class="row align-items-center">
+                <div class="row align-items-center mb-3">
                   <label class="col-sm-4 col-form-label fw-600 color-555">ผู้แก้ไขครั้งล่าสุด</label>
-                  <div class="col-sm-8"><input type="text" class="form-control bg-light border-0" value="<?= htmlspecialchars($claim['editor'] ?? 'ยังไม่มีการแก้ไข') ?>" readonly></div>
+                  <div class="col-sm-8"><input type="text" class="form-control bg-light border-0" value="<?= htmlspecialchars($claim['editor_id'] ?? 'ยังไม่มีการแก้ไข') ?>" readonly></div>
                 </div>
                 <div class="row align-items-center">
                   <label class="col-sm-4 col-form-label fw-600 color-555">วันที่แก้ไข</label>
@@ -131,15 +161,15 @@ try {
                         <label class="form-label fw-bold color-primary-orange" >การดำเนินการ</label>
                         <div class="d-flex flex-wrap gap-3 mt-1">
                             <div class="form-check">
-                                <input class="form-check-input act-radio" type="radio" name="claimAction" value="repairBranch" id="act1" <?= ($claim['repairBranch'] ?? 0) == 1 ? 'checked' : '' ?> disabled>
+                                <input class="form-check-input act-radio" type="radio" name="claimAction" value="RepairBranch" id="act1" <?= $cType === 'RepairBranch' ? 'checked' : '' ?> disabled>
                                 <label class="form-check-label" for="act1">ซ่อมที่สาขา</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input act-radio" type="radio" name="claimAction" value="sendHQ" id="act2" <?= ($claim['sendHQ'] ?? 0) == 1 ? 'checked' : '' ?> disabled>
+                                <input class="form-check-input act-radio" type="radio" name="claimAction" value="SendHQ" id="act2" <?= $cType === 'SendHQ' ? 'checked' : '' ?> disabled>
                                 <label class="form-check-label" for="act2">ส่งซ่อมที่สนญ.</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input act-radio" type="radio" name="claimAction" value="replaceVehicle" id="act3" <?= ($claim['otherAction'] ?? 0) == 1 || !empty($claim['replaceType']) ? 'checked' : '' ?> disabled>
+                                <input class="form-check-input act-radio" type="radio" name="claimAction" value="ReplaceVehicle" id="act3" <?= $cType === 'ReplaceVehicle' ? 'checked' : '' ?> disabled>
                                 <label class="form-check-label" for="act3">เปลี่ยนคัน/อื่นๆ</label>
                             </div>
                         </div>
@@ -148,7 +178,7 @@ try {
                         <label class="form-label fw-bold color-primary-orange">ประเภทการส่งอะไหล่</label>
                         <div class="d-flex flex-wrap gap-3 mt-1" >
                             <?php 
-                                $pd = $claim['partsDelivery'] ?? '';
+                                $pd = $claim['parts_delivery'] ?? '';
                                 $isOtherPD = !in_array($pd, ['', 'in_stock', 'wait_hq', 'buy_outside']);
                             ?>
                             <div class="form-check">
@@ -169,10 +199,21 @@ try {
                             </div>
                         </div>
                         <input type="text" id="partsDeliveryOtherTextEdit" name="partsDeliveryOtherText" class="form-control mt-2 <?= ($isOtherPD && $pd != '') ? '' : 'd-none' ?>" value="<?= $isOtherPD ? htmlspecialchars($pd) : '' ?>" placeholder="ระบุการส่งอะไหล่แบบอื่นๆ" readonly>
+                        
+                        <?php if(!empty($claim['repair_app_name'])): ?>
+                        <div class="mt-3 p-2 rounded" style="background:#fffcf0; border: 1px solid #ffeeba;">
+                             <small class="fw-bold text-muted d-block mb-1">ผู้อนุมัติจากฟอร์มหลัก:</small>
+                             <div class="d-flex gap-3">
+                                 <code class="text-dark"><?= htmlspecialchars($claim['repair_app_id']) ?></code>
+                                 <span class="fw-bold"><?= htmlspecialchars($claim['repair_app_name']) ?></span>
+                                 <span class="text-muted fs-xs">Sig: <?= htmlspecialchars($claim['repair_app_sig']) ?></span>
+                             </div>
+                        </div>
+                        <?php endif; ?>
                     </div>
                   </div>
 
-                  <div class="replace-block mt-4 p-4 bg-white rounded-3 border shadow-sm <?= (!empty($claim['replaceType']) || ($claim['otherAction'] ?? 0) == 1) ? 'd-block' : 'd-none' ?>" id="replaceBlock">
+                  <div class="replace-block mt-4 p-4 bg-white rounded-3 border shadow-sm <?= ($cType === 'ReplaceVehicle') ? 'd-block' : 'd-none' ?>" id="replaceBlock">
                       <div class="fw-bold mb-3 fs-5" style="color: #dc3545;">รายละเอียดการเปลี่ยนคันใหม่ :</div>
                       
                       <div class="row g-3 mb-3">
@@ -198,33 +239,33 @@ try {
                               <label class="form-label fw-600">ประเภทรถ</label>
                               <div class="d-flex gap-3 mt-2">
                                   <div class="form-check">
-                                      <input class="form-check-input rep-car-type" type="radio" name="replaceType" id="repNew" value="new" <?= ($claim['replaceType'] ?? '') == 'new' ? 'checked' : '' ?> disabled>
+                                      <input class="form-check-input rep-car-type" type="radio" name="replaceType" id="repNew" value="new" <?= ($claim['rp_type'] ?? '') == 'new' ? 'checked' : '' ?> disabled>
                                       <label class="form-check-label" for="repNew">รถใหม่</label>
                                   </div>
                                   <div class="form-check">
-                                      <input class="form-check-input rep-car-type" type="radio" name="replaceType" id="repUsed" value="used" <?= ($claim['replaceType'] ?? '') == 'used' ? 'checked' : '' ?> disabled>
+                                      <input class="form-check-input rep-car-type" type="radio" name="replaceType" id="repUsed" value="used" <?= ($claim['rp_type'] ?? '') == 'used' ? 'checked' : '' ?> disabled>
                                       <label class="form-check-label" for="repUsed">รถมือสอง</label>
                                   </div>
                               </div>
                           </div>
-                          <div class="col-md-4 rep-grade-field <?= ($claim['replaceType'] ?? '') == 'used' ? '' : 'd-none' ?>" id="repGradeField">
+                          <div class="col-md-4 rep-grade-field <?= ($claim['rp_type'] ?? '') == 'used' ? '' : 'd-none' ?>" id="repGradeField">
                               <label class="form-label fw-600">เกรด</label>
                               <select name="replaceUsedGrade" class="form-select border-2" disabled>
                                   <option value="">-- เลือกเกรด --</option>
-                                  <option value="A_premium" <?= ($claim['replaceUsedGrade'] ?? '') == 'A_premium' ? 'selected' : '' ?>>A พรีเมี่ยม</option>
-                                  <option value="A_w6" <?= ($claim['replaceUsedGrade'] ?? '') == 'A_w6' ? 'selected' : '' ?>>A (ประกัน 6 ด.)</option>
-                                  <option value="C_w1" <?= ($claim['replaceUsedGrade'] ?? '') == 'C_w1' ? 'selected' : '' ?>>C (ประกัน 1 ด.)</option>
-                                  <option value="C_as_is" <?= ($claim['replaceUsedGrade'] ?? '') == 'C_as_is' ? 'selected' : '' ?>>C (ตามสภาพ)</option>
+                                  <option value="A_premium" <?= ($claim['rp_used_grade'] ?? '') == 'A_premium' ? 'selected' : '' ?>>A พรีเมี่ยม</option>
+                                  <option value="A_w6" <?= ($claim['rp_used_grade'] ?? '') == 'A_w6' ? 'selected' : '' ?>>A (ประกัน 6 ด.)</option>
+                                  <option value="C_w1" <?= ($claim['rp_used_grade'] ?? '') == 'C_w1' ? 'selected' : '' ?>>C (ประกัน 1 ด.)</option>
+                                  <option value="C_as_is" <?= ($claim['rp_used_grade'] ?? '') == 'C_as_is' ? 'selected' : '' ?>>C (ตามสภาพ)</option>
                               </select>
                           </div>
                           
                           <div class="col-md-4">
                               <label class="form-label fw-600">รุ่น</label>
-                              <input type="text" name="replace_model" class="form-control border-2" placeholder="รุ่น" value="<?= htmlspecialchars($claim['replace_model'] ?? '') ?>" readonly>
+                              <input type="text" name="replace_model" class="form-control border-2" placeholder="รุ่น" value="<?= htmlspecialchars($claim['rp_model'] ?? '') ?>" readonly>
                           </div>
                           <div class="col-md-4">
                               <label class="form-label fw-600">สี</label>
-                              <input type="text" name="replace_color" class="form-control border-2" placeholder="สี" value="<?= htmlspecialchars($claim['replace_color'] ?? '') ?>" readonly>
+                              <input type="text" name="replace_color" class="form-control border-2" placeholder="สี" value="<?= htmlspecialchars($claim['rp_color'] ?? '') ?>" readonly>
                           </div>
 
                           <div class="col-md-4">
@@ -233,23 +274,23 @@ try {
                           </div>
                           <div class="col-md-6">
                               <label class="form-label fw-600">วันที่รับรถ</label>
-                              <input type="date" name="replace_receive_date" class="form-control border-2" value="<?= !empty($claim['replace_receive_date']) ? date('Y-m-d', strtotime($claim['replace_receive_date'])) : '' ?>" readonly>
+                              <input type="date" name="replace_receive_date" class="form-control border-2" value="<?= !empty($claim['rp_receive_date']) ? date('Y-m-d', strtotime($claim['rp_receive_date'])) : '' ?>" readonly>
                           </div>
                       </div>
 
                       <div class="mb-3 mt-4">
                           <label class="form-label fw-600">สาเหตุที่เปลี่ยนคัน</label>
-                          <textarea name="replace_reason" class="form-control border-2" rows="2" placeholder="ระบุสาเหตุการเปลี่ยนคัน" readonly><?= htmlspecialchars($claim['replace_reason'] ?? '') ?></textarea>
+                          <textarea name="replace_reason" class="form-control border-2" rows="2" placeholder="ระบุสาเหตุการเปลี่ยนคัน" readonly><?= htmlspecialchars($claim['rp_reason'] ?? '') ?></textarea>
                       </div>
 
                       <div class="row g-3">
                           <div class="col-md-6">
                               <label class="form-label fw-600">ผู้อนุมัติ</label>
-                              <input type="text" name="replace_approver" class="form-control border-2" placeholder="ชื่อผู้อนุมัติ" value="<?= htmlspecialchars($claim['replace_signature'] ?? '') ?>" readonly>
+                              <input type="text" name="replace_approver" class="form-control border-2" placeholder="ชื่อผู้อนุมัติ" value="<?= htmlspecialchars($claim['rp_app_name'] ?? '') ?>" readonly>
                           </div>
                           <div class="col-md-6">
                               <label class="form-label fw-600">วันที่อนุมัติ</label>
-                              <input type="date" name="replace_approve_date" class="form-control border-2" value="<?= !empty($claim['replace_approve_date']) ? date('Y-m-d', strtotime($claim['replace_approve_date'])) : '' ?>" readonly>
+                              <input type="date" name="replace_approve_date" class="form-control border-2" value="<?= !empty($claim['rp_app_date']) ? date('Y-m-d', strtotime($claim['rp_app_date'])) : '' ?>" readonly>
                           </div>
                       </div>
                       
@@ -277,18 +318,30 @@ try {
               <div class="row align-items-center mb-3">
                 <label class="col-sm-4 col-form-label fw-600">ยี่ห้อรถ</label>
                 <div class="col-sm-8">
-                  <input type="text" class="form-control bg-light border-0" value="<?= htmlspecialchars($claim['carBrand'] . (!empty($claim['usedGrade']) ? ' / เกรด: ' . $claim['usedGrade'] : '')) ?>" readonly>
+                  <input type="text" class="form-control bg-light border-0" value="<?= htmlspecialchars($claim['car_brand'] . (!empty($claim['used_grade']) ? ' / เกรด: ' . $claim['used_grade'] : '')) ?>" readonly>
                 </div>
+              </div>
+              <div class="row align-items-center mb-3">
+                <label class="col-sm-4 col-form-label fw-600">เลขไมล์รถ</label>
+                <div class="col-sm-8"><input type="text" class="form-control bg-light border-0" value="<?= htmlspecialchars($claim['mileage'] . ' กม.') ?>" readonly></div>
+              </div>
+              <div class="row align-items-center mb-3">
+                <label class="col-sm-4 col-form-label fw-600">อายุการใช้งาน</label>
+                <div class="col-sm-8"><input type="text" class="form-control bg-light border-0 fw-bold" value="<?= $carAgeDisplay ?>" readonly></div>
               </div>
             </div>
             <div class="col-12 col-lg-6">
               <div class="row align-items-center mb-3">
                 <label class="col-sm-4 col-form-label fw-600">เบอร์โทรศัพท์</label>
-                <div class="col-sm-8"><input type="text" class="form-control bg-light border-0" value="<?= htmlspecialchars($claim['ownerPhone'] ?? '-') ?>" readonly></div>
+                <div class="col-sm-8"><input type="text" class="form-control bg-light border-0" value="<?= htmlspecialchars($claim['owner_phone'] ?? '-') ?>" readonly></div>
               </div>
-              <div class="row align-items-center">
+              <div class="row align-items-center mb-3">
                 <label class="col-sm-4 col-form-label fw-600">หมายเลขตัวถัง</label>
                 <div class="col-sm-8"><input type="text" class="form-control bg-light border-0 fw-bold text-primary-orange" value="<?= htmlspecialchars($claim['vin']) ?>" readonly></div>
+              </div>
+              <div class="row align-items-center mb-3">
+                <label class="col-sm-4 col-form-label fw-600">วันที่ขายรถ</label>
+                <div class="col-sm-8"><input type="text" class="form-control bg-light border-0" value="<?= !empty($claim['sale_date']) ? date('d/m/Y', strtotime($claim['sale_date'])) : '-' ?>" readonly></div>
               </div>
             </div>
           </div>
@@ -298,16 +351,16 @@ try {
           <div class="section-title mb-4 pb-2 border-bottom fw-bold fs-5">ปัญหา</div>
           <div class="mb-4">
             <label class="form-label fw-600 mb-2">รายละเอียดปัญหาที่ลูกค้าแจ้ง</label>
-            <textarea class="form-control bg-light border-0" rows="3" readonly><?= htmlspecialchars($claim['problemDesc']) ?></textarea>
+            <textarea class="form-control bg-light border-0" rows="3" readonly><?= htmlspecialchars($claim['problem_desc']) ?></textarea>
           </div>
           <div class="row">
             <div class="col-md-6 mb-3">
               <label class="form-label fw-600 mb-2">วิธีการตรวจเช็ค</label>
-              <textarea class="form-control bg-light border-0" rows="3" readonly><?= htmlspecialchars($claim['inspectMethod']) ?></textarea>
+              <textarea class="form-control bg-light border-0" rows="3" readonly><?= htmlspecialchars($claim['inspect_method']) ?></textarea>
             </div>
             <div class="col-md-6 mb-3">
               <label class="form-label fw-600 mb-2">สาเหตุของปัญหา</label>
-              <textarea class="form-control bg-light border-0" rows="3" readonly><?= htmlspecialchars($claim['inspectCause']) ?></textarea>
+              <textarea class="form-control bg-light border-0" rows="3" readonly><?= htmlspecialchars($claim['inspect_cause']) ?></textarea>
             </div>
           </div>
         </div>
@@ -362,63 +415,31 @@ try {
                   <?php
                     $sumQty = 0;
                     $sumMoney = 0;
-                    $mainParts = array_filter($partsArray, function($part) {
-                        return empty($part['type']) || $part['type'] === 'main';
-                    });
-                    $assocParts = array_filter($partsArray, function($part) {
-                        return isset($part['type']) && $part['type'] === 'assoc';
-                    });
                   ?>
                   <tbody>
                     <tr class="group-header bg-light">
-                      <td colspan="7" class="text-danger fw-bold py-3 ps-3">อะไหล่หลัก</td>
+                      <td colspan="7" class="text-danger fw-bold py-3 ps-3">รายการอะไหล่ทั้งหมด</td>
                     </tr>
-                    <?php if (count($mainParts) > 0): ?>
-                        <?php foreach (array_values($mainParts) as $idx => $part):
-                            $qty = floatval($part['qty'] ?? 0);
-                            $price = floatval($part['price'] ?? 0);
+                    <?php if (count($items) > 0): ?>
+                        <?php foreach ($items as $idx => $part):
+                            $qty = floatval($part['quantity'] ?? 0);
+                            $price = floatval($part['unit_price'] ?? 0);
                             $total = $qty * $price;
                             $sumQty += $qty;
                             $sumMoney += $total;
                         ?>
                         <tr class="part-row">
                           <td><?= $idx + 1 ?></td>
-                          <td><?= htmlspecialchars($part['code'] ?? '') ?></td>
-                          <td><?= htmlspecialchars($part['name'] ?? '') ?></td>
+                          <td><?= htmlspecialchars($part['part_code'] ?? '') ?></td>
+                          <td><?= htmlspecialchars($part['part_name'] ?? '') ?></td>
                           <td class="text-center"><?= number_format($price, 2) ?></td>
                           <td class="text-center"><?= $qty ?></td>
                           <td class="text-center fw-600"><?= number_format($total, 2) ?></td>
-                          <td><?= htmlspecialchars($part['note'] ?? '') ?></td>
+                          <td><?= htmlspecialchars($part['note'] ?? '-') ?></td>
                         </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <tr><td colspan="7" class="text-center text-muted">ไม่มีอะไหล่หลัก</td></tr>
-                    <?php endif; ?>
-                  </tbody>
-                  <tbody>
-                    <tr class="group-header bg-light">
-                      <td colspan="7" class="text-danger fw-bold py-3 ps-3">อะไหล่ที่เคลมร่วมกัน</td>
-                    </tr>
-                    <?php if (count($assocParts) > 0): ?>
-                        <?php foreach (array_values($assocParts) as $idx => $part):
-                            $qty = floatval($part['qty'] ?? 0);
-                            $price = floatval($part['price'] ?? 0);
-                            $total = $qty * $price;
-                            $sumQty += $qty;
-                            $sumMoney += $total;
-                        ?>
-                        <tr class="part-row">
-                          <td><?= count($mainParts) + $idx + 1 ?></td>
-                          <td><?= htmlspecialchars($part['code'] ?? '') ?></td>
-                          <td><?= htmlspecialchars($part['name'] ?? '') ?></td>
-                          <td class="text-center"><?= number_format($price, 2) ?></td>
-                          <td class="text-center"><?= $qty ?></td>
-                          <td class="text-center fw-600"><?= number_format($total, 2) ?></td>
-                          <td><?= htmlspecialchars($part['note'] ?? '') ?></td>
-                        </tr>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <tr><td colspan="7" class="text-center text-muted">ไม่มีอะไหล่ที่เคลมร่วมกัน</td></tr>
+                        <tr><td colspan="7" class="text-center text-muted">ไม่มีรายการอะไหล่</td></tr>
                     <?php endif; ?>
                   </tbody>
                   <tbody>

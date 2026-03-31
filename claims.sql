@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: Mar 29, 2026 at 10:26 PM
+-- Generation Time: Mar 30, 2026 at 07:52 PM
 -- Server version: 8.0.45
 -- PHP Version: 8.3.26
 
@@ -32,12 +32,14 @@ CREATE TABLE `claims` (
   `created_at` datetime DEFAULT NULL,
   `branch` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `claimDate` date DEFAULT NULL,
+  `sale_date` date DEFAULT NULL COMMENT 'วันที่ขายรถ',
   `claimCategory` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `status` enum('Pending','Approved','Rejected') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Pending',
+  `status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Pending' COMMENT 'สถานะ: Pending, PendingEdit, ApprovedClaim, ApprovedReplace, Rejected, Completed, Replaced',
   `carType` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `carBrand` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `usedGrade` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `vin` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `mileage` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'เลขไมล์ของรถ',
   `ownerName` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `ownerAddress` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `ownerPhone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -52,6 +54,8 @@ CREATE TABLE `claims` (
   `otherActionText` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `parts` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `partsDelivery` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `job_number` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'เลขที่ Job',
+  `job_amount` decimal(12,2) DEFAULT NULL COMMENT 'จำนวนเงิน Job',
   `old_down_balance` decimal(10,2) DEFAULT NULL,
   `new_down_balance` decimal(10,2) DEFAULT NULL,
   `replaceType` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -67,6 +71,13 @@ CREATE TABLE `claims` (
   `replace_signature` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `replace_approver` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `replace_approve_date` date DEFAULT NULL,
+  `approver_repair_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'รหัสพนักงาน ผู้อนุมัติซ่อมสาขา',
+  `approver_repair_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'ชื่อ ผู้อนุมัติซ่อมสาขา',
+  `approver_repair_signature` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'ลายเซ็นต์ ผู้อนุมัติซ่อมสาขา',
+  `approver_sendhq_id` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'รหัสพนักงาน ผู้อนุมัติส่งซ่อม สนญ.',
+  `approver_sendhq_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'ชื่อ ผู้อนุมัติส่งซ่อม สนญ.',
+  `approver_sendhq_signature` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'ลายเซ็นต์ ผู้อนุมัติส่งซ่อม สนญ.',
+  `claim_end_date` date DEFAULT NULL COMMENT 'วันสิ้นสุดเคลม',
   `recorder` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `editor` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
@@ -92,7 +103,7 @@ ALTER TABLE `claims`
 -- AUTO_INCREMENT for table `claims`
 --
 ALTER TABLE `claims`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

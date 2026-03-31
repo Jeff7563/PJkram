@@ -2,156 +2,159 @@
 require_once __DIR__ . '/../shared/config/db_connect.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // 1. จัดการข้อมูลอะไหล่
-    $parts = [];
-    if (isset($_POST['parts_name']) && is_array($_POST['parts_name'])) {
-        for ($i = 0; $i < count($_POST['parts_name']); $i++) {
-            if (!empty($_POST['parts_name'][$i])) {
-                $parts[] = [
-                    'code' => $_POST['parts_code'][$i] ?? '',
-                    'name' => $_POST['parts_name'][$i],
-                    'qty' => $_POST['parts_qty'][$i] ?? 1,
-                    'price' => $_POST['parts_price'][$i] ?? '',
-                    'note' => $_POST['parts_note'][$i] ?? '',
-                    'type' => $_POST['parts_type'][$i] ?? 'main'
-                ];
-            }
-        }
-    }
+    $pdo = getServiceCenterPDO();
 
-    // 2. จัดการอัปโหลดรูปภาพ และตั้งชื่อไฟล์แบบฉลาด (Smart Naming)
-    $uploadDir = __DIR__ . '/../uploads/claims/';
-    if (!is_dir($uploadDir)) { mkdir($uploadDir, 0777, true); }
+    try {
+        $pdo->beginTransaction();
 
-    // ดึงเลขตัวถังมาทำเป็นชื่อไฟล์ (ตัดอักขระแปลกๆ ออกป้องกันไฟล์พัง)
-    $vin = $_POST['vin'] ?? 'UnknownVIN';
-    $safeVin = preg_replace('/[^a-zA-Z0-9_-]/', '_', $vin);
+        // 1. จัดการข้อมูลรูปภาพ (Smart Naming)
+        $uploadDir = __DIR__ . '/../uploads/claims/';
+        if (!is_dir($uploadDir)) { mkdir($uploadDir, 0777, true); }
 
-    // กำหนดชื่อหัวข้อ ตามชื่อของกล่องอัปโหลด
-    $fieldLabels = [
-        'imgFullCar'  => 'ภาพรถทั้งคัน',
-        'imgSpot'     => 'ภาพจุดปัญหา',
-        'imgPart'     => 'ภาพชิ้นส่วนที่เสียหาย',
-        'imgWarranty' => 'ภาพสมุดรับประกัน',
-        'imgOdometer' => 'ภาพเลขไมล์',
-        'imgEstimate' => 'ภาพใบประเมินอะไหล่',
-        'imgParts'    => 'ภาพอะไหล่ที่เคลม',
-        'claim_images'=> 'ภาพเพิ่มเติม'
-    ];
+        $vin = $_POST['vin'] ?? 'UnknownVIN';
+        $safeVin = preg_replace('/[^a-zA-Z0-9_-]/', '_', $vin);
 
-    $savedImages = [];
-    foreach ($_FILES as $key => $fileData) {
-        // หาชื่อหัวข้อภาษาไทย ถ้าไม่ตรงกับกล่องไหนเลยให้ใช้คำว่า "รูปภาพทั่วไป"
-        $prefix = $fieldLabels[$key] ?? 'รูปภาพทั่วไป';
+        $fieldLabels = [
+            'imgFullCar'  => 'ภาพรถทั้งคัน',
+            'imgSpot'     => 'ภาพจุดปัญหา',
+            'imgPart'     => 'ภาพชิ้นส่วนที่เสียหาย',
+            'imgWarranty' => 'ภาพสมุดรับประกัน',
+            'imgOdometer' => 'ภาพเลขไมล์',
+            'imgEstimate' => 'ภาพใบประเมินอะไหล่',
+            'imgParts'    => 'ภาพอะไหล่ที่เคลม'
+        ];
 
-        if (is_array($fileData['name'])) {
-            for ($i = 0; $i < count($fileData['name']); $i++) {
-                if ($fileData['error'][$i] === UPLOAD_ERR_OK && !empty($fileData['name'][$i])) {
-                    $ext = pathinfo($fileData['name'][$i], PATHINFO_EXTENSION);
-                    // สร้างชื่อไฟล์ใหม่: ภาพรถทั้งคัน_VIN12345_1425_4821.jpg
-                    $newFileName = $prefix . '_' . $safeVin . '.' . $ext;
-                    if (move_uploaded_file($fileData['tmp_name'][$i], $uploadDir . $newFileName)) {
+        $savedImages = [];
+        foreach ($_FILES as $key => $fileData) {
+            $prefix = $fieldLabels[$key] ?? 'รูปภาพทั่วไป';
+            if (is_array($fileData['name'])) {
+                for ($i = 0; $i < count($fileData['name']); $i++) {
+                    if ($fileData['error'][$i] === UPLOAD_ERR_OK && !empty($fileData['name'][$i])) {
+                        $ext = pathinfo($fileData['name'][$i], PATHINFO_EXTENSION);
+                        $uniqueId = date('Ymd_His') . '_' . ($i + 1);
+                        $newFileName = $prefix . '_' . $safeVin . '_' . $uniqueId . '.' . $ext;
+                        if (move_uploaded_file($fileData['tmp_name'][$i], $uploadDir . $newFileName)) {
+                            $savedImages[] = 'uploads/claims/' . $newFileName; 
+                        }
+                    }
+                }
+            } else {
+                if ($fileData['error'] === UPLOAD_ERR_OK && !empty($fileData['name'])) {
+                    $ext = pathinfo($fileData['name'], PATHINFO_EXTENSION);
+                    $uniqueId = date('Ymd_His') . '_0';
+                    $newFileName = $prefix . '_' . $safeVin . '_' . $uniqueId . '.' . $ext;
+                    if (move_uploaded_file($fileData['tmp_name'], $uploadDir . $newFileName)) {
                         $savedImages[] = 'uploads/claims/' . $newFileName; 
                     }
                 }
             }
-        } else {
-            if ($fileData['error'] === UPLOAD_ERR_OK && !empty($fileData['name'])) {
-                $ext = pathinfo($fileData['name'], PATHINFO_EXTENSION);
-                // สร้างชื่อไฟล์ใหม่: ภาพรถทั้งคัน_VIN12345_1425_4821.jpg
-                $newFileName = $prefix . '_' . $safeVin . '.' . $ext;
-                if (move_uploaded_file($fileData['tmp_name'], $uploadDir . $newFileName)) {
-                    $savedImages[] = 'uploads/claims/' . $newFileName; 
+        }
+        $claim_images_json = json_encode($savedImages, JSON_UNESCAPED_UNICODE);
+
+        // 2. เตรียมข้อมูลหลัก (Claims Table)
+        $claimAction = $_POST['claimAction'] ?? 'Other';
+        $claimTypeMap = [
+            'repairBranch'   => 'RepairBranch',
+            'sendHQ'         => 'SendHQ',
+            'replaceVehicle' => 'ReplaceVehicle',
+            'other'          => 'Other'
+        ];
+        $claim_type = $claimTypeMap[$claimAction] ?? 'Other';
+
+        $branch      = $_POST['branch'] ?? '';
+        $claimDate   = !empty($_POST['claimDate']) ? $_POST['claimDate'] : date('Y-m-d');
+        $saleDate    = !empty($_POST['sale_date']) ? $_POST['sale_date'] : null;
+        $carType     = $_POST['carType'] ?? '';
+        $carBrand    = $_POST['carBrand'] ?? '';
+        $usedGrade   = $_POST['usedGrade'] ?? '';
+        $ownerName   = $_POST['ownerName'] ?? '';
+        $ownerPhone  = $_POST['ownerPhone'] ?? '';
+        $mileage     = $_POST['mileage'] ?? '';
+        $problemDesc = $_POST['problemDesc'] ?? '';
+        $inspectMethod = $_POST['inspectMethod'] ?? '';
+        $inspectCause = $_POST['inspectCause'] ?? '';
+        $claimCategory = $_POST['claimCategory'] ?? '';
+        $recorder    = $_POST['recorder'] ?? '';
+
+        $sql_claim = "INSERT INTO `claims` (
+            claim_type, claim_date, sale_date, vin, mileage, car_type, car_brand, used_grade, 
+            owner_name, owner_phone, problem_desc, inspect_method, inspect_cause, 
+            claim_category, branch, recorder_id, claim_images
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        $stmt_claim = $pdo->prepare($sql_claim);
+        $stmt_claim->execute([
+            $claim_type, $claimDate, $saleDate, $vin, $mileage, $carType, $carBrand, $usedGrade,
+            $ownerName, $ownerPhone, $problemDesc, $inspectMethod, $inspectCause,
+            $claimCategory, $branch, $recorder, $claim_images_json
+        ]);
+
+        $claim_id = $pdo->lastInsertId();
+
+        // 3. บันทึกรายการอะไหล่ (Claim Items Table)
+        if (isset($_POST['parts_name']) && is_array($_POST['parts_name'])) {
+            $sql_item = "INSERT INTO `claim_items` (claim_id, part_name, part_code, quantity, unit_price) VALUES (?, ?, ?, ?, ?)";
+            $stmt_item = $pdo->prepare($sql_item);
+            for ($i = 0; $i < count($_POST['parts_name']); $i++) {
+                if (!empty($_POST['parts_name'][$i])) {
+                    $stmt_item->execute([
+                        $claim_id,
+                        $_POST['parts_name'][$i],
+                        $_POST['parts_code'][$i] ?? '',
+                        $_POST['parts_qty'][$i] ?? 1,
+                        $_POST['parts_price'][$i] ?? 0
+                    ]);
                 }
             }
         }
-    }
-    $claim_images_json = json_encode($savedImages, JSON_UNESCAPED_UNICODE);
 
-    // 3. ประเภทการส่งอะไหล่
-    $partsDelivery = $_POST['partsDelivery'] ?? '';
-    if ($partsDelivery === 'other') {
-        $partsDelivery = $_POST['partsDeliveryOtherText'] ?? 'อื่นๆ';
-    }
+        // 4. บันทึกรายละเอียดเฉพาะประเภท
+        if ($claim_type === 'RepairBranch' || $claim_type === 'SendHQ') {
+            $partsDelivery = $_POST['partsDelivery'] ?? '';
+            if ($partsDelivery === 'other') $partsDelivery = $_POST['partsDeliveryOtherText'] ?? 'อื่นๆ';
 
-    // 4. รับค่าฟอร์มหลัก
-    $branch = $_POST['branch'] ?? '';
-    $claimDate = !empty($_POST['claimDate']) ? date('Y-m-d', strtotime($_POST['claimDate'])) : null;
-    $carType = $_POST['carType'] ?? '';
-    $carBrand = $_POST['carBrand'] ?? '';
-    $usedGrade = $_POST['usedGrade'] ?? '';
-    $ownerName = $_POST['ownerName'] ?? '';
-    $ownerAddress = $_POST['ownerAddress'] ?? ''; 
-    $ownerPhone = $_POST['ownerPhone'] ?? '';
-    $problemDesc = $_POST['problemDesc'] ?? '';
-    $inspectMethod = $_POST['inspectMethod'] ?? '';
-    $inspectCause = $_POST['inspectCause'] ?? '';
-    $claimCategory = $_POST['claimCategory'] ?? '';
-    
-    $claimAction = $_POST['claimAction'] ?? '';
-    $repairBranch = ($claimAction === 'repairBranch') ? 1 : 0;
-    $sendHQ = ($claimAction === 'sendHQ') ? 1 : 0;
-    $otherAction = ($claimAction === 'replaceVehicle' || $claimAction === 'other') ? 1 : 0;
-    $otherActionText = ($claimAction === 'other') ? ($_POST['claimOtherText'] ?? '') : null;
-    
-    // 5. ฟอร์มเปลี่ยนคัน
-    $old_down_balance = !empty($_POST['old_down_balance']) ? $_POST['old_down_balance'] : null;
-    $new_down_balance = !empty($_POST['new_down_balance']) ? $_POST['new_down_balance'] : null;
-    $replaceType = $_POST['replaceType'] ?? null;
-    $replaceUsedGrade = $_POST['replaceUsedGrade'] ?? null;
-    $replace_brand = $_POST['replace_brand'] ?? null;
-    $replace_model = $_POST['replace_model'] ?? null;
-    $replace_color = $_POST['replace_color'] ?? null;
-    $replace_vin = $_POST['replace_vin'] ?? null;
-    $replace_receive_date = !empty($_POST['replace_receive_date']) ? date('Y-m-d', strtotime($_POST['replace_receive_date'])) : null;
-    $replace_reason = $_POST['replace_reason'] ?? null;
-    $replace_emp_id = $_POST['replace_id'] ?? null;
-    $replace_emp_name = $_POST['replace_name'] ?? null;
-    $replace_signature = $_POST['replace_signature'] ?? null;
-    $replace_approve_date = !empty($_POST['replace_approve_date']) ? date('Y-m-d', strtotime($_POST['replace_approve_date'])) : null;
-    
-    $partsJson = json_encode($parts, JSON_UNESCAPED_UNICODE);
-    $recorder = $_POST['recorder'] ?? '';
-    $filesJson = json_encode([], JSON_UNESCAPED_UNICODE);
-    
-    $status = 'Pending'; 
-    $created_at = date('Y-m-d H:i:s');
+            $sql_repair = "INSERT INTO `claim_repair_details` (
+                claim_id, parts_delivery, approver_id, approver_name, approver_signature
+            ) VALUES (?, ?, ?, ?, ?)";
+            $pdo->prepare($sql_repair)->execute([
+                $claim_id, $partsDelivery, 
+                $_POST['approver_id'] ?? null,
+                $_POST['approver_name'] ?? null,
+                $_POST['approver_signature'] ?? null
+            ]);
+        } 
+        else if ($claim_type === 'ReplaceVehicle') {
+            $sql_replace = "INSERT INTO `claim_replacement_details` (
+                claim_id, old_down_balance, new_down_balance, replace_vin, replace_brand, 
+                replace_model, replace_color, replace_type, replace_receive_date, 
+                replace_reason, approver_id, approver_name, approver_signature, approve_date
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            
+            $pdo->prepare($sql_replace)->execute([
+                $claim_id,
+                !empty($_POST['old_down_balance']) ? $_POST['old_down_balance'] : null,
+                !empty($_POST['new_down_balance']) ? $_POST['new_down_balance'] : null,
+                $_POST['replace_vin'] ?? null,
+                $_POST['replace_brand'] ?? null,
+                $_POST['replace_model'] ?? null,
+                $_POST['replace_color'] ?? null,
+                $_POST['replaceType'] ?? null,
+                !empty($_POST['replace_receive_date']) ? $_POST['replace_receive_date'] : null,
+                $_POST['replace_reason'] ?? null,
+                $_POST['replace_id'] ?? null,
+                $_POST['replace_name'] ?? null,
+                $_POST['replace_signature'] ?? null,
+                !empty($_POST['replace_approve_date']) ? $_POST['replace_approve_date'] : date('Y-m-d')
+            ]);
+        }
 
+        $pdo->commit();
+        echo '<div style="color: #06b957; font-weight: bold; padding: 10px; border-radius: 8px; background: #e8f5e9;">✅ บันทึกข้อมูลการเคลม (Normalized V3) เรียบร้อยแล้ว!</div>';
+        echo '<script>setTimeout(function(){ window.location.href = "check.php"; }, 1500);</script>';
 
-    try {
-        $pdo = getServiceCenterPDO();
-        $table = getServiceCenterTable();
-
-        $sql = "INSERT INTO `{$table}` (
-            created_at, branch, claimDate, carType, carBrand, usedGrade, vin, 
-            ownerName, ownerAddress, ownerPhone, problemDesc, inspectMethod, inspectCause, 
-            claimCategory, repairBranch, sendHQ, otherAction, otherActionText, parts, partsDelivery, recorder, 
-            files, claim_images, status,
-            old_down_balance, new_down_balance, replaceType, replaceUsedGrade, replace_brand, replace_model, replace_color, replace_vin, 
-            replace_receive_date, replace_reason, replace_id, replace_name, replace_signature, replace_approve_date
-        ) VALUES (
-            ?, ?, ?, ?, ?, ?, ?, 
-            ?, ?, ?, ?, ?, ?, 
-            ?, ?, ?, ?, ?, ?, ?, ?, 
-            ?, ?, ?,
-            ?, ?, ?, ?, ?, ?, ?, ?, 
-            ?, ?, ?, ?, ?, ?
-        )";
-        
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([
-            $created_at, $branch, $claimDate, $carType, $carBrand, $usedGrade, $vin,
-            $ownerName, $ownerAddress, $ownerPhone, $problemDesc, $inspectMethod, $inspectCause,
-            $claimCategory, $repairBranch, $sendHQ, $otherAction, $otherActionText, $partsJson, $partsDelivery, $recorder,
-            $filesJson, $claim_images_json, $status,
-            $old_down_balance, $new_down_balance, $replaceType, $replaceUsedGrade, $replace_brand, $replace_model, $replace_color, $replace_vin,
-            $replace_receive_date, $replace_reason, $replace_emp_id, $replace_emp_name, $replace_signature, $replace_approve_date
-        ]);
-        
-        echo '<div style="color: #06b957; font-weight: bold; padding: 10px; border-radius: 8px; background: #e8f5e9;">✅ บันทึกข้อมูลการเคลมเรียบร้อยแล้ว!</div>';
-        echo '<script>setTimeout(function(){ window.location.href = "' . BASE_URL_BACKEND . '/check.php"; }, 1500);</script>';
     } catch (Exception $e) {
-        echo '<div style="color: #dc3545; font-weight: bold; padding: 10px; border-radius: 8px; background: #fdedea;">❌ เกิดข้อผิดพลาดในฐานข้อมูล: ' . $e->getMessage() . '</div>';
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        echo '<div style="color: #dc3545; font-weight: bold; padding: 10px; border-radius: 8px; background: #fdedea;">❌ เกิดข้อผิดพลาด: ' . $e->getMessage() . '</div>';
     }
     exit;
 }

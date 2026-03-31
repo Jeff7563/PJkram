@@ -10,8 +10,8 @@ $dbConfig = [
 ];
 
 // URLs สำหรับแยก Front/Back (ใช้ Port ตาม docker-compose.yml)
-define('BASE_URL_FRONTEND', 'http://localhost:8888/frontend');
-define('BASE_URL_BACKEND', 'http://localhost:8889/backend');
+define('BASE_URL_FRONTEND', 'http://localhost:8870/frontend');
+define('BASE_URL_BACKEND', 'http://localhost:8871/backend');
 
 
 function getServiceCenterPDO()

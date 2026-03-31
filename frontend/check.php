@@ -1,5 +1,7 @@
 <?php
 // 1. เชื่อมต่อฐานข้อมูล
+require_once __DIR__ . '/../backend/auth.php';
+requireLogin();
 require_once __DIR__ . '/../shared/config/db_connect.php';
 
 try {
@@ -146,14 +148,17 @@ try {
                           $statusDisplay = 'รอดำเนินการ';
                       }
 
-                      // 4. เช็คข้อมูล การดำเนินการ (Action)
+                      // 4. เช็คข้อมูล การดำเนินการ (Action) จาก claim_type ใหม่
                       $actionDisplay = '-';
-                      if ($row['repairBranch'] == 1) {
+                      $cType = $row['claim_type'] ?? '';
+                      if ($cType === 'RepairBranch') {
                           $actionDisplay = 'ซ่อมที่สาขา';
-                      } elseif ($row['sendHQ'] == 1) {
+                      } elseif ($cType === 'SendHQ') {
                           $actionDisplay = 'ส่งซ่อมที่สนญ.';
-                      } elseif (!empty($row['claimCategory'])) { 
-                          $actionDisplay = 'เปลี่ยนคัน/อื่นๆ';
+                      } elseif ($cType === 'ReplaceVehicle') {
+                          $actionDisplay = 'เปลี่ยนคัน';
+                      } elseif ($cType === 'Other') {
+                          $actionDisplay = 'อื่นๆ';
                       }
 
                       // 5. แปลงประเภทรถเป็นภาษาไทย

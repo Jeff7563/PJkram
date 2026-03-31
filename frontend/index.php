@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../backend/auth.php';
+requireLogin();
 require_once __DIR__ . '/../backend/index_handler.php';
 ?>
 <!doctype html>
@@ -462,22 +464,49 @@ require_once __DIR__ . '/../backend/index_handler.php';
               </div>
 
               <div class="col-12 col-md-6">
-                <div class="form-row-item">
-                  <label for="vin" class="form-label">หมายเลขตัวถัง</label>
-                  <input type="text" id="vin" name="vin" class="form-control" placeholder="VIN Number" required>
+                <div class="row g-2">
+                  <div class="col-8">
+                    <div class="form-row-item">
+                      <label for="vin" class="form-label">หมายเลขตัวถัง <span class="text-danger">*</span></label>
+                      <input type="text" id="vin" name="vin" class="form-control" placeholder="VIN Number" required>
+                    </div>
+                  </div>
+                  <div class="col-4">
+                    <div class="form-row-item">
+                      <label for="mileage" class="form-label">เลขไมล์รถ</label>
+                      <input type="number" id="mileage" name="mileage" class="form-control" placeholder="0" min="0">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12 col-md-6">
+                <div class="row g-2">
+                  <div class="col-7">
+                    <div class="form-row-item">
+                      <label for="sale_date" class="form-label">วันที่ขายรถ</label>
+                      <input type="date" id="sale_date" name="sale_date" class="form-control">
+                    </div>
+                  </div>
+                  <div class="col-5">
+                    <div class="form-row-item">
+                      <label class="form-label">อายุการใช้งาน</label>
+                      <input type="text" id="vehicle_age_display" class="form-control" placeholder="-- ปี -- เดือน -- วัน 0 ชั่วโมง" readonly style="background-color: #f9f9f9; color: #666; font-weight: 600;">
+                    </div>
+                  </div>
                 </div>
               </div>
 
               <div class="col-12 col-md-6">
                 <div class="form-row-item">
-                  <label for="ownerName" class="form-label">ชื่อ-นามสกุล (ผู้ซื้อ)</label>
+                  <label for="ownerName" class="form-label">ชื่อ-นามสกุล (ผู้ซื้อ) <span class="text-danger">*</span></label>
                   <input type="text" id="ownerName" name="ownerName" class="form-control" placeholder="ชื่อ นามสกุล" required>
                 </div>
               </div>
 
               <div class="col-12 col-md-6">
                 <div class="form-row-item">
-                  <label for="ownerPhone" class="form-label">เบอร์โทรศัพท์</label>
+                  <label for="ownerPhone" class="form-label">เบอร์โทรศัพท์ <span class="text-danger">*</span></label>
                   <input type="text" id="ownerPhone" name="ownerPhone" class="form-control" placeholder="เบอร์โทรศัพท์" required>
                 </div>
               </div>
@@ -632,6 +661,27 @@ require_once __DIR__ . '/../backend/index_handler.php';
               </div>
             </div>
 
+            <!-- Approver Section (Visible for RepairBranch / SendHQ) -->
+            <div id="approverSection" class="card d-none mt-3 p-3" style="background: #fffdf9; border: 1px dashed var(--primary-orange);">
+              <h6 class="fw-bold mb-3"><svg class="icon small" aria-hidden="true"><use xlink:href="#icon-claim"></use></svg> ผู้อนุมัติการดำเนินการ</h6>
+              <div class="row g-2">
+                <div class="col-12 col-md-4">
+                  <label class="form-label fs-sm fw-600">รหัสพนักงาน</label>
+                  <select name="approver_id" class="form-select employee-select" data-target-name="approver_name" data-target-sig="approver_signature">
+                    <option value="">-- เลือกพนักงาน --</option>
+                  </select>
+                </div>
+                <div class="col-12 col-md-4">
+                  <label class="form-label fs-sm fw-600">ชื่อผู้อนุมัติ</label>
+                  <input type="text" name="approver_name" class="form-control bg-light" readonly placeholder="ชื่อพนักงาน">
+                </div>
+                <div class="col-12 col-md-4">
+                  <label class="form-label fs-sm fw-600">ลายเซ็นต์</label>
+                  <input type="text" name="approver_signature" class="form-control bg-light" readonly placeholder="ลายเซ็นต์">
+                </div>
+              </div>
+            </div>
+
             <section id="partsSection" class="d-none mt-4">
               <div class="row g-3">
                 <div class="col-12">
@@ -779,25 +829,27 @@ require_once __DIR__ . '/../backend/index_handler.php';
 
                 <div class="row g-3 mb-3">
                 <div class="col-12 col-md-6">
-                    <div class="d-flex gap-2" style="gap: 10px;">
-                        <div style="flex: 1; min-width: 0;">
-                            <label for="replace_id" class="form-label fw-semibold">รหัสพนักงาน</label>
-                            <input type="text" id="replace_id" name="replace_id" class="form-control" placeholder="รหัสพนักงาน">
-                        </div>
-                        <div style="flex: 1; min-width: 0;">
-                            <label for="replace_name" class="form-label fw-semibold">ชื่อพนักงาน</label>
-                            <input type="text" id="replace_name" name="replace_name" class="form-control" placeholder="ชื่อพนักงาน">
-                        </div>
-                        <div style="flex: 1; min-width: 0;">
-                            <label for="replace_signature" class="form-label fw-semibold">ลายเซ็นต์</label>
-                            <input type="text" id="replace_signature" name="replace_signature" class="form-control" placeholder="ลายเซ็นต์">
-                        </div>
+                    <div class="row g-2">
+                      <div class="col-4">
+                        <label for="replace_id" class="form-label fw-semibold">รหัสพนักงาน</label>
+                        <select id="replace_id" name="replace_id" class="form-select employee-select" data-target-name="replace_name" data-target-sig="replace_signature">
+                           <option value="">-- เลือก --</option>
+                        </select>
+                      </div>
+                      <div class="col-4">
+                        <label for="replace_name" class="form-label fw-semibold">ชื่อพนักงาน</label>
+                        <input type="text" id="replace_name" name="replace_name" class="form-control bg-light" readonly placeholder="ชื่อพนักงาน">
+                      </div>
+                      <div class="col-4">
+                        <label for="replace_signature" class="form-label fw-semibold">ลายเซ็นต์</label>
+                        <input type="text" id="replace_signature" name="replace_signature" class="form-control bg-light" readonly placeholder="ลายเซ็นต์">
+                      </div>
                     </div>
                 </div>
                 
                 <div class="col-12 col-md-6">
                     <label for="replace_approve_date" class="form-label fw-semibold">วันที่อนุมัติ</label>
-                    <input type="date" id="replace_approve_date" name="replace_approve_date" class="form-control">
+                    <input type="date" id="replace_approve_date" name="replace_approve_date" class="form-control" value="<?= date('Y-m-d') ?>">
                 </div>
             </div>
 
@@ -844,14 +896,86 @@ require_once __DIR__ . '/../backend/index_handler.php';
       const resultBox = document.getElementById('result');
       if(!gallery || !form) return;
 
+      // Car Age Calculation
+      const saleDateInput = document.getElementById('sale_date');
+      const ageDisplay = document.getElementById('vehicle_age_display');
+      
+      function calculateVehicleAge() {
+        if (!saleDateInput.value) {
+          ageDisplay.value = '';
+          return;
+        }
+        const start = new Date(saleDateInput.value);
+        start.setHours(0,0,0,0);
+        const end = new Date();
+        
+        let years = end.getFullYear() - start.getFullYear();
+        let months = end.getMonth() - start.getMonth();
+        let days = end.getDate() - start.getDate();
+        let hours = end.getHours();
+        
+        if (days < 0) {
+          months--;
+          const prevMonth = new Date(end.getFullYear(), end.getMonth(), 0);
+          days += prevMonth.getDate();
+        }
+        if (months < 0) {
+          years--;
+          months += 12;
+        }
+        
+        let res = [];
+        if (years > 0) res.push(years + " ปี");
+        if (months > 0) res.push(months + " เดือน");
+        if (days > 0) res.push(days + " วัน");
+        res.push(hours + " ชั่วโมง");
+        
+        ageDisplay.value = res.join(" ");
+      }
+      saleDateInput.addEventListener('change', calculateVehicleAge);
+
+      // Employee Dropdowns Logic
+      let employeesData = [];
+      async function loadEmployees() {
+        try {
+          const res = await fetch('../backend/api_users.php');
+          const json = await res.json();
+          if (json.success) {
+            employeesData = json.data;
+            populateEmployeeDropdowns();
+          }
+        } catch (e) { console.error('Failed to load employees', e); }
+      }
+
+      function populateEmployeeDropdowns() {
+        const selects = document.querySelectorAll('.employee-select');
+        selects.forEach(sel => {
+          employeesData.forEach(emp => {
+            const opt = document.createElement('option');
+            opt.value = emp.employee_id;
+            opt.textContent = `${emp.employee_id} - ${emp.name}`;
+            sel.appendChild(opt);
+          });
+
+          sel.addEventListener('change', function() {
+            const targetName = document.getElementsByName(this.dataset.targetName)[0] || document.getElementById(this.dataset.targetName);
+            const targetSig = document.getElementsByName(this.dataset.targetSig)[0] || document.getElementById(this.dataset.targetSig);
+            const emp = employeesData.find(e => e.employee_id === this.value);
+            
+            if (targetName) targetName.value = emp ? emp.name : '';
+            if (targetSig) targetSig.value = emp ? (emp.signature || 'No Signature') : '';
+          });
+        });
+      }
+      loadEmployees();
+
       // show grade select only for used cars and keep it inline with brand
       const gradeFields = document.querySelectorAll('.grade-field');
+      const usedGradeCol = document.getElementById('gradeLabel');
       function updateGradeVisibility(){
         const checkedType = document.querySelector('input[name="carType"]:checked');
         const used = checkedType && checkedType.value === 'used';
-        gradeFields.forEach(f => {
-          f.classList.toggle('d-none', !used);
-        });
+        if(usedGradeCol) usedGradeCol.classList.toggle('d-none', !used);
       }
       // listen for carType changes
       document.querySelectorAll('input[name="carType"]').forEach(r => r.addEventListener('change', updateGradeVisibility));
@@ -860,6 +984,7 @@ require_once __DIR__ . '/../backend/index_handler.php';
       // Claim action: single-select radios
       const claimActionRadios = document.querySelectorAll('input[name="claimAction"]');
       const replaceBlock = document.getElementById('replaceBlock');
+      const approverSection = document.getElementById('approverSection');
       const partsSection = document.getElementById('partsSection');
       const claimOtherTextInit = document.getElementById('claimOtherText');
 
@@ -867,10 +992,13 @@ require_once __DIR__ . '/../backend/index_handler.php';
         if(!partsSection) return;
         const sel = document.querySelector('input[name="claimAction"]:checked');
         const val = sel ? sel.value : '';
-        const show = val === 'repairBranch' || val === 'sendHQ';
-        partsSection.classList.toggle('d-none', !show);
+        const showParts = val === 'repairBranch' || val === 'sendHQ' || val === 'replaceVehicle';
+        partsSection.classList.toggle('d-none', !showParts);
+        
         const partsDeliverySection = document.getElementById('partsDeliverySection');
-        if(partsDeliverySection) partsDeliverySection.classList.toggle('d-none', !show);
+        if(partsDeliverySection) partsDeliverySection.classList.toggle('d-none', !(val === 'repairBranch' || val === 'sendHQ'));
+        
+        if(approverSection) approverSection.classList.toggle('d-none', !(val === 'repairBranch' || val === 'sendHQ'));
       }
 
       function updateClaimActionVisibility(){

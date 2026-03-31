@@ -1,5 +1,7 @@
 <?php
 // 1. เชื่อมต่อฐานข้อมูล
+require_once __DIR__ . '/../backend/auth.php';
+requireLogin();
 require_once __DIR__ . '/../shared/config/db_connect.php';
 
 try {
@@ -17,7 +19,7 @@ try {
     $params = [];
 
     if (!empty($search)) {
-        $whereConditions[] = "(ownerName LIKE ? OR vin LIKE ? OR problemDesc LIKE ?)";
+        $whereConditions[] = "(owner_name LIKE ? OR vin LIKE ? OR problem_desc LIKE ?)";
         $params[] = "%$search%";
         $params[] = "%$search%";
         $params[] = "%$search%";
@@ -31,14 +33,14 @@ try {
         $params[] = $status;
     }
     if (!empty($date)) {
-        $whereConditions[] = "claimDate = ?";
+        $whereConditions[] = "claim_date = ?";
         $params[] = $date;
     }
 
     $whereSql = implode(' AND ', $whereConditions);
     
     // ดึงข้อมูลเรียงจากใหม่ไปเก่า (DESC)
-    $stmt = $pdo->prepare("SELECT * FROM `$table` WHERE $whereSql ORDER BY id DESC");
+    $stmt = $pdo->prepare("SELECT * FROM claims WHERE $whereSql ORDER BY id DESC");
     $stmt->execute($params);
     $claims = $stmt->fetchAll();
 
@@ -97,12 +99,12 @@ try {
         <?php if (count($claims) > 0): ?>
             <?php foreach ($claims as $row): 
                 // จัดรูปแบบวันที่สำหรับแสดงผล
-                $claimDateFormatted = $row['claimDate'] ? date('d/m/Y', strtotime($row['claimDate'])) : '-';
+                $claimDateFormatted = $row['claim_date'] ? date('d/m/Y', strtotime($row['claim_date'])) : '-';
                 
                 // จัดรูปแบบเลขเอกสาร C001-280369
                 $idPart = "C" . str_pad($row['id'], 3, '0', STR_PAD_LEFT);
-                if ($row['claimDate']) {
-                    $timestamp = strtotime($row['claimDate']);
+                if ($row['claim_date']) {
+                    $timestamp = strtotime($row['claim_date']);
                     $buddhistYearShort = substr((date('Y', $timestamp) + 543), -2); // เอาปี ค.ศ. + 543 แล้วตัดมาแค่ 2 ตัวท้าย
                     $datePart = date('dm', $timestamp) . $buddhistYearShort; // รวม วัน(2) + เดือน(2) + ปี(2)
                 } else {
@@ -151,7 +153,7 @@ try {
                     <div class="hc-field-group">
                       <div class="hc-label">ประเภทการเคลม :</div>
                       <?php 
-                        $cat = !empty($row['claimCategory']) ? $row['claimCategory'] : '- ไม่ระบุ -';
+                        $cat = !empty($row['claim_category']) ? $row['claim_category'] : '- ไม่ระบุ -';
                         $catTH = ($cat == 'pre-sale') ? 'เคลมรถก่อนขาย' : (($cat == 'technical') ? 'เคลมปัญหาทางเทคนิค' : (($cat == 'customer-sale' || $cat == 'customer') ? 'เคลมรถลูกค้า' : $cat));
                       ?>
                       <input type="text" class="hc-input form-control" value="<?= htmlspecialchars($catTH) ?>" readonly>
@@ -161,7 +163,7 @@ try {
                   <div class="col-12 col-md-6">
                     <div class="hc-field-group">
                       <div class="hc-label">ชื่อผู้ใช้งาน :</div>
-                      <input type="text" class="hc-input form-control" value="<?= htmlspecialchars($row['ownerName']) ?>" readonly>
+                      <input type="text" class="hc-input form-control" value="<?= htmlspecialchars($row['owner_name']) ?>" readonly>
                     </div>
                   </div>
                   <div class="col-12 col-md-6">
@@ -181,27 +183,27 @@ try {
                   <div class="col-12 col-md-6">
                     <div class="hc-field-group">
                       <div class="hc-label">เบอร์โทรศัพท์ :</div>
-                      <input type="text" class="hc-input form-control" value="<?= htmlspecialchars($row['ownerPhone']) ?>" readonly>
+                      <input type="text" class="hc-input form-control" value="<?= htmlspecialchars($row['owner_phone']) ?>" readonly>
                     </div>
                   </div>
                 </div>
 
                 <div class="hc-textarea-group mt-3">
                   <label class="hc-textarea-label fw-bold mb-1 d-block">รายละเอียดปัญหาที่ลูกค้าแจ้ง :</label>
-                  <textarea class="hc-textarea form-control" readonly><?= htmlspecialchars($row['problemDesc']) ?></textarea>
+                  <textarea class="hc-textarea form-control" readonly><?= htmlspecialchars($row['problem_desc']) ?></textarea>
                 </div>
 
                 <div class="row g-3 mt-1">
                   <div class="col-12 col-md-6">
                     <div class="hc-textarea-group">
                       <label class="hc-textarea-label fw-bold mb-1 d-block">วิธีการตรวจเช็ค :</label>
-                      <textarea class="hc-textarea form-control" readonly><?= htmlspecialchars($row['inspectMethod']) ?></textarea>
+                      <textarea class="hc-textarea form-control" readonly><?= htmlspecialchars($row['inspect_method']) ?></textarea>
                     </div>
                   </div>
                   <div class="col-12 col-md-6">
                     <div class="hc-textarea-group">
                       <label class="hc-textarea-label fw-bold mb-1 d-block">สาเหตุของปัญหา :</label>
-                      <textarea class="hc-textarea form-control" readonly><?= htmlspecialchars($row['inspectCause']) ?></textarea>
+                      <textarea class="hc-textarea form-control" readonly><?= htmlspecialchars($row['inspect_cause']) ?></textarea>
                     </div>
                   </div>
                 </div>

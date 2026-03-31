@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: docker/frontend.Dockerfile
     ports:
-      - "8888:80"
+      - "8870:80"
     volumes:
       - ./:/var/www/html/
     depends_on:
@@ -20,7 +20,7 @@ services:
       context: .
       dockerfile: docker/backend.Dockerfile
     ports:
-      - "8889:80"
+      - "8871:80"
     volumes:
       - ./:/var/www/html/
     depends_on:
@@ -33,17 +33,15 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: service_center
-      MYSQL_USER: root
-      MYSQL_PASSWORD: root
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     ports:
-      - "8080:80"  
+      - "8081:80"  
     environment:
       PMA_HOST: db 
     depends_on:
