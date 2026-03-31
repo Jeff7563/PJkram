@@ -17,12 +17,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         $pdo = getServiceCenterPDO();
-        $table = getServiceCenterTable();
 
-        $sql = "UPDATE `$table` SET 
+        $sql = "UPDATE `claims` SET 
                 status=?, verify_remarks=?, verifier=?, updated_at=? 
                 WHERE id=?";
-                
+                 
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             $status, $verify_remarks, $verifier, $updated_at,

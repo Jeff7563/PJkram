@@ -15,18 +15,28 @@ $placeholders = implode(',', array_fill(0, count($ids), '?'));
 
 try {
     $pdo = getServiceCenterPDO();
-    $table = getServiceCenterTable();
 
-    // ดึงข้อมูลตาม ID ที่ส่งมา
-    $stmt = $pdo->prepare("SELECT * FROM `$table` WHERE id IN ($placeholders) ORDER BY id DESC");
+    // 1. ดึงข้อมูลหลักจากตาราง claims (V3)
+    $stmt = $pdo->prepare("SELECT * FROM `claims` WHERE id IN ($placeholders) ORDER BY id DESC");
     $stmt->execute($ids);
-    $claims = $stmt->fetchAll();
+    $claims = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // 2. ดึงข้อมูลอะไหล่ทั้งหมดที่เกี่ยวข้อง (Batch Fetch)
+    $stmtItems = $pdo->prepare("SELECT * FROM `claim_items` WHERE claim_id IN ($placeholders)");
+    $stmtItems->execute($ids);
+    $allItems = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
+
+    // จัดกลุ่มอะไหล่ตาม claim_id เพื่อให้เรียกใช้งานง่าย
+    $itemsByClaim = [];
+    foreach ($allItems as $item) {
+        $itemsByClaim[$item['claim_id']][] = $item;
+    }
 
     // เคลียร์สิ่งตกค้าง (Buffer) ป้องกันไฟล์พัง
     if (ob_get_length()) ob_clean(); 
     
     // ตั้งค่า Header บังคับให้ดาวน์โหลดเป็นไฟล์ .csv
-    $filename = "Export_Claims_" . date('Ymd_His') . ".csv";
+    $filename = "Export_Claims_V3_" . date('Ymd_His') . ".csv";
     header('Content-Type: text/csv; charset=utf-8');
     header('Content-Disposition: attachment; filename="' . $filename . '"');
 
@@ -47,11 +57,8 @@ try {
         'ยี่ห้อรถ (เกรด)', 
         'หมายเลขตัวถัง', 
         'ปัญหาที่ลูกค้าแจ้ง',
-        'ยอดรวมอะไหล่หลัก (บาท)',
-        'ยอดรวมอะไหล่ที่เคลมร่วมกัน (บาท)',
         'ยอดรวมค่าอะไหล่ (บาท)',
-        'รายการอะไหล่หลัก',
-        'รายการอะไหล่ที่เคลมร่วมกัน',
+        'รายการอะไหล่',
         'สถานะการพิจารณา',
         'หมายเหตุ (ผู้ตรวจสอบ)',
         'ผู้ตรวจสอบ', 
@@ -61,14 +68,15 @@ try {
     $count = 1;
     foreach ($claims as $row) {
         // จัดรูปแบบวันที่
-        $claimDateFormatted = $row['claimDate'] ? date('d/m/Y', strtotime($row['claimDate'])) : '-';
+        $claim_id = $row['id'];
+        $claimDateFormatted = !empty($row['claim_date']) ? date('d/m/Y', strtotime($row['claim_date'])) : '-';
         $updatedAtFormatted = !empty($row['updated_at']) ? date('d/m/Y H:i', strtotime($row['updated_at'])) : '-';
         
         // จัดรูปแบบเลขเอกสาร
-        $idPart = "C" . str_pad($row['id'], 3, '0', STR_PAD_LEFT);
+        $idPart = "C" . str_pad($claim_id, 3, '0', STR_PAD_LEFT);
         $datePart = "000000";
-        if (!empty($row['claimDate']) && $row['claimDate'] !== '0000-00-00') {
-            $timestamp = strtotime($row['claimDate']);
+        if (!empty($row['claim_date']) && $row['claim_date'] !== '0000-00-00') {
+            $timestamp = strtotime($row['claim_date']);
             if ($timestamp !== false) {
                 $datePart = date('dm', $timestamp) . substr((date('Y', $timestamp) + 543), -2);
             }
@@ -81,24 +89,55 @@ try {
         if ($row['status'] == 'Rejected') $statusText = 'ไม่อนุมัติการเคลม';
 
         // จัดรูปแบบประเภทและเกรดรถ
-        $carType = $row['carType'] == 'new' ? 'รถใหม่' : ($row['carType'] == 'used' ? 'รถมือสอง' : $row['carType']);
-        $brandText = $row['carBrand'] . (!empty($row['usedGrade']) ? " ({$row['usedGrade']})" : "");
+        $carType = $row['car_type'] == 'new' ? 'รถใหม่' : ($row['car_type'] == 'used' ? 'รถมือสอง' : $row['car_type']);
+        $brandText = $row['car_brand'] . (!empty($row['used_grade']) ? " ({$row['used_grade']})" : "");
 
-        // คำนวณยอดรวมอะไหล่เฉพาะเคสนั้นๆ
-        $partsArray = json_decode($row['parts'], true) ?: [];
+        // ดึงรายการอะไหล่จากที่จัดกลุ่มไว้
+        $parts = $itemsByClaim[$claim_id] ?? [];
         $sumMoney = 0;
-        $mainSum = 0;
-        $assocSum = 0;
-        $mainPartsDesc = [];
-        $assocPartsDesc = [];
-        foreach($partsArray as $part) {
-            $qty = floatval($part['qty'] ?? 0);
-            $price = floatval($part['price'] ?? 0);
+        $partsDesc = [];
+        
+        foreach($parts as $part) {
+            $qty = floatval($part['quantity'] ?? 0);
+            $price = floatval($part['unit_price'] ?? 0);
             $total = $qty * $price;
             $sumMoney += $total;
-            if (isset($part['type']) && $part['type'] === 'assoc') {
-                $assocSum += $total;
-                $assocPartsDesc[] = trim(($part['code'] ?? '-') . ' : ' . ($part['name'] ?? '-') . ' x' . $qty);
+            $partsDesc[] = trim(($part['part_code'] ?? '-') . ' : ' . ($part['part_name'] ?? '-') . ' x' . $qty);
+        }
+
+        // จัดการลบการขึ้นบรรทัดใหม่ในช่องปัญหา (ป้องกัน Excel แถวพัง)
+        $cleanProblemDesc = str_replace(array("\r", "\n"), " ", $row['problem_desc'] ?? '');
+        $cleanRemarks = str_replace(array("\r", "\n"), " ", $row['verify_remarks'] ?? '');
+
+        // วางข้อมูลลงไปทีละแถว
+        fputcsv($output, [
+            $count++,
+            $docId,
+            $claimDateFormatted,
+            $row['branch'],
+            $row['owner_name'],
+            $row['owner_phone'],
+            $carType,
+            $brandText,
+            $row['vin'],
+            $cleanProblemDesc,
+            number_format($sumMoney, 2, '.', ''),
+            $partsDesc ? implode(' / ', $partsDesc) : '-',
+            $statusText,
+            $cleanRemarks,
+            $row['verifier'] ?? '-',
+            $updatedAtFormatted
+        ]);
+    }
+    
+    // ปิดไฟล์
+    fclose($output);
+    exit;
+
+} catch (Exception $e) {
+    die("เกิดข้อผิดพลาดในการส่งออก Excel: " . $e->getMessage());
+}
+?>
             } else {
                 $mainSum += $total;
                 $mainPartsDesc[] = trim(($part['code'] ?? '-') . ' : ' . ($part['name'] ?? '-') . ' x' . $qty);

@@ -15,9 +15,10 @@
     <img src="https://i.ibb.co/svxDp4Y7/image.png" alt="อึ้งกุ่ยเฮง Logo">
   </div>
   <div class="nav-menu">
-    <a href="<?= BASE_URL_FRONTEND ?>/index.php" class="nav-btn <?= ($current_page == 'index.php') ? 'active' : '';?>">ฟอร์มส่งเคลม</a>
-    <a href="<?= BASE_URL_FRONTEND ?>/history.php" class="nav-btn <?= ($current_page == 'history.php') ? 'active' : '';?>">ประวัติเคลม</a>
-    <a href="<?= BASE_URL_FRONTEND ?>/check.php" class="nav-btn <?= ($current_page == 'check.php') ? 'active' : '';?>">ตรวจเช็ค</a>
+    <a href="<?= BASE_URL_FRONTEND ?>/dashboard.php" class="nav-btn <?= ($current_page == 'dashboard.php') ? 'active' : '';?>">📊 แดชบอร์ด</a>
+    <a href="<?= BASE_URL_FRONTEND ?>/index.php" class="nav-btn <?= ($current_page == 'index.php') ? 'active' : '';?>">📝 ฟอร์มส่งเคลม</a>
+    <a href="<?= BASE_URL_FRONTEND ?>/history.php" class="nav-btn <?= ($current_page == 'history.php') ? 'active' : '';?>">⏳ ประวัติเคลม</a>
+    <a href="<?= BASE_URL_FRONTEND ?>/check.php" class="nav-btn <?= ($current_page == 'check.php') ? 'active' : '';?>">🔎 ตรวจเช็ค</a>
     <?php if ($_sidebar_is_admin): ?>
     <a href="<?= BASE_URL_FRONTEND ?>/admin.php" class="nav-btn <?= ($current_page == 'admin.php') ? 'active' : '';?>" style="margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">🛡️ จัดการผู้ใช้/สิทธิ์</a>
     <?php endif; ?>
@@ -102,4 +103,40 @@
   window.addEventListener('resize', () => {
     if (window.innerWidth > 1024) closeSidebar();
   });
+
+  // Toast Helper
+  window.showToast = function(message, type = 'success') {
+    const toastEl = document.getElementById('liveToast');
+    const toastMsg = document.getElementById('toastMessage');
+    if (!toastEl || !toastMsg) return;
+
+    toastMsg.textContent = message;
+    toastEl.classList.remove('bg-primary', 'bg-success', 'bg-danger', 'bg-warning', 'bg-info', 'text-dark');
+    
+    if (type === 'success') {
+        toastEl.classList.add('bg-success');
+    } else if (type === 'error' || type === 'danger') {
+        toastEl.classList.add('bg-danger');
+    } else if (type === 'warning') {
+        toastEl.classList.add('bg-warning', 'text-dark');
+    } else {
+        toastEl.classList.add('bg-primary');
+    }
+
+    const toast = new bootstrap.Toast(toastEl);
+    toast.show();
+  };
 </script>
+
+<!-- Toast Container -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 10000;">
+  <div id="liveToast" class="toast align-items-center text-white border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" style="border-radius: 12px; min-width: 250px;">
+    <div class="d-flex p-2">
+      <div class="toast-body fs-6 fw-medium" id="toastMessage">
+        ข้อความแจ้งเตือน
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
+</div>
+

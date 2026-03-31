@@ -101,9 +101,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmtRepair = $pdo->prepare($sqlRepair);
             $stmtRepair->execute([
                 $id, $pd,
-                $_POST['approver_repair_id'] ?? null,
-                $_POST['approver_repair_name'] ?? null,
-                $_POST['approver_repair_signature'] ?? null
+                $_POST['repair_id'] ?? null,
+                $_POST['repair_name'] ?? null,
+                $_POST['repair_signature'] ?? null
             ]);
         } 
         elseif ($claim_type === 'ReplaceVehicle') {

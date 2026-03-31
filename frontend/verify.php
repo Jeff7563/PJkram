@@ -313,7 +313,7 @@ try {
             <div class="col-12 col-lg-6">
               <div class="row align-items-center mb-3">
                 <label class="col-sm-4 col-form-label fw-600">ชื่อ-นามสกุล</label>
-                <div class="col-sm-8"><input type="text" class="form-control bg-light border-0" value="<?= htmlspecialchars($claim['ownerName']) ?>" readonly></div>
+                <div class="col-sm-8"><input type="text" class="form-control bg-light border-0" value="<?= htmlspecialchars($claim['owner_name']) ?>" readonly></div>
               </div>
               <div class="row align-items-center mb-3">
                 <label class="col-sm-4 col-form-label fw-600">ยี่ห้อรถ</label>
@@ -697,15 +697,17 @@ try {
                 .then(res => res.text())
                 .then(text => {
                     if (text.includes('✅')) {
-                        alert('✅ บันทึกผลการตรวจสอบเรียบร้อยแล้ว!');
-                        window.location.href = 'check.php'; 
+                        showToast('✅ บันทึกผลการตรวจสอบเรียบร้อยแล้ว!', 'success');
+                        setTimeout(() => {
+                            window.location.href = 'check.php'; 
+                        }, 1500);
                     } else {
-                        alert('❌ เกิดข้อผิดพลาด:\n' + text.replace(/(<([^>]+)>)/gi, "")); 
+                        showToast('❌ ' + text.replace(/(<([^>]+)>)/gi, ""), 'error');
                         if (submitBtn) { submitBtn.innerHTML = originalText; submitBtn.disabled = false; }
                     }
                 })
                 .catch(err => {
-                    alert('❌ เกิดข้อผิดพลาดในการเชื่อมต่อ!');
+                    showToast('❌ เกิดข้อผิดพลาดในการเชื่อมต่อ!', 'error');
                     if (submitBtn) { submitBtn.innerHTML = originalText; submitBtn.disabled = false; }
                 });
             });

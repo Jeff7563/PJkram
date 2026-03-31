@@ -850,15 +850,17 @@ try {
                 .then(res => res.text())
                 .then(text => {
                     if (text.includes('✅')) {
-                        alert('✅ บันทึกข้อมูลสำเร็จ');
-                        window.location.href = 'history.php';
+                        showToast('✅ บันทึกข้อมูลสำเร็จ', 'success');
+                        setTimeout(() => {
+                             window.location.href = 'history.php';
+                        }, 1500);
                     } else {
-                        alert('❌ เกิดข้อผิดพลาด:\n' + text.replace(/<[^>]*>/g, ''));
+                        showToast('❌ ' + text.replace(/<[^>]*>/g, ''), 'error');
                         btn.disabled = false; btn.innerHTML = originalText;
                     }
                 })
                 .catch(() => {
-                    alert('❌ ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
+                    showToast('❌ ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้', 'error');
                     btn.disabled = false; btn.innerHTML = originalText;
                 });
             });

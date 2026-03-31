@@ -13,10 +13,23 @@ $placeholders = implode(',', array_fill(0, count($ids), '?'));
 
 try {
     $pdo = getServiceCenterPDO();
-    $table = getServiceCenterTable();
-    $stmt = $pdo->prepare("SELECT * FROM `$table` WHERE id IN ($placeholders) ORDER BY id DESC");
+    
+    // 1. ดึงข้อมูลหลักจากตาราง claims (V3)
+    $stmt = $pdo->prepare("SELECT * FROM `claims` WHERE id IN ($placeholders) ORDER BY id DESC");
     $stmt->execute($ids);
-    $claims = $stmt->fetchAll();
+    $claims = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // 2. ดึงข้อมูลอะไหล่ลูกทั้งหมด (Batch Fetch)
+    $stmtItems = $pdo->prepare("SELECT * FROM `claim_items` WHERE claim_id IN ($placeholders)");
+    $stmtItems->execute($ids);
+    $allItems = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
+
+    // จัดกลุ่มลำดับอะไหล่ตาม claim_id
+    $itemsByClaim = [];
+    foreach ($allItems as $item) {
+        $itemsByClaim[$item['claim_id']][] = $item;
+    }
+
 } catch (Exception $e) {
     die("<h2 style='color:red; text-align:center;'>❌ เกิดข้อผิดพลาดในฐานข้อมูล: " . $e->getMessage() . "</h2>");
 }
@@ -33,7 +46,6 @@ try {
         body { font-family: 'Sarabun', sans-serif; margin: 0; padding: 0; background: #f4f6f9; }
         * { box-sizing: border-box; }
         
-        /* หน้าจอ Loading ที่จะโชว์ให้ผู้ใช้เห็น */
         #loading-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
             background: #ffffff; display: flex; flex-direction: column;
@@ -46,7 +58,6 @@ try {
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* ดันเนื้อหา PDF ออกนอกจอ ไม่ให้กวนสายตา แต่ให้ระบบวาดภาพได้สมบูรณ์ */
         #pdf-wrapper { position: absolute; left: -9999px; top: 0; }
         #pdf-content { width: 210mm; background: #fff; color: #000; font-size: 15px; }
         .claim-page { padding: 15mm 20mm; }
@@ -60,8 +71,6 @@ try {
         .parts-table th { background-color: #e6e6e6; text-align: center; font-weight: bold; }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
-        #pdf-content { width: 210mm; }
-        .claim-page { padding: 15mm 20mm; }
         .html2pdf__page-break { display: block; page-break-after: always; page-break-before: always; }
         .parts-table { page-break-inside: auto; }
         .parts-table tr { page-break-inside: avoid; }
@@ -72,35 +81,35 @@ try {
     
     <div id="loading-screen">
         <div class="spinner"></div>
-        <h2 style="color: #333; margin-bottom: 5px;">⏳ กำลังประมวลผลไฟล์ PDF...</h2>
+        <h2 style="color: #333; margin-bottom: 5px;">⏳ กำลังประมวลผลไฟล์ PDF (V3 Normalized)...</h2>
         <p style="color: #666; font-size: 16px;">กรุณารอสักครู่ ระบบจะปิดหน้านี้อัตโนมัติเมื่อดาวน์โหลดเสร็จสิ้น</p>
     </div>
 
     <div id="pdf-wrapper">
         <div id="pdf-content">
             <?php $i = 0; $total = count($claims); foreach ($claims as $claim): $i++;
-                $idPart = "C" . str_pad($claim['id'], 3, '0', STR_PAD_LEFT);
+                $claim_id = $claim['id'];
+                $idPart = "C" . str_pad($claim_id, 3, '0', STR_PAD_LEFT);
                 $datePart = "000000";
-                if (!empty($claim['claimDate']) && $claim['claimDate'] !== '0000-00-00') {
-                    $timestamp = strtotime($claim['claimDate']);
+                if (!empty($claim['claim_date']) && $claim['claim_date'] !== '0000-00-00') {
+                    $timestamp = strtotime($claim['claim_date']);
                     if ($timestamp !== false) {
                         $datePart = date('dm', $timestamp) . substr((date('Y', $timestamp) + 543), -2);
                     }
                 }
                 $doc_id = $idPart . "-" . $datePart;
-                $claimDateFormatted = $claim['claimDate'] ? date('d/m/Y', strtotime($claim['claimDate'])) : '-';
+                $claimDateFormatted = !empty($claim['claim_date']) ? date('d/m/Y', strtotime($claim['claim_date'])) : '-';
                 
-                $carTypeDisplay = $claim['carType'] === 'new' ? 'รถใหม่' : ($claim['carType'] === 'used' ? 'รถมือสอง' : $claim['carType']);
-                $brandText = $claim['carBrand'] . (!empty($claim['usedGrade']) ? " (เกรด: {$claim['usedGrade']})" : "");
-                $partsArray = json_decode($claim['parts'], true) ?: [];
-
+                $carTypeDisplay = $claim['car_type'] === 'new' ? 'รถใหม่' : ($claim['car_type'] === 'used' ? 'รถมือสอง' : $claim['car_type']);
+                $brandText = $claim['car_brand'] . (!empty($claim['used_grade']) ? " (เกรด: {$claim['used_grade']})" : "");
+                
                 $statusText = 'รอดำเนินการ';
                 if ($claim['status'] == 'Approved') $statusText = 'อนุมัติการเคลม';
-                if ($claim['status'] == 'Rejected') $statusText = 'ไม่อนุมัติการเคลม';
+                if ($claim['status'] == 'Rejected') $statusText = 'ไม่นุมัติการเคลม';
             ?>
             <div class="claim-page">
                 <div class="header-title">
-                    <h2>ใบรายละเอียดการตรวจสอบและส่งเคลม</h2>
+                    <h2>ใบรายละเอียดการตรวจสอบและส่งเคลม (V3)</h2>
                     <div style="font-size: 16px; margin-top: 5px;">เลขที่อ้างอิง: <?= $doc_id ?></div>
                 </div>
 
@@ -110,13 +119,13 @@ try {
                         <td style="width: 15%; font-weight: bold; padding: 4px 0; border-bottom: 1px dotted #ccc;">วันที่ส่งเคลม:</td>
                         <td style="width: 35%; padding: 4px 0; border-bottom: 1px dotted #ccc;"><?= $claimDateFormatted ?></td>
                         <td style="width: 15%; font-weight: bold; padding: 4px 0; border-bottom: 1px dotted #ccc;">สาขา:</td>
-                        <td style="width: 35%; padding: 4px 0; border-bottom: 1px dotted #ccc;"><?= htmlspecialchars($claim['branch']) ?></td>
+                        <td style="width: 35%; padding: 4px 0; border-bottom: 1px dotted #ccc;"><?= htmlspecialchars($claim['branch'] ?? '-') ?></td>
                     </tr>
                     <tr>
                         <td style="font-weight: bold; padding: 4px 0; border-bottom: 1px dotted #ccc;">ชื่อ-นามสกุล:</td>
-                        <td style="padding: 4px 0; border-bottom: 1px dotted #ccc;"><?= htmlspecialchars($claim['ownerName']) ?></td>
+                        <td style="padding: 4px 0; border-bottom: 1px dotted #ccc;"><?= htmlspecialchars($claim['owner_name'] ?? '-') ?></td>
                         <td style="font-weight: bold; padding: 4px 0; border-bottom: 1px dotted #ccc;">เบอร์โทรศัพท์:</td>
-                        <td style="padding: 4px 0; border-bottom: 1px dotted #ccc;"><?= htmlspecialchars($claim['ownerPhone'] ?? '-') ?></td>
+                        <td style="padding: 4px 0; border-bottom: 1px dotted #ccc;"><?= htmlspecialchars($claim['owner_phone'] ?? '-') ?></td>
                     </tr>
                 </table>
 
@@ -130,42 +139,35 @@ try {
                     </tr>
                     <tr>
                         <td style="font-weight: bold; padding: 4px 0; border-bottom: 1px dotted #ccc;">หมายเลขตัวถัง:</td>
-                        <td style="padding: 4px 0; border-bottom: 1px dotted #ccc;"><b><?= htmlspecialchars($claim['vin']) ?></b></td>
-                        <td style="font-weight: bold; padding: 4px 0; border-bottom: 1px dotted #ccc;">ผู้บันทึก:</td>
-                        <td style="padding: 4px 0; border-bottom: 1px dotted #ccc;"><?= htmlspecialchars($claim['recorder']) ?></td>
+                        <td style="padding: 4px 0; border-bottom: 1px dotted #ccc;"><b><?= htmlspecialchars($claim['vin'] ?? '-') ?></b></td>
+                        <td style="font-weight: bold; padding: 4px 0; border-bottom: 1px dotted #ccc;">เลขไมล์:</td>
+                        <td style="padding: 4px 0; border-bottom: 1px dotted #ccc;"><?= htmlspecialchars($claim['mileage'] ?? '-') ?> กม.</td>
                     </tr>
                 </table>
 
                 <div class="section-title">3. รายละเอียดปัญหา</div>
                 <div>
                     <div style="font-weight:bold; margin-bottom: 5px;">ปัญหาที่ลูกค้าแจ้ง:</div>
-                    <div class="problem-box"><?= nl2br(htmlspecialchars($claim['problemDesc'])) ?></div>
+                    <div class="problem-box"><?= nl2br(htmlspecialchars($claim['problem_desc'] ?? '')) ?></div>
                 </div>
                 <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
                     <tr>
                         <td style="width: 50%; padding-right: 5px; vertical-align: top;">
                             <div style="font-weight:bold; margin-bottom: 5px;">วิธีการตรวจเช็ค:</div>
-                            <div class="problem-box"><?= nl2br(htmlspecialchars($claim['inspectMethod'])) ?></div>
+                            <div class="problem-box"><?= nl2br(htmlspecialchars($claim['inspect_method'] ?? '')) ?></div>
                         </td>
                         <td style="width: 50%; padding-left: 5px; vertical-align: top;">
                             <div style="font-weight:bold; margin-bottom: 5px;">สาเหตุของปัญหา:</div>
-                            <div class="problem-box"><?= nl2br(htmlspecialchars($claim['inspectCause'])) ?></div>
+                            <div class="problem-box"><?= nl2br(htmlspecialchars($claim['inspect_cause'] ?? '')) ?></div>
                         </td>
                     </tr>
                 </table>
 
                 <div class="section-title">4. รายการอะไหล่ที่เคลม</div>
                 <?php
-                    $mainParts = array_values(array_filter($partsArray, function($part) {
-                        return !isset($part['type']) || $part['type'] !== 'assoc';
-                    }));
-                    $assocParts = array_values(array_filter($partsArray, function($part) {
-                        return isset($part['type']) && $part['type'] === 'assoc';
-                    }));
+                    $parts = $itemsByClaim[$claim_id] ?? [];
                     $sumQty = 0;
                     $sumMoney = 0;
-                    $mainTotal = 0;
-                    $assocTotal = 0;
                 ?>
                 <table class="parts-table">
                     <thead>
@@ -179,54 +181,25 @@ try {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td colspan="6" class="text-center" style="font-weight:bold; background:#eee;">อะไหล่หลัก</td>
-                        </tr>
-                        <?php if (count($mainParts) > 0): ?>
-                            <?php foreach ($mainParts as $idx => $part):
-                                $qty = floatval($part['qty'] ?? 0);
-                                $price = floatval($part['price'] ?? 0);
+                        <?php if (count($parts) > 0): ?>
+                            <?php foreach ($parts as $idx => $part):
+                                $qty = floatval($part['quantity'] ?? 0);
+                                $price = floatval($part['unit_price'] ?? 0);
                                 $total = $qty * $price;
                                 $sumQty += $qty;
                                 $sumMoney += $total;
-                                $mainTotal += $total;
                             ?>
                             <tr>
                                 <td class="text-center"><?= $idx + 1 ?></td>
-                                <td><?= htmlspecialchars($part['code'] ?? '') ?></td>
-                                <td><?= htmlspecialchars($part['name'] ?? '') ?></td>
+                                <td><?= htmlspecialchars($part['part_code'] ?? '-') ?></td>
+                                <td><?= htmlspecialchars($part['part_name'] ?? '-') ?></td>
                                 <td class="text-right"><?= number_format($price, 2) ?></td>
                                 <td class="text-center"><?= $qty ?></td>
                                 <td class="text-right" style="font-weight: bold;"><?= number_format($total, 2) ?></td>
                             </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <tr><td colspan="6" class="text-center text-muted">ไม่มีอะไหล่หลัก</td></tr>
-                        <?php endif; ?>
-
-                        <tr>
-                            <td colspan="6" class="text-center" style="font-weight:bold; background:#eee;">อะไหล่ที่เคลมร่วมกัน</td>
-                        </tr>
-                        <?php if (count($assocParts) > 0): ?>
-                            <?php foreach ($assocParts as $idx => $part):
-                                $qty = floatval($part['qty'] ?? 0);
-                                $price = floatval($part['price'] ?? 0);
-                                $total = $qty * $price;
-                                $sumQty += $qty;
-                                $sumMoney += $total;
-                                $assocTotal += $total;
-                            ?>
-                            <tr>
-                                <td class="text-center"><?= count($mainParts) + $idx + 1 ?></td>
-                                <td><?= htmlspecialchars($part['code'] ?? '') ?></td>
-                                <td><?= htmlspecialchars($part['name'] ?? '') ?></td>
-                                <td class="text-right"><?= number_format($price, 2) ?></td>
-                                <td class="text-center"><?= $qty ?></td>
-                                <td class="text-right" style="font-weight: bold;"><?= number_format($total, 2) ?></td>
-                            </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <tr><td colspan="6" class="text-center text-muted">ไม่มีอะไหล่ที่เคลมร่วมกัน</td></tr>
+                            <tr><td colspan="6" class="text-center text-muted">ไม่มีรายการอะไหล่ในฐานข้อมูล</td></tr>
                         <?php endif; ?>
 
                         <tr>
@@ -236,10 +209,6 @@ try {
                         </tr>
                     </tbody>
                 </table>
-                <div style="margin-top: 10px; font-size: 14px;">
-                    <div><strong>ยอดรวมอะไหล่หลัก:</strong> <?= number_format($mainTotal, 2) ?> บาท</div>
-                    <div><strong>ยอดรวมอะไหล่ที่เคลมร่วมกัน:</strong> <?= number_format($assocTotal, 2) ?> บาท</div>
-                </div>
 
                 <div class="section-title">5. สรุปผลการพิจารณาอนุมัติ</div>
                 <div class="problem-box" style="background-color: #f9f9f9; padding: 15px;">
@@ -265,24 +234,22 @@ try {
 
     <script>
         window.onload = function() {
-            // รอ 1 วินาที ให้ระบบจัดหน้าให้สมบูรณ์ก่อน
             setTimeout(function() {
                 var element = document.getElementById('pdf-content');
                 var opt = {
                     margin:       [10, 10, 10, 10],
-                    filename:     'Export_Claims_<?= date("Ymd_His") ?>.pdf',
+                    filename:     'Export_Claims_V3_<?= date("Ymd_His") ?>.pdf',
                     image:        { type: 'jpeg', quality: 0.98 },
                     html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
                     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
                     pagebreak:    { mode: ['css', 'legacy'] }
                 };
                 
-                // สั่งโหลด PDF เมื่อโหลดเสร็จแล้ว สั่งปิดแท็บนี้ทันที!
                 html2pdf().set(opt).from(element).save().then(function() {
-                    window.close(); // <--- คำสั่งวิเศษ ปิดหน้าต่างตัวเอง
+                    window.close();
                 });
             }, 1000);
         };
     </script>
 </body>
-</html>
+</html>
