@@ -12,17 +12,32 @@ try {
     $search = $_GET['search'] ?? '';
     $branch = $_GET['branch'] ?? '';
     $status = $_GET['status'] ?? '';
-    $date = $_GET['date'] ?? '';
+    $date_start = $_GET['date_start'] ?? '';
+    $date_end = $_GET['date_end'] ?? '';
 
     // 3. สร้างเงื่อนไข SQL
     $whereConditions = ["1=1"];
     $params = [];
 
     if (!empty($search)) {
-        $whereConditions[] = "(ownerName LIKE ? OR vin LIKE ? OR id LIKE ?)";
-        $params[] = "%$search%";
-        $params[] = "%$search%";
-        $params[] = "%$search%";
+        $searchIdMatch = false;
+        $searchIdValue = '';
+        if (preg_match('/^[Cc]0*(\d+)/', $search, $matches)) {
+            $searchIdMatch = true;
+            $searchIdValue = (int)$matches[1];
+        }
+
+        if ($searchIdMatch) {
+            $whereConditions[] = "(owner_name LIKE ? OR vin LIKE ? OR id = ?)";
+            $params[] = "%$search%";
+            $params[] = "%$search%";
+            $params[] = $searchIdValue;
+        } else {
+            $whereConditions[] = "(owner_name LIKE ? OR vin LIKE ? OR id LIKE ?)";
+            $params[] = "%$search%";
+            $params[] = "%$search%";
+            $params[] = "%$search%";
+        }
     }
     if (!empty($branch)) {
         $whereConditions[] = "branch = ?";
@@ -32,9 +47,13 @@ try {
         $whereConditions[] = "status = ?";
         $params[] = $status;
     }
-    if (!empty($date)) {
-        $whereConditions[] = "claimDate = ?";
-        $params[] = $date;
+    if (!empty($date_start)) {
+        $whereConditions[] = "claim_date >= ?";
+        $params[] = $date_start;
+    }
+    if (!empty($date_end)) {
+        $whereConditions[] = "claim_date <= ?";
+        $params[] = $date_end;
     }
 
     $whereSql = implode(' AND ', $whereConditions);
@@ -79,12 +98,20 @@ try {
                 
                 <select name="status" class="form-select" style="width: auto; min-width: 140px;">
                     <option value="">ทุกสถานะ</option>
-                    <option value="Pending" <?= $status == 'Pending' ? 'selected' : '' ?>>รอดำเนินการ</option>
-                    <option value="Approved" <?= $status == 'Approved' ? 'selected' : '' ?>>อนุมัติ</option>
+                    <option value="Pending Fix" <?= $status == 'Pending Fix' ? 'selected' : '' ?>>รอแก้ไข</option>
+                    <option value="Completed" <?= $status == 'Completed' ? 'selected' : '' ?>>ดำเนินการเสร็จสิ้น</option>
+                    <option value="Replaced" <?= $status == 'Replaced' ? 'selected' : '' ?>>เปลี่ยนคัน</option>
+                    <option value="Approved Claim" <?= $status == 'Approved Claim' ? 'selected' : '' ?>>อนุมัติเคลม</option>
+                    <option value="Approved Replacement" <?= $status == 'Approved Replacement' ? 'selected' : '' ?>>อนุมัติเปลี่ยนคัน</option>
                     <option value="Rejected" <?= $status == 'Rejected' ? 'selected' : '' ?>>ปฏิเสธ</option>
                 </select>
                 
-                <input type="date" name="date" class="form-control" style="width: auto;" value="<?= htmlspecialchars($date) ?>">
+                <div class="input-group" style="width: auto;">
+                    <span class="input-group-text">ตั้งแต่</span>
+                    <input type="date" name="date_start" class="form-control" value="<?= htmlspecialchars($date_start) ?>">
+                    <span class="input-group-text">ถึง</span>
+                    <input type="date" name="date_end" class="form-control" value="<?= htmlspecialchars($date_end) ?>">
+                </div>
                 </div>
             </div>
             <div class="col-12 col-lg-auto">
@@ -118,13 +145,13 @@ try {
               <?php if (count($claims) > 0): ?>
                   <?php foreach ($claims as $row): 
                       // 1. จัดรูปแบบวันที่
-                      $claimDateFormatted = $row['claimDate'] ? date('d/m/Y', strtotime($row['claimDate'])) : '-';
+                      $claimDateFormatted = $row['claim_date'] ? date('d/m/Y', strtotime($row['claim_date'])) : '-';
                       
                       // 2. จัดรูปแบบเลขเอกสาร C001-280369
                       $idPart = "C" . str_pad($row['id'], 3, '0', STR_PAD_LEFT);
                       $datePart = "000000";
-                      if (!empty($row['claimDate']) && $row['claimDate'] !== '0000-00-00') {
-                          $timestamp = strtotime($row['claimDate']);
+                      if (!empty($row['claim_date']) && $row['claim_date'] !== '0000-00-00') {
+                          $timestamp = strtotime($row['claim_date']);
                           if ($timestamp !== false) {
                               $buddhistYearShort = substr((date('Y', $timestamp) + 543), -2);
                               $datePart = date('dm', $timestamp) . $buddhistYearShort;
@@ -137,13 +164,25 @@ try {
                       $badgeClass = 'status-badge '; 
                       $statusDisplay = 'รอดำเนินการ';
 
-                      if ($dbStatus === 'Approved') {
+                      if ($dbStatus === 'Approved Claim' || $dbStatus === 'Approved') {
                           $badgeClass .= 'status-approve';
-                          $statusDisplay = 'อนุมัติ';
+                          $statusDisplay = $dbStatus === 'Approved Claim' ? 'อนุมัติเคลม' : 'อนุมัติ';
+                      } elseif ($dbStatus === 'Approved Replacement') {
+                          $badgeClass .= 'status-approve';
+                          $statusDisplay = 'อนุมัติเปลี่ยนคัน';
+                      } elseif ($dbStatus === 'Pending Fix') {
+                          $badgeClass .= 'status-pending'; 
+                          $statusDisplay = 'รอแก้ไข';
+                      } elseif ($dbStatus === 'Completed') {
+                          $badgeClass .= 'bg-success text-white'; 
+                          $statusDisplay = 'ดำเนินการเสร็จสิ้น';
+                      } elseif ($dbStatus === 'Replaced') {
+                          $badgeClass .= 'bg-info text-white'; 
+                          $statusDisplay = 'เปลี่ยนคัน';
                       } elseif ($dbStatus === 'Rejected') {
                           $badgeClass .= 'status-reject';
                           $statusDisplay = 'ปฏิเสธ';
-                      } elseif ($dbStatus === 'Pending') {
+                      } else {
                           $badgeClass .= 'status-pending'; 
                           $statusDisplay = 'รอดำเนินการ';
                       }
@@ -161,19 +200,11 @@ try {
                           $actionDisplay = 'อื่นๆ';
                       }
 
-                      // 5. แปลงประเภทรถเป็นภาษาไทย
-                      $carTypeDisplay = '-';
-                       if (($row['car_type'] ?? '') === 'new') {
-                           $carTypeDisplay = 'รถใหม่';
-                       } elseif (($row['car_type'] ?? '') === 'used') {
-                           $carTypeDisplay = 'รถมือสอง';
-                       } else {
-                           $carTypeDisplay = htmlspecialchars($row['car_type'] ?? ''); 
-                       }
-
-                      // 6. เตรียมข้อความยี่ห้อ + เกรด (สำหรับรถมือสอง)
+                      // 5. แปลงประเภทรถและยี่ห้อ (แบบดั้งเดิม V1)
                        $brandDisplay = htmlspecialchars($row['car_brand'] ?? '');
-                       if (($row['car_type'] ?? '') === 'used' && !empty($row['used_grade'])) {
+                       if (($row['car_type'] ?? '') === 'new') {
+                           $carTypeDisplay = 'รถใหม่<br><span style="font-size:0.85rem; color:#666;">'.$brandDisplay.'</span>';
+                       } else {
                            $gradeMap = [
                                'A_premium' => 'A พรีเมี่ยม',
                                'A_w6' => 'A (ประกัน 6 ด.)',
@@ -181,7 +212,7 @@ try {
                                'C_as_is' => 'C (ตามสภาพ)'
                            ];
                            $gradeText = $gradeMap[$row['used_grade']] ?? $row['used_grade'];
-                           $brandDisplay .= ' / เกรด: ' . $gradeText;
+                           $carTypeDisplay = 'รถมือสอง<br><span style="font-size:0.85rem; color:#666;">'.$brandDisplay.' / เกรด: '.$gradeText.'</span>';
                        }
 
                       // 7. แปลงประเภทการเคลมเป็นภาษาไทย
@@ -192,26 +223,28 @@ try {
                   ?>
                   <tr>
                     <td class="export-col text-center" style="display: none;">
-                      <input type="checkbox" class="row-checkbox form-check-input shadow-none" value="<?= $row['id'] ?>" data-doc="<?= $docId ?>">
+                      <input type="checkbox" class="row-checkbox form-check-input shadow-none text-nowrap" value="<?= $row['id'] ?>" data-doc="<?= $docId ?>">
                     </td>
                     <td class="ps-4">
-                        <div class="doc-id-text"><?= $docId ?></div>
+                        <div class="doc-id-text text-nowrap"><?= $docId ?></div>
                         <div class="car-info-text"><small><?= $claimDateFormatted ?></small></div>
+                        <?php if(!empty($row['sale_date']) && $row['sale_date'] !== '0000-00-00'): ?>
+                        <div class="car-info-text text-danger fw-bold realtime-age mt-1" style="font-size: 0.8rem;" data-saledate="<?= $row['sale_date'] ?>"></div>
+                        <?php endif; ?>
                     </td>
-                    <td><?= htmlspecialchars($row['branch']) ?></td>
+                    <td class="text-nowrap"><?= htmlspecialchars($row['branch']) ?></td>
                     <td>
-                        <div class="fw-medium text-dark"><?= $carTypeDisplay ?></div>
-                        <div class="car-info-text"><?= $brandDisplay ?></div>
+                        <div class="fw-medium text-dark text-nowrap"><?= $carTypeDisplay ?></div>
                     </td>
-                    <td class="fw-medium"><?= htmlspecialchars($row['vin']) ?></td>
+                    <td class="fw-medium text-nowrap"><?= htmlspecialchars($row['vin']) ?></td>
                     
-                    <td><span class="text-dark"><?= $claimCatDisplay ?></span></td>
+                    <td><span class="text-dark text-nowrap"><?= $claimCatDisplay ?></span></td>
                     
-                    <td><span class="text-secondary fw-medium"><?= $actionDisplay ?></span></td> 
+                    <td><span class="text-secondary fw-medium text-nowrap"><?= $actionDisplay ?></span></td> 
                     <td class="text-center">
                       <span class="<?= $badgeClass ?>"><?= $statusDisplay ?></span>
                     </td>
-                    <td class="text-center pe-4">
+                    <td class="text-center pe-4 text-nowrap">
                       <a href="verify.php?id=<?= $row['id'] ?>" class="btn-verify text-decoration-none">ตรวจสอบ</a>
                     </td>
                   </tr>
@@ -393,6 +426,50 @@ try {
           btnCancelExport.click();          
         });
       }
+      // Real-time Age Calculation
+      function applyRealTimeAges() {
+        const ageElements = document.querySelectorAll('.realtime-age');
+        const now = new Date();
+        
+        ageElements.forEach(el => {
+            const saleDateStr = el.getAttribute('data-saledate');
+            if(!saleDateStr) return;
+            
+            const saleDate = new Date(saleDateStr);
+            if(now < saleDate) {
+                el.innerText = '(!)';
+                return;
+            }
+
+            let years = now.getFullYear() - saleDate.getFullYear();
+            let months = now.getMonth() - saleDate.getMonth();
+            let days = now.getDate() - saleDate.getDate();
+            let hours = now.getHours() - saleDate.getHours();
+            let minutes = now.getMinutes() - saleDate.getMinutes();
+
+            if (minutes < 0) { minutes += 60; hours--; }
+            if (hours < 0) { hours += 24; days--; }
+            if (days < 0) {
+                const previousMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+                days += previousMonth.getDate();
+                months--;
+            }
+            if (months < 0) { months += 12; years--; }
+
+            let textParts = [];
+            if (years > 0) textParts.push(`${years} ปี`);
+            if (months > 0 || years > 0) textParts.push(`${months} เดือน`);
+            textParts.push(`${days} วัน`);
+            textParts.push(`${hours} ชม.`);
+            textParts.push(`${minutes} นาที`);
+
+            el.innerText = textParts.join(' ');
+        });
+      }
+      
+      applyRealTimeAges();
+      setInterval(applyRealTimeAges, 60000); // 1 minute
+      
     });
   </script>
 </body>

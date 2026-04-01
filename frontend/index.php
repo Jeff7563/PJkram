@@ -491,7 +491,7 @@ require_once __DIR__ . '/../backend/index_handler.php';
                   <div class="col-5">
                     <div class="form-row-item">
                       <label class="form-label">อายุการใช้งาน</label>
-                      <input type="text" id="vehicle_age_display" class="form-control" placeholder="-- ปี -- เดือน -- วัน 0 ชั่วโมง" readonly style="background-color: #f9f9f9; color: #666; font-weight: 600;">
+                      <input type="text" id="vehicle_age_display" class="form-control" placeholder="-- ปี -- เดือน -- วัน 0 ชั่วโมง" readonly style="background-color: #ffffff; color: #fd0000; font-weight: 600;">
                     </div>
                   </div>
                 </div>
@@ -557,10 +557,10 @@ require_once __DIR__ . '/../backend/index_handler.php';
                   <div class="upload-card" data-field="imgFullCar">
                     <div class="drop-area">
                       <div class="upload-placeholder"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-modern"></use></svg>ภาพรถทั้งคัน</div>
-                      <div class="upload-hint">คลิกหรือวางรูปที่นี่</div>
+                      <div class="upload-hint">รองรับหลายรูป</div>
                       <span class="attach-count" aria-hidden="true">0</span>
                     </div>
-                    <input type="file" id="imgFullCar" name="imgFullCar" accept="image/*">
+                    <input type="file" id="imgFullCar" name="imgFullCar[]" accept="image/*" multiple>
                     <div class="preview" data-target="imgFullCar"></div>
                   </div>
 
@@ -587,30 +587,30 @@ require_once __DIR__ . '/../backend/index_handler.php';
                   <div class="upload-card" data-field="imgWarranty">
                     <div class="drop-area">
                       <div class="upload-placeholder"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-modern"></use></svg>ภาพสมุดรับประกันที่มีประวัติ</div>
-                      <div class="upload-hint">คลิกหรือวางรูปที่นี่</div>
+                      <div class="upload-hint">รองรับหลายรูป</div>
                       <span class="attach-count" aria-hidden="true">0</span>
                     </div>
-                    <input type="file" id="imgWarranty" name="imgWarranty" accept="image/*">
+                    <input type="file" id="imgWarranty" name="imgWarranty[]" accept="image/*" multiple>
                     <div class="preview" data-target="imgWarranty"></div>
                   </div>
 
                   <div class="upload-card" data-field="imgOdometer">
                     <div class="drop-area">
                       <div class="upload-placeholder"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-modern"></use></svg>ภาพเลขไมล์</div>
-                      <div class="upload-hint">คลิกหรือวางรูปที่นี่</div>
+                      <div class="upload-hint">รองรับหลายรูป</div>
                       <span class="attach-count" aria-hidden="true">0</span>
                     </div>
-                    <input type="file" id="imgOdometer" name="imgOdometer" accept="image/*">
+                    <input type="file" id="imgOdometer" name="imgOdometer[]" accept="image/*" multiple>
                     <div class="preview" data-target="imgOdometer"></div>
                   </div>
 
                   <div class="upload-card" data-field="imgEstimate">
                     <div class="drop-area">
                       <div class="upload-placeholder"><svg class="icon" aria-hidden="true"><use xlink:href="#icon-modern"></use></svg>ภาพใบประเมินรายการอะไหล่</div>
-                      <div class="upload-hint">คลิกหรือวางรูปที่นี่</div>
+                      <div class="upload-hint">รองรับหลายรูป</div>
                       <span class="attach-count" aria-hidden="true">0</span>
                     </div>
-                    <input type="file" id="imgEstimate" name="imgEstimate" accept="image/*">
+                    <input type="file" id="imgEstimate" name="imgEstimate[]" accept="image/*" multiple>
                     <div class="preview" data-target="imgEstimate"></div>
                   </div>
                 </div>
@@ -639,18 +639,27 @@ require_once __DIR__ . '/../backend/index_handler.php';
                 <div class="mb-3">
                   <label class="form-label fw-semibold">การดำเนินการ</label>
                   <div class="d-flex flex-wrap gap-2">
+                    <?php if (hasTag('repairBranch')): ?>
                     <div class="form-check">
                       <input class="form-check-input" type="radio" name="claimAction" id="claim_repair" value="repairBranch">
                       <label class="form-check-label" for="claim_repair">ซ่อมที่สาขา</label>
                     </div>
+                    <?php endif; ?>
+                    
+                    <?php if (hasTag('sendHQ')): ?>
                     <div class="form-check">
                       <input class="form-check-input" type="radio" name="claimAction" id="claim_send" value="sendHQ">
                       <label class="form-check-label" for="claim_send">ส่งซ่อมที่สนญ.</label>
                     </div>
+                    <?php endif; ?>
+
+                    <?php if (hasTag('replaceVehicle')): ?>
                     <div class="form-check">
                       <input class="form-check-input" type="radio" name="claimAction" id="claim_replace" value="replaceVehicle">
                       <label class="form-check-label" for="claim_replace">เปลี่ยนคัน</label>
                     </div>
+                    <?php endif; ?>
+
                     <div class="form-check">
                       <input class="form-check-input" type="radio" name="claimAction" id="claim_other" value="other">
                       <label class="form-check-label" for="claim_other">อื่นๆ</label>
@@ -661,26 +670,7 @@ require_once __DIR__ . '/../backend/index_handler.php';
               </div>
             </div>
 
-            <!-- Approver Section (Visible for RepairBranch / SendHQ) -->
-            <div id="approverSection" class="card d-none mt-3 p-3" style="background: #fffdf9; border: 1px dashed var(--primary-orange);">
-              <h6 class="fw-bold mb-3"><svg class="icon small" aria-hidden="true"><use xlink:href="#icon-claim"></use></svg> ผู้อนุมัติการดำเนินการ</h6>
-              <div class="row g-2">
-                <div class="col-12 col-md-4">
-                  <label class="form-label fs-sm fw-600">รหัสพนักงาน</label>
-                  <select name="approver_id" class="form-select employee-select" data-target-name="approver_name" data-target-sig="approver_signature">
-                    <option value="">-- เลือกพนักงาน --</option>
-                  </select>
-                </div>
-                <div class="col-12 col-md-4">
-                  <label class="form-label fs-sm fw-600">ชื่อผู้อนุมัติ</label>
-                  <input type="text" name="approver_name" class="form-control bg-light" readonly placeholder="ชื่อพนักงาน">
-                </div>
-                <div class="col-12 col-md-4">
-                  <label class="form-label fs-sm fw-600">ลายเซ็นต์</label>
-                  <input type="text" name="approver_signature" class="form-control bg-light" readonly placeholder="ลายเซ็นต์">
-                </div>
-              </div>
-            </div>
+            
 
             <section id="partsSection" class="d-none mt-4">
               <div class="row g-3">
@@ -704,18 +694,40 @@ require_once __DIR__ . '/../backend/index_handler.php';
                       <tbody></tbody>
                     </table>
                   </div>
-                  <div class="parts-actions">
-                    <button type="button" id="addPart" class="btn-parts-add">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  <div class="d-flex justify-content-between align-items-center mt-3" style="width: 100%;">
+                    <div></div> <!-- spacer -->
+                    <button type="button" id="addPart" class="btn-parts-add px-4" style="border-radius:20px; font-weight: 600;">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                       เพิ่มรายการ
                     </button>
-                    <button type="button" id="btnUploadParts" class="btn-parts-upload">
+                    <button type="button" id="btnUploadParts" class="btn-parts-upload px-3" style="border-radius:20px;">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                       อัปโหลดรูปภาพ
                     </button>
                     <input type="file" id="imgPartsUpload" name="imgParts[]" accept="image/*" multiple style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;">
                   </div>
                   <div id="partsImgPreview" class="parts-img-preview" style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 15px;"></div>
+                </div>
+
+                <!-- Approver Section (Visible for RepairBranch / SendHQ) -->
+                <div id="approverSection" class="card d-none mt-3 p-3" style="background: #fffdf9; border: 1px dashed var(--primary-orange);">
+                  <h4 class="fw-bold mb-3"><svg class="icon small" aria-hidden="true"><use xlink:href="#icon-claim"></use></svg> ผู้อนุมัติการดำเนินการ</h4>
+                  <div class="row g-2">
+                    <div class="col-12 col-md-4">
+                      <label class="form-label fs-sm fw-600">รหัสพนักงาน</label>
+                      <select name="approver_id" class="form-select employee-select" data-target-name="approver_name" data-target-sig="approver_signature">
+                        <option value="">-- เลือกพนักงาน --</option>
+                      </select>
+                    </div>
+                    <div class="col-12 col-md-4">
+                      <label class="form-label fs-sm fw-600">ชื่อผู้อนุมัติ</label>
+                      <input type="text" name="approver_name" class="form-control bg-light" readonly placeholder="ชื่อพนักงาน">
+                    </div>
+                    <div class="col-12 col-md-4">
+                      <label class="form-label fs-sm fw-600">ลายเซ็นต์</label>
+                      <input type="text" name="approver_signature" class="form-control bg-light" readonly placeholder="ลายเซ็นต์">
+                    </div>
+                  </div>
                 </div>
               </div>
             </section>
@@ -875,7 +887,7 @@ require_once __DIR__ . '/../backend/index_handler.php';
       <div class="row mt-2 mb-3" style="padding: 0 12px;">
         <div class="col-12 d-flex gap-2 justify-content-end">
           <button type="submit" class="btn btn-primary">บันทึกการส่งเคลม</button>
-          <button type="reset" class="btn btn-outline-secondary">รีเซ็ต</button>
+          <button type="reset" class="btn btn-reset">รีเซ็ต</button>
         </div>
       </div>
 
@@ -890,6 +902,62 @@ require_once __DIR__ . '/../backend/index_handler.php';
       // set claimDate value from placeholder if empty so user can edit it
       const _claimDate = document.getElementById('claimDate');
       if(_claimDate && !_claimDate.value){ _claimDate.value = _claimDate.placeholder || '<?php echo date('Y-m-d'); ?>'; }
+
+      // Real-time Age of Vehicle Calculation
+      function updateVehicleAge() {
+        const saleDateInput = document.getElementById('sale_date');
+        const ageDisplay = document.getElementById('vehicle_age_display');
+        
+        if (!saleDateInput || !ageDisplay) return;
+        
+        if (!saleDateInput.value) {
+          ageDisplay.value = '-- ปี -- เดือน -- วัน 0 ชั่วโมง';
+          ageDisplay.style.color = '#666';
+          ageDisplay.style.fontWeight = '600';
+          return;
+        }
+
+        const saleDate = new Date(saleDateInput.value);
+        const now = new Date();
+
+        if (now < saleDate) {
+          ageDisplay.value = 'วันที่ขายต้องไม่เกินวันปัจจุบัน';
+          ageDisplay.style.color = '#e74c3c';
+          return;
+        }
+
+        let years = now.getFullYear() - saleDate.getFullYear();
+        let months = now.getMonth() - saleDate.getMonth();
+        let days = now.getDate() - saleDate.getDate();
+        let hours = now.getHours() - saleDate.getHours();
+        let minutes = now.getMinutes() - saleDate.getMinutes();
+
+        if (minutes < 0) {
+            minutes += 60;
+            hours--;
+        }
+        if (hours < 0) {
+            hours += 24;
+            days--;
+        }
+        if (days < 0) {
+            const previousMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+            days += previousMonth.getDate();
+            months--;
+        }
+        if (months < 0) {
+            months += 12;
+            years--;
+        }
+
+        ageDisplay.value = `${years} ปี ${months} เดือน ${days} วัน ${hours} ชั่วโมง ${minutes} นาที`;
+        ageDisplay.style.color = '#e74c3c'; // สีแดงเด่นชัด (Text สีแดง แบบ Real Time)
+        ageDisplay.style.fontWeight = 'bold';
+      }
+
+      setInterval(updateVehicleAge, 60000); // 1 minute
+      const saleDateInputEvent = document.getElementById('sale_date');
+      if(saleDateInputEvent) saleDateInputEvent.addEventListener('change', updateVehicleAge);
 
       const gallery = document.getElementById('imageGallery');
       const form = document.getElementById('claimForm');
@@ -992,13 +1060,14 @@ require_once __DIR__ . '/../backend/index_handler.php';
         if(!partsSection) return;
         const sel = document.querySelector('input[name="claimAction"]:checked');
         const val = sel ? sel.value : '';
-        const showParts = val === 'repairBranch' || val === 'sendHQ' || val === 'replaceVehicle';
+        // ซ่อนตารางอะไหล่ถ้าเป็นการเปลี่ยนคัน
+        const showParts = val === 'repairBranch' || val === 'sendHQ';
         partsSection.classList.toggle('d-none', !showParts);
         
         const partsDeliverySection = document.getElementById('partsDeliverySection');
-        if(partsDeliverySection) partsDeliverySection.classList.toggle('d-none', !(val === 'repairBranch' || val === 'sendHQ'));
+        if(partsDeliverySection) partsDeliverySection.classList.toggle('d-none', !showParts);
         
-        if(approverSection) approverSection.classList.toggle('d-none', !(val === 'repairBranch' || val === 'sendHQ'));
+        if(approverSection) approverSection.classList.toggle('d-none', !showParts);
       }
 
       function updateClaimActionVisibility(){

@@ -180,14 +180,15 @@ body {
 .btn-primary:hover {
   background-color: #da5400;
   border-color: #da5400;
+  color: #fff;
   transform: translateY(-2px);
   box-shadow: 0 6px 18px rgba(242, 114, 43, 0.25);
 }
 
-.btn-success {
-  background-color: var(--btn-green);
-  border-color: var(--btn-green);
-  color: #fff;
+.btn-reset {
+  background-color: #e0e0e0;
+  border-color: #e0e0e0;
+  color: #333;
 }
 
 .btn-success:hover {

@@ -90,7 +90,7 @@ try {
 <div class="main-content">
     <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="fw-bold m-0" style="color: #2c3e50;">📊 ภาพรวมระบบจัดการเคลม</h2>
+            <h2 class="fw-bold m-0" style="color: #2c3e50;">ภาพรวมระบบจัดการเคลม</h2>
             <div class="text-muted fw-500">อัปเดตล่าสุด: <?= date('d/m/Y H:i') ?></div>
         </div>
 

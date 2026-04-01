@@ -232,7 +232,7 @@ body {
   font-size: 1rem;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.btn-reset:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(255, 30, 30, 0.3); }
+.btn-reset:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(255, 30, 30, 0.3); color: #ffffff; background-color: #ff1e1e; }
 
 .btn-action {
   background-color: var(--btn-green);
@@ -679,3 +679,17 @@ body {
   transform: scale(1.15);
   background-color: rgba(255, 0, 0, 1);
 }
+
+  /* ปุ่มสีส้ม Custom */
+  .btn-primary-orange {
+      background-color: #ff7a32;
+      color: #ffffff;
+      border: none;
+      transition: all 0.2s ease-in-out;
+  }
+
+  .btn-primary-orange:hover {
+      background-color: #e66a2a;
+      color: #ffffff;
+      box-shadow: 0 4px 8px rgba(255, 122, 50, 0.3);
+  }

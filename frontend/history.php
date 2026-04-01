@@ -12,17 +12,32 @@ try {
     $search = $_GET['search'] ?? '';
     $branch = $_GET['branch'] ?? '';
     $status = $_GET['status'] ?? '';
-    $date = $_GET['date'] ?? '';
+    $date_start = $_GET['date_start'] ?? '';
+    $date_end = $_GET['date_end'] ?? '';
 
     // 3. สร้างเงื่อนไข SQL แบบไดนามิก
     $whereConditions = ["1=1"];
     $params = [];
 
     if (!empty($search)) {
-        $whereConditions[] = "(owner_name LIKE ? OR vin LIKE ? OR problem_desc LIKE ?)";
-        $params[] = "%$search%";
-        $params[] = "%$search%";
-        $params[] = "%$search%";
+        $searchIdMatch = false;
+        $searchIdValue = '';
+        if (preg_match('/^[Cc]0*(\d+)/', $search, $matches)) {
+            $searchIdMatch = true;
+            $searchIdValue = (int)$matches[1];
+        }
+
+        if ($searchIdMatch) {
+            $whereConditions[] = "(owner_name LIKE ? OR vin LIKE ? OR id = ?)";
+            $params[] = "%$search%";
+            $params[] = "%$search%";
+            $params[] = $searchIdValue;
+        } else {
+            $whereConditions[] = "(owner_name LIKE ? OR vin LIKE ? OR id LIKE ?)";
+            $params[] = "%$search%";
+            $params[] = "%$search%";
+            $params[] = "%$search%";
+        }
     }
     if (!empty($branch)) {
         $whereConditions[] = "branch = ?";
@@ -32,9 +47,13 @@ try {
         $whereConditions[] = "status = ?";
         $params[] = $status;
     }
-    if (!empty($date)) {
-        $whereConditions[] = "claim_date = ?";
-        $params[] = $date;
+    if (!empty($date_start)) {
+        $whereConditions[] = "claim_date >= ?";
+        $params[] = $date_start;
+    }
+    if (!empty($date_end)) {
+        $whereConditions[] = "claim_date <= ?";
+        $params[] = $date_end;
     }
 
     $whereSql = implode(' AND ', $whereConditions);
@@ -77,11 +96,20 @@ try {
                 </select>
                 <select name="status" class="form-select" style="width: auto; min-width: 140px;">
                   <option value="">ทุกสถานะ</option>
-                  <option value="Pending" <?= $status == 'Pending' ? 'selected' : '' ?>>รอดำเนินการ</option>
-                  <option value="Approved" <?= $status == 'Approved' ? 'selected' : '' ?>>อนุมัติ</option>
+                  <option value="Pending" <?= $status == 'Pending' ? 'selected' : '' ?>>ส่งไปตรวจสอบ</option>
+                  <option value="Pending Fix" <?= $status == 'Pending Fix' ? 'selected' : '' ?>>รอแก้ไข</option>
+                  <option value="Completed" <?= $status == 'Completed' ? 'selected' : '' ?>>ดำเนินการเสร็จสิ้น</option>
+                  <option value="Replaced" <?= $status == 'Replaced' ? 'selected' : '' ?>>เปลี่ยนคัน</option>
+                  <option value="Approved Claim" <?= $status == 'Approved Claim' ? 'selected' : '' ?>>อนุมัติเคลม</option>
+                  <option value="Approved Replacement" <?= $status == 'Approved Replacement' ? 'selected' : '' ?>>อนุมัติเปลี่ยนคัน</option>
                   <option value="Rejected" <?= $status == 'Rejected' ? 'selected' : '' ?>>ปฏิเสธ</option>
                 </select>
-                <input type="date" name="date" class="form-control" style="width: auto;" value="<?= htmlspecialchars($date) ?>">
+                <div class="input-group" style="width: auto;">
+                    <span class="input-group-text">ตั้งแต่</span>
+                    <input type="date" name="date_start" class="form-control" value="<?= htmlspecialchars($date_start) ?>">
+                    <span class="input-group-text">ถึง</span>
+                    <input type="date" name="date_end" class="form-control" value="<?= htmlspecialchars($date_end) ?>">
+                </div>
                 </div>
             </div>
             <div class="col-12 col-lg-auto">
@@ -117,15 +145,24 @@ try {
                 $badgeClass = 'hc-badge'; 
                 $statusDisplay = 'รอดำเนินการ'; // ค่าเริ่มต้น
 
-                if ($dbStatus === 'Approved') {
+                if ($dbStatus === 'Approved' || $dbStatus === 'Approved Claim' || $dbStatus === 'Approved Replacement') {
                     $badgeClass .= ' bg-success text-white';
-                    $statusDisplay = 'อนุมัติ';
+                    $statusDisplay = $dbStatus === 'Approved Replacement' ? 'อนุมัติเปลี่ยนคัน' : ($dbStatus === 'Approved Claim' ? 'อนุมัติเคลม' : 'อนุมัติ');
                 } elseif ($dbStatus === 'Rejected') {
                     $badgeClass .= ' bg-danger text-white';
                     $statusDisplay = 'ปฏิเสธ';
+                } elseif ($dbStatus === 'Pending Fix') {
+                    $badgeClass .= ' bg-warning text-dark';
+                    $statusDisplay = 'รอแก้ไข';
+                } elseif ($dbStatus === 'Completed') {
+                    $badgeClass .= ' bg-primary text-white'; 
+                    $statusDisplay = 'ดำเนินการเสร็จสิ้น';
+                } elseif ($dbStatus === 'Replaced') {
+                    $badgeClass .= ' bg-info text-white'; 
+                    $statusDisplay = 'เปลี่ยนคัน';
                 } elseif ($dbStatus === 'Pending') {
-                    $badgeClass .= ' bg-warning text-white'; // เพิ่มสีเหลืองให้สถานะรอดำเนินการ
-                    $statusDisplay = 'รอดำเนินการ';
+                    $badgeClass .= ' bg-secondary text-white'; 
+                    $statusDisplay = 'ส่งไปตรวจสอบ';
                 }
                 
             ?>
@@ -135,10 +172,17 @@ try {
                   <div class="col d-flex flex-column">
                     <div class="hc-date"><?= $claimDateFormatted ?></div>
                     <div class="hc-doc fw-bold">เลขที่เอกสาร : <?= $docId ?></div>
+                    <?php if(!empty($row['sale_date']) && $row['sale_date'] !== '0000-00-00'): ?>
+                    <div class="text-danger fw-bold realtime-age mt-1" style="font-size: 0.8rem;" data-saledate="<?= $row['sale_date'] ?>"></div>
+                    <?php endif; ?>
                   </div>
                   <div class="d-flex gap-2 align-items-center">
                     <div class="<?= $badgeClass ?>">สถานะ : <?= htmlspecialchars($statusDisplay) ?></div>
+                    <?php if (isAdmin()): ?>
                     <a href="edit.php?id=<?= $row['id'] ?>" class="hc-btn">ดู/แก้ไข</a>
+                    <?php else: ?>
+                    <a href="verify.php?id=<?= $row['id'] ?>" class="hc-btn">ดูรายละเอียด</a>
+                    <?php endif; ?>
                   </div>
                 </div>
                 
@@ -221,5 +265,55 @@ try {
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function applyRealTimeAges() {
+        const ageElements = document.querySelectorAll('.realtime-age');
+        
+        ageElements.forEach(el => {
+            const saleDateStr = el.getAttribute('data-saledate');
+            if (!saleDateStr) return;
+            
+            const saleDate = new Date(saleDateStr);
+            const now = new Date();
+            
+            if (now < saleDate) {
+                el.textContent = 'วันที่ขายเกินวันปัจจุบัน';
+                return;
+            }
+            
+            let years = now.getFullYear() - saleDate.getFullYear();
+            let months = now.getMonth() - saleDate.getMonth();
+            let days = now.getDate() - saleDate.getDate();
+            let hours = now.getHours() - saleDate.getHours();
+            let minutes = now.getMinutes() - saleDate.getMinutes();
+            
+            if (minutes < 0) {
+                minutes += 60;
+                hours--;
+            }
+            if (hours < 0) {
+                hours += 24;
+                days--;
+            }
+            if (days < 0) {
+                const previousMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+                days += previousMonth.getDate();
+                months--;
+            }
+            if (months < 0) {
+                months += 12;
+                years--;
+            }
+            
+            el.textContent = `อายุการใช้งาน: ${years} ปี ${months} เดือน ${days} วัน ${hours} ชม. ${minutes} น.`;
+        });
+    }
+
+    // ทำงานทันทีที่โหลดหน้าจอ 
+    applyRealTimeAges();
+    
+    // อัปเดตข้อมูลอัตโนมัติทุกๆ 1 นาที (60000 ms)
+    setInterval(applyRealTimeAges, 60000);
+  </script>
 </body>
 </html>

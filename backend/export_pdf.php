@@ -15,7 +15,7 @@ try {
     $pdo = getServiceCenterPDO();
     
     // 1. ดึงข้อมูลหลักจากตาราง claims (V3)
-    $stmt = $pdo->prepare("SELECT * FROM `claims` WHERE id IN ($placeholders) ORDER BY id DESC");
+    $stmt = $pdo->prepare("SELECT c.*, rd.job_number, rd.job_amount, rd.parts_delivery, rp.replace_type, rp.replace_vin FROM `claims` c LEFT JOIN claim_repair_details rd ON c.id = rd.claim_id LEFT JOIN claim_replacement_details rp ON c.id = rp.claim_id WHERE c.id IN ($placeholders) ORDER BY c.id DESC");
     $stmt->execute($ids);
     $claims = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -59,16 +59,19 @@ try {
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         #pdf-wrapper { position: absolute; left: -9999px; top: 0; }
-        #pdf-content { width: 210mm; background: #fff; color: #000; font-size: 15px; }
-        .claim-page { padding: 15mm 20mm; }
+        #pdf-content { width: 210mm; background: #fff; color: #000; font-size: 11px; }
+        .claim-page { padding: 8mm 12mm; height: 297mm; overflow: hidden; position: relative; }
 
-        .header-title { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
-        .header-title h2 { margin: 0; font-size: 22px; font-weight: bold; }
-        .section-title { font-weight: bold; font-size: 16px; background-color: #f0f0f0; padding: 5px 10px; border-left: 4px solid #e65100; margin-top: 15px; margin-bottom: 10px; }
-        .problem-box { border: 1px solid #000; padding: 10px; border-radius: 4px; min-height: 50px; margin-bottom: 10px; }
-        table.parts-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
-        .parts-table th, .parts-table td { border: 1px solid #000; padding: 6px; text-align: left; }
-        .parts-table th { background-color: #e6e6e6; text-align: center; font-weight: bold; }
+        .header-title { text-align: center; margin-bottom: 8px; border-bottom: 2px solid #000; padding-bottom: 4px; }
+        .header-title h2 { margin: 0; font-size: 16px; font-weight: bold; }
+        .section-title { font-weight: bold; font-size: 12px; background-color: #f0f0f0; padding: 3px 6px; border-left: 3px solid #e65100; margin-top: 8px; margin-bottom: 4px; }
+        .problem-box { border: 1px solid #777; padding: 4px 6px; border-radius: 2px; height: 35px; overflow: hidden; margin-bottom: 4px; font-size: 11px; line-height: 1.3; }
+        table.info-table { width: 100%; border-collapse: collapse; margin-bottom: 6px; font-size: 11px; }
+        table.info-table td { padding: 3px 0; border-bottom: 1px dotted #ccc; }
+        table.parts-table { width: 100%; border-collapse: collapse; margin-top: 4px; font-size: 10px; }
+        .parts-table th, .parts-table td { border: 1px solid #777; padding: 4px; text-align: left; }
+        .parts-table th { background-color: #eee; text-align: center; font-weight: bold; height: 20px;}
+        .parts-table tbody tr { height: 18px; }
         .text-center { text-align: center; }
         .text-right { text-align: right; }
         .html2pdf__page-break { display: block; page-break-after: always; page-break-before: always; }
@@ -104,8 +107,12 @@ try {
                 $brandText = $claim['car_brand'] . (!empty($claim['used_grade']) ? " (เกรด: {$claim['used_grade']})" : "");
                 
                 $statusText = 'รอดำเนินการ';
-                if ($claim['status'] == 'Approved') $statusText = 'อนุมัติการเคลม';
-                if ($claim['status'] == 'Rejected') $statusText = 'ไม่นุมัติการเคลม';
+                if ($claim['status'] == 'Pending Fix') $statusText = 'รอแก้ไข';
+                if ($claim['status'] == 'Completed') $statusText = 'ดำเนินการเสร็จสิ้น';
+                if ($claim['status'] == 'Replaced') $statusText = 'เปลี่ยนคัน';
+                if ($claim['status'] == 'Approved Claim' || $claim['status'] == 'Approved') $statusText = 'อนุมัติเคลม';
+                if ($claim['status'] == 'Approved Replacement') $statusText = 'อนุมัติเปลี่ยนคัน';
+                if ($claim['status'] == 'Rejected') $statusText = 'ปฏิเสธ';
             ?>
             <div class="claim-page">
                 <div class="header-title">
@@ -114,50 +121,50 @@ try {
                 </div>
 
                 <div class="section-title">1. ข้อมูลเอกสารและผู้ใช้งาน</div>
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+                <table class="info-table">
                     <tr>
-                        <td style="width: 15%; font-weight: bold; padding: 4px 0; border-bottom: 1px dotted #ccc;">วันที่ส่งเคลม:</td>
-                        <td style="width: 35%; padding: 4px 0; border-bottom: 1px dotted #ccc;"><?= $claimDateFormatted ?></td>
-                        <td style="width: 15%; font-weight: bold; padding: 4px 0; border-bottom: 1px dotted #ccc;">สาขา:</td>
-                        <td style="width: 35%; padding: 4px 0; border-bottom: 1px dotted #ccc;"><?= htmlspecialchars($claim['branch'] ?? '-') ?></td>
+                        <td style="width: 15%; font-weight: bold;">วันที่ส่งเคลม:</td>
+                        <td style="width: 35%;"><?= $claimDateFormatted ?></td>
+                        <td style="width: 15%; font-weight: bold;">สาขา:</td>
+                        <td style="width: 35%;"><?= htmlspecialchars($claim['branch'] ?? '-') ?></td>
                     </tr>
                     <tr>
-                        <td style="font-weight: bold; padding: 4px 0; border-bottom: 1px dotted #ccc;">ชื่อ-นามสกุล:</td>
-                        <td style="padding: 4px 0; border-bottom: 1px dotted #ccc;"><?= htmlspecialchars($claim['owner_name'] ?? '-') ?></td>
-                        <td style="font-weight: bold; padding: 4px 0; border-bottom: 1px dotted #ccc;">เบอร์โทรศัพท์:</td>
-                        <td style="padding: 4px 0; border-bottom: 1px dotted #ccc;"><?= htmlspecialchars($claim['owner_phone'] ?? '-') ?></td>
+                        <td style="font-weight: bold;">ชื่อ-นามสกุล:</td>
+                        <td><?= htmlspecialchars($claim['owner_name'] ?? '-') ?></td>
+                        <td style="font-weight: bold;">เบอร์โทรศัพท์:</td>
+                        <td><?= htmlspecialchars($claim['owner_phone'] ?? '-') ?></td>
                     </tr>
                 </table>
 
                 <div class="section-title">2. ข้อมูลรถจักรยานยนต์</div>
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+                <table class="info-table">
                     <tr>
-                        <td style="width: 15%; font-weight: bold; padding: 4px 0; border-bottom: 1px dotted #ccc;">ประเภทรถ:</td>
-                        <td style="width: 35%; padding: 4px 0; border-bottom: 1px dotted #ccc;"><?= $carTypeDisplay ?></td>
-                        <td style="width: 15%; font-weight: bold; padding: 4px 0; border-bottom: 1px dotted #ccc;">ยี่ห้อรถ/เกรด:</td>
-                        <td style="width: 35%; padding: 4px 0; border-bottom: 1px dotted #ccc;"><?= $brandText ?></td>
+                        <td style="width: 15%; font-weight: bold;">ประเภทรถ:</td>
+                        <td style="width: 35%;"><?= $carTypeDisplay ?></td>
+                        <td style="width: 15%; font-weight: bold;">ยี่ห้อรถ/เกรด:</td>
+                        <td style="width: 35%;"><?= $brandText ?></td>
                     </tr>
                     <tr>
-                        <td style="font-weight: bold; padding: 4px 0; border-bottom: 1px dotted #ccc;">หมายเลขตัวถัง:</td>
-                        <td style="padding: 4px 0; border-bottom: 1px dotted #ccc;"><b><?= htmlspecialchars($claim['vin'] ?? '-') ?></b></td>
-                        <td style="font-weight: bold; padding: 4px 0; border-bottom: 1px dotted #ccc;">เลขไมล์:</td>
-                        <td style="padding: 4px 0; border-bottom: 1px dotted #ccc;"><?= htmlspecialchars($claim['mileage'] ?? '-') ?> กม.</td>
+                        <td style="font-weight: bold;">หมายเลขตัวถัง:</td>
+                        <td><b><?= htmlspecialchars($claim['vin'] ?? '-') ?></b></td>
+                        <td style="font-weight: bold;">เลขไมล์:</td>
+                        <td><?= htmlspecialchars($claim['mileage'] ?? '-') ?> กม.</td>
                     </tr>
                 </table>
 
                 <div class="section-title">3. รายละเอียดปัญหา</div>
                 <div>
-                    <div style="font-weight:bold; margin-bottom: 5px;">ปัญหาที่ลูกค้าแจ้ง:</div>
+                    <div style="font-weight:bold; margin-bottom: 2px;">ปัญหาที่ลูกค้าแจ้ง:</div>
                     <div class="problem-box"><?= nl2br(htmlspecialchars($claim['problem_desc'] ?? '')) ?></div>
                 </div>
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 6px;">
                     <tr>
                         <td style="width: 50%; padding-right: 5px; vertical-align: top;">
-                            <div style="font-weight:bold; margin-bottom: 5px;">วิธีการตรวจเช็ค:</div>
+                            <div style="font-weight:bold; margin-bottom: 2px;">วิธีการตรวจเช็ค:</div>
                             <div class="problem-box"><?= nl2br(htmlspecialchars($claim['inspect_method'] ?? '')) ?></div>
                         </td>
                         <td style="width: 50%; padding-left: 5px; vertical-align: top;">
-                            <div style="font-weight:bold; margin-bottom: 5px;">สาเหตุของปัญหา:</div>
+                            <div style="font-weight:bold; margin-bottom: 2px;">สาเหตุของปัญหา:</div>
                             <div class="problem-box"><?= nl2br(htmlspecialchars($claim['inspect_cause'] ?? '')) ?></div>
                         </td>
                     </tr>
@@ -209,18 +216,33 @@ try {
                         </tr>
                     </tbody>
                 </table>
+                
+                <?php if(!empty($claim['job_number']) || !empty($claim['job_amount'])): ?>
+                <div style="margin-top: 10px; padding: 10px; border: 1px dotted #000; background-color: #fdf5e6;">
+                    <b>รายละเอียดยอดจัดซ่อม:</b> เลขจ๊อบ: <?= htmlspecialchars($claim['job_number'] ?? '-') ?> 
+                    | ยอดเงินเคลมสุทธิ: <?= number_format(floatval($claim['job_amount'] ?? 0), 2) ?> บาท
+                </div>
+                <?php endif; ?>
 
                 <div class="section-title">5. สรุปผลการพิจารณาอนุมัติ</div>
-                <div class="problem-box" style="background-color: #f9f9f9; padding: 15px;">
-                    <div style="font-size: 16px; margin-bottom: 10px;">
-                        <b>สถานะการพิจารณา:</b> 
-                        <span style="font-size: 18px; font-weight: bold; color: <?= $claim['status'] == 'Approved' ? '#06b957' : ($claim['status'] == 'Rejected' ? '#dc3545' : '#f39c12') ?>;">
-                            [ <?= $statusText ?> ]
-                        </span>
-                    </div>
-                    <div style="margin-bottom: 10px;"><b>หมายเหตุผู้ตรวจสอบ:</b> <?= htmlspecialchars($claim['verify_remarks'] ?? '-') ?></div>
-                    <div><b>ลงชื่อผู้ตรวจสอบ:</b> <?= htmlspecialchars($claim['verifier'] ?? '.......................................................') ?></div>
-                    <div style="margin-top: 10px;"><b>วันที่ทำรายการล่าสุด:</b> <?= !empty($claim['updated_at']) ? date('d/m/Y H:i', strtotime($claim['updated_at'])) : '-' ?></div>
+                <div style="border: 2px solid #555; padding: 8px; border-radius: 4px; font-size: 11px;">
+                    <table style="width: 100%;">
+                        <tr>
+                            <td style="width: 50%; vertical-align: top;">
+                                <div><b>สถานะการพิจารณา:</b> 
+                                    <span style="font-weight: bold; color: <?= in_array($claim['status'], ['Approved','Approved Claim','Approved Replacement','Completed','Replaced']) ? '#06b957' : ($claim['status'] == 'Rejected' ? '#dc3545' : '#f39c12') ?>;">
+                                        [ <?= $statusText ?> ]
+                                    </span>
+                                </div>
+                                <div style="margin-top: 5px;"><b>ผู้อนุมัติ (ผู้ตรวจสอบ):</b> <?= htmlspecialchars($claim['verifier_name'] ?? $claim['editor_id'] ?? '-') ?></div>
+                                <div style="margin-top: 5px;"><b>ลายเซ็นต์ผู้อนุมัติ:</b> <?= htmlspecialchars($claim['verifier_signature'] ?? '-') ?></div>
+                            </td>
+                            <td style="width: 50%; vertical-align: top;">
+                                <div><b>หมายเหตุผู้ตรวจสอบ:</b> <?= htmlspecialchars($claim['verify_remarks'] ?? '-') ?></div>
+                                <div style="margin-top: 5px;"><b>วันที่ทำรายการล่าสุด:</b> <?= !empty($claim['updated_at']) ? date('d/m/Y H:i', strtotime($claim['updated_at'])) : '-' ?></div>
+                            </td>
+                        </tr>
+                    </table>
                 </div>
             </div>
             
@@ -237,7 +259,7 @@ try {
             setTimeout(function() {
                 var element = document.getElementById('pdf-content');
                 var opt = {
-                    margin:       [10, 10, 10, 10],
+                    margin:       [5, 5, 5, 5],
                     filename:     'Export_Claims_V3_<?= date("Ymd_His") ?>.pdf',
                     image:        { type: 'jpeg', quality: 0.98 },
                     html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },

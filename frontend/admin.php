@@ -117,18 +117,43 @@ $currentUser = getCurrentUser();
         </button>
       </div>
 
-      <!-- Search -->
-      <div class="search-bar mb-4" style="max-width:400px;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="searchUsers" placeholder="ค้นหาผู้ใช้...">
+      <!-- Filters -->
+      <div class="d-flex flex-wrap gap-3 mb-4">
+        <div class="search-bar flex-grow-1" style="max-width:400px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="searchUsers" placeholder="ค้นหาชื่อ, รหัสพนักงาน...">
+        </div>
+        <div>
+          <select id="filterBranch" class="form-select border-2 py-2 px-3 fw-bold" style="border-radius: 14px; color: var(--orange);">
+            <option value="">ทุกสาขาทั้งหมด</option>
+            <option value="สาขา สกลนคร">สาขา สกลนคร</option>
+            <!-- ใส่ตรรกะดึงสาขาอื่นๆถ้ามี -->
+          </select>
+        </div>
       </div>
 
-      <!-- User List -->
-      <div id="userList" class="row g-3">
-        <div class="col-12 text-center py-5 text-muted">
-          <div class="spinner-border text-secondary" role="status"></div>
-          <p class="mt-3">กำลังโหลดข้อมูลผู้ใช้...</p>
-        </div>
+      <!-- Admin Zone -->
+      <div class="mb-5">
+          <div class="d-flex align-items-center mb-3">
+              <span class="fs-5 fw-bold" style="color: #e65100;">ผู้ดูแลระบบ (Admin)</span>
+              <span class="badge bg-danger ms-2" id="adminCount">0</span>
+              <div class="flex-grow-1 border-bottom ms-3" style="border-color: #ffd1b3 !important;"></div>
+          </div>
+          <div id="adminList" class="row g-3">
+              <div class="col-12 text-center py-4 text-muted"><div class="spinner-border text-secondary spinner-border-sm" role="status"></div> กำลังโหลดข้อมูล...</div>
+          </div>
+      </div>
+
+      <!-- User Zone -->
+      <div class="mb-5">
+          <div class="d-flex align-items-center mb-3">
+              <span class="fs-5 fw-bold text-dark">ผู้ใช้งานระบบ (User / พนักงานสาขา)</span>
+              <span class="badge bg-secondary ms-2" id="userCount">0</span>
+              <div class="flex-grow-1 border-bottom ms-3"></div>
+          </div>
+          <div id="userList" class="row g-3">
+              <div class="col-12 text-center py-4 text-muted"><div class="spinner-border text-secondary spinner-border-sm" role="status"></div> กำลังโหลดข้อมูล...</div>
+          </div>
       </div>
 
     </div>
@@ -230,13 +255,25 @@ $currentUser = getCurrentUser();
     }
 
     function renderUsers(users) {
-      const container = document.getElementById('userList');
+      const adminContainer = document.getElementById('adminList');
+      const userContainer = document.getElementById('userList');
+      const adminCountBadge = document.getElementById('adminCount');
+      const userCountBadge = document.getElementById('userCount');
+
       if (users.length === 0) {
-        container.innerHTML = '<div class="col-12 text-center text-muted py-5">ไม่พบผู้ใช้ในระบบ</div>';
+        adminContainer.innerHTML = '<div class="col-12 text-center text-muted py-4">ไม่พบผู้ดูแลระบบตามเงื่อนไขที่ค้นหา</div>';
+        userContainer.innerHTML = '<div class="col-12 text-center text-muted py-4">ไม่พบผู้ใช้ตามเงื่อนไขที่ค้นหา</div>';
+        adminCountBadge.textContent = '0';
+        userCountBadge.textContent = '0';
         return;
       }
 
-      container.innerHTML = users.map(u => {
+      let adminHtml = '';
+      let userHtml = '';
+      let aCount = 0;
+      let uCount = 0;
+
+      users.forEach(u => {
         const tags = JSON.parse(u.tags || '[]');
         const tagHtml = tags.map(t => {
           const info = TAG_LABELS[t] || { label: t, cls: '' };
@@ -252,10 +289,11 @@ $currentUser = getCurrentUser();
           : '';
 
         const opacity = u.is_active == 0 ? 'opacity: 0.5;' : '';
+        const cardStyle = u.role === 'admin' ? 'border-left: 4px solid var(--orange);' : 'border-left: 4px solid #1565c0;';
 
-        return `
-          <div class="col-12 col-lg-6" data-search="${(u.employee_id + ' ' + u.name + ' ' + u.branch).toLowerCase()}">
-            <div class="user-card d-flex justify-content-between align-items-start" style="${opacity}">
+        const uHtml = `
+          <div class="col-12 col-lg-6" data-search="${(u.employee_id + ' ' + u.name + ' ' + u.branch).toLowerCase()}" data-branch="${u.branch || ''}">
+            <div class="user-card d-flex justify-content-between align-items-start" style="${opacity} ${cardStyle}">
               <div class="flex-grow-1">
                 <div class="d-flex align-items-center gap-2 mb-2">
                   <span class="fw-bold fs-6">${escHtml(u.name)}</span>
@@ -264,9 +302,9 @@ $currentUser = getCurrentUser();
                 <div class="text-muted small mb-1">
                   <strong>รหัส:</strong> ${escHtml(u.employee_id)} &nbsp;|&nbsp;
                   <strong>สาขา:</strong> ${escHtml(u.branch || '-')} &nbsp;|&nbsp;
-                  <strong>ลายเซ็นต์:</strong> ${escHtml(u.signature || '-')}
+                  <strong>ลายเซ็น:</strong> ${escHtml(u.signature || '-')}
                 </div>
-                <div class="mt-2">${tagHtml || '<span class="text-muted small">ไม่มี Tag</span>'}</div>
+                <div class="mt-2">${tagHtml || '<span class="text-muted small border p-1 rounded">ไม่มี Tag กรองโซนซ่อม</span>'}</div>
               </div>
               <div class="d-flex gap-1 flex-shrink-0 ms-3">
                 <button class="btn btn-sm btn-outline-secondary" onclick="openEditModal(${u.id})" title="แก้ไข">✏️</button>
@@ -275,7 +313,15 @@ $currentUser = getCurrentUser();
             </div>
           </div>
         `;
-      }).join('');
+
+        if (u.role === 'admin') { adminHtml += uHtml; aCount++; }
+        else { userHtml += uHtml; uCount++; }
+      });
+
+      adminContainer.innerHTML = adminHtml || '<div class="col-12 text-center text-muted py-4">ไม่มีผู้ดูแลระบบในระบบ</div>';
+      userContainer.innerHTML = userHtml || '<div class="col-12 text-center text-muted py-4">ไม่มีผู้ใช้งานในระบบ</div>';
+      adminCountBadge.textContent = aCount;
+      userCountBadge.textContent = uCount;
     }
 
     function escHtml(str) {
@@ -284,14 +330,20 @@ $currentUser = getCurrentUser();
       return div.innerHTML;
     }
 
-    // Search ผู้ใช้
-    document.getElementById('searchUsers').addEventListener('input', function() {
-      const q = this.value.toLowerCase().trim();
-      const filtered = allUsers.filter(u => 
-        (u.employee_id + ' ' + u.name + ' ' + (u.branch || '')).toLowerCase().includes(q)
-      );
+    // Search / Filter ผู้ใช้
+    function applyFilters() {
+      const q = document.getElementById('searchUsers').value.toLowerCase().trim();
+      const bOption = document.getElementById('filterBranch').value;
+      const filtered = allUsers.filter(u => {
+          const matchQ = (u.employee_id + ' ' + u.name + ' ' + (u.branch || '')).toLowerCase().includes(q);
+          const matchB = bOption === '' || u.branch === bOption;
+          return matchQ && matchB;
+      });
       renderUsers(filtered);
-    });
+    }
+
+    document.getElementById('searchUsers').addEventListener('input', applyFilters);
+    document.getElementById('filterBranch').addEventListener('change', applyFilters);
 
     // Modal: เปิดสร้างใหม่
     function openCreateModal() {

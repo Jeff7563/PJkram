@@ -7,49 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $pdo->beginTransaction();
 
-        // 1. จัดการข้อมูลรูปภาพ (Smart Naming)
-        $uploadDir = __DIR__ . '/../uploads/claims/';
-        if (!is_dir($uploadDir)) { mkdir($uploadDir, 0777, true); }
 
-        $vin = $_POST['vin'] ?? 'UnknownVIN';
-        $safeVin = preg_replace('/[^a-zA-Z0-9_-]/', '_', $vin);
-
-        $fieldLabels = [
-            'imgFullCar'  => 'ภาพรถทั้งคัน',
-            'imgSpot'     => 'ภาพจุดปัญหา',
-            'imgPart'     => 'ภาพชิ้นส่วนที่เสียหาย',
-            'imgWarranty' => 'ภาพสมุดรับประกัน',
-            'imgOdometer' => 'ภาพเลขไมล์',
-            'imgEstimate' => 'ภาพใบประเมินอะไหล่',
-            'imgParts'    => 'ภาพอะไหล่ที่เคลม'
-        ];
-
-        $savedImages = [];
-        foreach ($_FILES as $key => $fileData) {
-            $prefix = $fieldLabels[$key] ?? 'รูปภาพทั่วไป';
-            if (is_array($fileData['name'])) {
-                for ($i = 0; $i < count($fileData['name']); $i++) {
-                    if ($fileData['error'][$i] === UPLOAD_ERR_OK && !empty($fileData['name'][$i])) {
-                        $ext = pathinfo($fileData['name'][$i], PATHINFO_EXTENSION);
-                        $uniqueId = date('Ymd_His') . '_' . ($i + 1);
-                        $newFileName = $prefix . '_' . $safeVin . '_' . $uniqueId . '.' . $ext;
-                        if (move_uploaded_file($fileData['tmp_name'][$i], $uploadDir . $newFileName)) {
-                            $savedImages[] = 'uploads/claims/' . $newFileName; 
-                        }
-                    }
-                }
-            } else {
-                if ($fileData['error'] === UPLOAD_ERR_OK && !empty($fileData['name'])) {
-                    $ext = pathinfo($fileData['name'], PATHINFO_EXTENSION);
-                    $uniqueId = date('Ymd_His') . '_0';
-                    $newFileName = $prefix . '_' . $safeVin . '_' . $uniqueId . '.' . $ext;
-                    if (move_uploaded_file($fileData['tmp_name'], $uploadDir . $newFileName)) {
-                        $savedImages[] = 'uploads/claims/' . $newFileName; 
-                    }
-                }
-            }
-        }
-        $claim_images_json = json_encode($savedImages, JSON_UNESCAPED_UNICODE);
 
         // 2. เตรียมข้อมูลหลัก (Claims Table)
         $claimAction = $_POST['claimAction'] ?? 'Other';
@@ -79,17 +37,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sql_claim = "INSERT INTO `claims` (
             claim_type, claim_date, sale_date, vin, mileage, car_type, car_brand, used_grade, 
             owner_name, owner_phone, problem_desc, inspect_method, inspect_cause, 
-            claim_category, branch, recorder_id, claim_images
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            claim_category, branch, recorder_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         $stmt_claim = $pdo->prepare($sql_claim);
         $stmt_claim->execute([
             $claim_type, $claimDate, $saleDate, $vin, $mileage, $carType, $carBrand, $usedGrade,
             $ownerName, $ownerPhone, $problemDesc, $inspectMethod, $inspectCause,
-            $claimCategory, $branch, $recorder, $claim_images_json
+            $claimCategory, $branch, $recorder
         ]);
 
         $claim_id = $pdo->lastInsertId();
+
+        // 1.5 จัดการข้อมูลรูปภาพ (สร้าง Folder ตามวันที่/รหัสเคส)
+        $docIdFormat = "C" . str_pad($claim_id, 3, '0', STR_PAD_LEFT);
+        $uploadBaseDate = date('Y-m-d');
+        $uploadFolder = "{$uploadBaseDate}/{$docIdFormat}";
+        $uploadDir = __DIR__ . '/../uploads/claims/' . $uploadFolder . '/';
+        
+        if (!is_dir($uploadDir)) { mkdir($uploadDir, 0777, true); }
+
+        $safeVin = preg_replace('/[^a-zA-Z0-9_-]/', '_', $vin);
+        $fieldLabels = [
+            'imgFullCar'  => 'ภาพรถทั้งคัน',
+            'imgSpot'     => 'ภาพจุดปัญหา',
+            'imgPart'     => 'ภาพชิ้นส่วนที่เสียหาย',
+            'imgWarranty' => 'ภาพสมุดรับประกัน',
+            'imgOdometer' => 'ภาพเลขไมล์',
+            'imgEstimate' => 'ภาพใบประเมินอะไหล่',
+            'imgParts'    => 'ภาพอะไหล่ที่เคลม'
+        ];
+
+        $savedImages = [];
+        foreach ($_FILES as $key => $fileData) {
+            $prefix = $fieldLabels[$key] ?? 'รูปภาพทั่วไป';
+            if (is_array($fileData['name'])) {
+                for ($i = 0; $i < count($fileData['name']); $i++) {
+                    if ($fileData['error'][$i] === UPLOAD_ERR_OK && !empty($fileData['name'][$i])) {
+                        $ext = pathinfo($fileData['name'][$i], PATHINFO_EXTENSION);
+                        $uniqueId = date('His') . '_' . ($i + 1);
+                        $newFileName = $prefix . '_' . $safeVin . '_' . $uniqueId . '.' . $ext;
+                        if (move_uploaded_file($fileData['tmp_name'][$i], $uploadDir . $newFileName)) {
+                            $savedImages[] = 'uploads/claims/' . $uploadFolder . '/' . $newFileName; 
+                        }
+                    }
+                }
+            } else {
+                if ($fileData['error'] === UPLOAD_ERR_OK && !empty($fileData['name'])) {
+                    $ext = pathinfo($fileData['name'], PATHINFO_EXTENSION);
+                    $uniqueId = date('His') . '_0';
+                    $newFileName = $prefix . '_' . $safeVin . '_' . $uniqueId . '.' . $ext;
+                    if (move_uploaded_file($fileData['tmp_name'], $uploadDir . $newFileName)) {
+                        $savedImages[] = 'uploads/claims/' . $uploadFolder . '/' . $newFileName; 
+                    }
+                }
+            }
+        }
+        $claim_images_json = json_encode($savedImages, JSON_UNESCAPED_UNICODE);
+        
+        // Update images back to the record
+        $pdo->prepare("UPDATE `claims` SET claim_images = ? WHERE id = ?")->execute([$claim_images_json, $claim_id]);
 
         // 3. บันทึกรายการอะไหล่ (Claim Items Table)
         if (isset($_POST['parts_name']) && is_array($_POST['parts_name'])) {
@@ -149,7 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $pdo->commit();
-        echo '<div style="color: #06b957; font-weight: bold; padding: 10px; border-radius: 8px; background: #e8f5e9;">✅ บันทึกข้อมูลการเคลม (Normalized V3) เรียบร้อยแล้ว!</div>';
+        echo '<div style="color: #06b957; font-weight: bold; padding: 10px; border-radius: 8px; background: #e8f5e9;">✅ บันทึกข้อมูลการเคลม เรียบร้อยแล้ว!</div>';
         echo '<script>setTimeout(function(){ window.location.href = "check.php"; }, 1500);</script>';
 
     } catch (Exception $e) {

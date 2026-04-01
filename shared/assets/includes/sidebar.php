@@ -1,10 +1,32 @@
 <?php
   if (session_status() === PHP_SESSION_NONE) session_start();
+  
+  // Include DB to query alert counts
+  require_once __DIR__ . '/../../config/db_connect.php';
+  
   $current_page = basename($_SERVER['PHP_SELF']);
   $_sidebar_is_admin = isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
   $_sidebar_user_name = $_SESSION['user_name'] ?? '';
   $_sidebar_user_role = $_SESSION['user_role'] ?? '';
   $_sidebar_logged_in = !empty($_SESSION['logged_in']);
+  
+  // โลจิกดึงจำนวนเคสที่ "รอดำเนินการ" และ "รอแก้ไข"
+  $pending_claims_count = 0;
+  try {
+      if (function_exists('getServiceCenterPDO')) {
+          $pdo = getServiceCenterPDO();
+          // ถ้าเป็น Admin เห็นทั้งหมด, ถ้าเป็น User เห็นแค่สาขาตัวเอง
+          if ($_sidebar_is_admin) {
+              $stmtAlert = $pdo->prepare("SELECT COUNT(id) FROM claims WHERE status IN ('Pending', 'Pending Fix')");
+              $stmtAlert->execute();
+          } else {
+              $userBranch = $_SESSION['branch'] ?? '';
+              $stmtAlert = $pdo->prepare("SELECT COUNT(id) FROM claims WHERE status IN ('Pending', 'Pending Fix') AND branch = ?");
+              $stmtAlert->execute([$userBranch]);
+          }
+          $pending_claims_count = $stmtAlert->fetchColumn() ?: 0;
+      }
+  } catch(Exception $e) { }
 ?>
 <button id="sidebarToggle" class="hamburger-btn" aria-label="Toggle menu">☰</button>
 
@@ -15,12 +37,25 @@
     <img src="https://i.ibb.co/svxDp4Y7/image.png" alt="อึ้งกุ่ยเฮง Logo">
   </div>
   <div class="nav-menu">
-    <a href="<?= BASE_URL_FRONTEND ?>/dashboard.php" class="nav-btn <?= ($current_page == 'dashboard.php') ? 'active' : '';?>">📊 แดชบอร์ด</a>
-    <a href="<?= BASE_URL_FRONTEND ?>/index.php" class="nav-btn <?= ($current_page == 'index.php') ? 'active' : '';?>">📝 ฟอร์มส่งเคลม</a>
-    <a href="<?= BASE_URL_FRONTEND ?>/history.php" class="nav-btn <?= ($current_page == 'history.php') ? 'active' : '';?>">⏳ ประวัติเคลม</a>
-    <a href="<?= BASE_URL_FRONTEND ?>/check.php" class="nav-btn <?= ($current_page == 'check.php') ? 'active' : '';?>">🔎 ตรวจเช็ค</a>
+    <a href="<?= BASE_URL_FRONTEND ?>/dashboard.php" class="nav-btn <?= ($current_page == 'dashboard.php') ? 'active' : '';?>">แดชบอร์ด</a>
+    <a href="<?= BASE_URL_FRONTEND ?>/index.php" class="nav-btn <?= ($current_page == 'index.php') ? 'active' : '';?>">ฟอร์มส่งเคลม</a>
+    
+    <a href="<?= BASE_URL_FRONTEND ?>/history.php" class="nav-btn <?= ($current_page == 'history.php') ? 'active' : '';?> d-flex justify-content-between align-items-center">
+        <span>ประวัติเคลม</span>
+        <?php if($pending_claims_count > 0 && !$_sidebar_is_admin): ?>
+            <span class="badge bg-danger rounded-pill shadow-sm" style="font-size:0.75rem; padding: 4px 8px;"><?= $pending_claims_count ?> รายการ</span>
+        <?php endif; ?>
+    </a>
+    
+    <a href="<?= BASE_URL_FRONTEND ?>/check.php" class="nav-btn <?= ($current_page == 'check.php') ? 'active' : '';?> d-flex justify-content-between align-items-center">
+        <span>ตรวจเช็ค</span>
+        <?php if($pending_claims_count > 0 && $_sidebar_is_admin): ?>
+            <span class="badge bg-danger rounded-pill shadow-sm animate-pulse" style="font-size:0.75rem; padding: 4px 8px;"><?= $pending_claims_count ?> ใหม่</span>
+        <?php endif; ?>
+    </a>
+    
     <?php if ($_sidebar_is_admin): ?>
-    <a href="<?= BASE_URL_FRONTEND ?>/admin.php" class="nav-btn <?= ($current_page == 'admin.php') ? 'active' : '';?>" style="margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">🛡️ จัดการผู้ใช้/สิทธิ์</a>
+    <a href="<?= BASE_URL_FRONTEND ?>/admin.php" class="nav-btn <?= ($current_page == 'admin.php') ? 'active' : '';?>" style="margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 16px;">จัดการผู้ใช้/สิทธิ์</a>
     <?php endif; ?>
   </div>
 
@@ -129,7 +164,7 @@
 </script>
 
 <!-- Toast Container -->
-<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 10000;">
+<!-- <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 10000;">
   <div id="liveToast" class="toast align-items-center text-white border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" style="border-radius: 12px; min-width: 250px;">
     <div class="d-flex p-2">
       <div class="toast-body fs-6 fw-medium" id="toastMessage">
@@ -138,5 +173,5 @@
       <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
     </div>
   </div>
-</div>
+</div> -->
 

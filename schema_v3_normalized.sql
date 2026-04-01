@@ -29,7 +29,7 @@ INSERT INTO `users` (`employee_id`, `name`, `signature`, `password`, `role`, `br
 -- 2. ตารางหลัก claims (ข้อมูลพื้นฐาน)
 CREATE TABLE IF NOT EXISTS `claims` (
   `id` int UNSIGNED NOT NULL AUTO_INCREMENT,
-  `status` varchar(50) NOT NULL DEFAULT 'Pending',
+  `status` varchar(50) NOT NULL DEFAULT 'Pending',  
   `claim_type` enum('RepairBranch', 'SendHQ', 'ReplaceVehicle', 'Other') NOT NULL,
   `claim_date` date DEFAULT NULL,
   `sale_date` date DEFAULT NULL,
