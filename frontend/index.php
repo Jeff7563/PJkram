@@ -18,7 +18,7 @@ require_once __DIR__ . '/../backend/index_handler.php';
     :root{--orange:#e65100;--orange-600:#ff7a1a;--black:#121212;--muted:#6b6b6b;--bg:#f7f8fb;--surface:#ffffff;--soft-shadow:rgba(16,24,40,0.06);--icon-card-grad:linear-gradient(135deg,#ff7a1a,#ff8a3d)}
     *{box-sizing:border-box}
     body{font-family:'Kanit',Inter,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:linear-gradient(180deg,#fbfbfd,#ffffff);color:var(--black);-webkit-font-smoothing:antialiased;font-size:16px;line-height:1.55;display:flex;min-height:100vh}
-    .container{max-width:1100px;margin:28px auto;padding:0 18px}
+    .container{max-width:1400px;margin:28px auto;padding:0 18px}
     .header{padding:10px 0}
     h1{color:var(--orange);margin:0;font-size:1.6rem}
     .form-title{display:flex;align-items:center;gap:14px;margin:0}
@@ -68,7 +68,7 @@ require_once __DIR__ . '/../backend/index_handler.php';
     /* icon helper */
     .icon{width:18px;height:18px;vertical-align:middle;margin-right:8px;fill:currentColor}
     .icon.small{width:14px;height:14px;margin-right:6px}
-    @media (max-width:880px){ .compact-number input{width:100%;} .inline-field{flex-direction:column;align-items:stretch} .inline-field .label-text{margin-bottom:6px;min-width:auto} }
+    @media (max-width:600px){ .compact-number input{width:100%;} .inline-field{flex-direction:column;align-items:stretch} .inline-field .label-text{margin-bottom:6px;min-width:auto} }
     .label-text{font-weight:600;color:var(--muted);font-size:0.95rem;margin-bottom:6px}
     /* inline grade & brand fields (keep label and select on same row) */
     .grade-field, .brand-select{display:flex;align-items:center;gap:8px}
@@ -404,111 +404,91 @@ require_once __DIR__ . '/../backend/index_handler.php';
       <div class="container-fluid">
         <div class="tab-content" id="claimFormTabContent">
           <div class="tab-pane fade show active" id="tab-basic" role="tabpanel" aria-labelledby="tab-basic-tab">
-            <div class="row g-3">
-              <div class="col-12 col-md-6">
-                <div class="form-row-item">
-                  <label for="branch" class="form-label">สาขา</label>
-                  <select id="branch" name="branch" class="form-select" required>
-                    <option value="">-- เลือกสาขา --</option>
-                    <option>สาขา สกลนคร</option>
-                  </select>
-                </div>
+            <div class="claim-form-grid">
+              <!-- Row 1: Branch & Claim Date -->
+              <div class="form-row-item">
+                <label for="branch" class="form-label">สาขา</label>
+                <select id="branch" name="branch" class="form-select" required>
+                  <option value="">-- เลือกสาขา --</option>
+                  <option>สาขา สกลนคร</option>
+                </select>
               </div>
 
-              <div class="col-12 col-md-6">
-                <div class="form-row-item">
-                  <label for="claimDate" class="form-label">วันที่ส่งเคลม</label>
-                  <input type="date" id="claimDate" name="claimDate" class="form-control" value="<?php echo date('Y-m-d'); ?>" readonly required>
-                </div>
+              <div class="form-row-item">
+                <label for="sale_date" class="form-label">วันที่ขายรถ</label>
+                <input type="date" id="sale_date" name="sale_date" class="form-control">
               </div>
 
-              <div class="col-12 col-md-6">
-                <div class="form-row-item align-items-start">
-                  <label class="form-label">ประเภทรถ</label>
-                  <div class="d-flex gap-2">
-                    <div class="form-check">
-                      <input class="form-check-input" type="radio" name="carType" id="carTypeNew" value="new" checked required>
-                      <label class="form-check-label" for="carTypeNew">รถใหม่</label>
-                    </div>
-                    <div class="form-check">
-                      <input class="form-check-input" type="radio" name="carType" id="carTypeUsed" value="used" required>
-                      <label class="form-check-label" for="carTypeUsed">รถมือสอง</label>
-                    </div>
+              <div class="form-row-item">
+                <label for="claimDate" class="form-label">วันที่ส่งเคลม</label>
+                <input type="date" id="claimDate" name="claimDate" class="form-control" value="<?php echo date('Y-m-d'); ?>" readonly required>
+              </div>
+
+              <!-- Row 2: Sale Date & Vehicle Age -->
+              <div class="form-row-item">
+                <label class="form-label">อายุการใช้งาน</label>
+                <input type="text" id="vehicle_age_display" class="form-control" placeholder="-- ปี -- เดือน -- วัน 0 ชั่วโมง" readonly style="background-color: #ffffff; color: #fd0000; font-weight: 600;">
+              </div>
+            </div>
+
+            <!-- Row 3: Car Details (Pills/Radios + Selects) - Uses 3 columns grid -->
+            <div class="claim-form-grid-3">
+              <div class="form-row-item" style="grid-template-columns: 80px 1fr;">
+                <label class="form-label">ประเภทรถ</label>
+                <div class="d-flex gap-4 align-items-center h-100">
+                  <div class="form-check m-0">
+                    <input class="form-check-input" type="radio" name="carType" id="carTypeNew" value="new" checked required>
+                    <label class="form-check-label ms-1" for="carTypeNew">รถใหม่</label>
+                  </div>
+                  <div class="form-check m-0">
+                    <input class="form-check-input" type="radio" name="carType" id="carTypeUsed" value="used" required>
+                    <label class="form-check-label ms-1" for="carTypeUsed">มือสอง</label>
                   </div>
                 </div>
               </div>
 
-              <div class="col-12 col-md-6">
-                <div class="form-row-item">
-                  <label for="carBrand" class="form-label">ยี่ห้อ</label>
-                  <select id="carBrand" name="carBrand" class="form-select" required>
-                    <option value="">-- เลือกยี่ห้อ --</option>
-                    <option>Honda</option>
-                    <option>Yamaha</option>
-                    <option>Vespa</option>
-                  </select>
-                </div>
+              <div class="form-row-item" style="grid-template-columns: 60px 1fr;">
+                <label for="carBrand" class="form-label">ยี่ห้อ</label>
+                <select id="carBrand" name="carBrand" class="form-select" required>
+                  <option value="">-- เลือกยี่ห้อ --</option>
+                  <option>Honda</option>
+                  <option>Yamaha</option>
+                  <option>Vespa</option>
+                </select>
               </div>
 
-              <div class="col-12 col-md-6" id="gradeLabel">
-                <div class="form-row-item">
-                  <label for="usedGrade" class="form-label">เกรด</label>
-                  <select id="usedGrade" name="usedGrade" class="form-select">
-                    <option value="">-- เลือกเกรด --</option>
-                    <option value="A_premium">A พรีเมี่ยม</option>
-                    <option value="A_w6">A รับประกันเครื่องยนต์ 6 เดือน</option>
-                    <option value="C_w1">C รับประกันเครื่องยนต์ 1 เดือน</option>
-                    <option value="C_as_is">C ตามสภาพไม่รับประกัน</option>
-                  </select>
-                </div>
+              <div id="usedGradeBlock" class="form-row-item d-none" style="grid-template-columns: 60px 1fr;">
+                <label for="usedGrade" class="form-label">เกรด</label>
+                <select id="usedGrade" name="usedGrade" class="form-select">
+                  <option value="">-- เลือกเกรด --</option>
+                  <option value="A_premium">A พรีเมี่ยม</option>
+                  <option value="A_w6">A (6ด.)</option>
+                  <option value="C_w1">C (1ด.)</option>
+                  <option value="C_as_is">C (ตามสภาพ)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="claim-form-grid">
+              <!-- Primary Identification -->
+              <div class="form-row-item">
+                <label for="vin" class="form-label">เลขตัวถัง <span class="text-danger">*</span></label>
+                <input type="text" id="vin" name="vin" class="form-control" placeholder="VIN Number" required>
+              </div>
+              <div class="form-row-item">
+                <label for="mileage" class="form-label">เลขไมล์รถ</label>
+                <input type="number" id="mileage" name="mileage" class="form-control" placeholder="0" min="0">
               </div>
 
-              <div class="col-12 col-md-6">
-                <div class="row g-2">
-                  <div class="col-8">
-                    <div class="form-row-item">
-                      <label for="vin" class="form-label">หมายเลขตัวถัง <span class="text-danger">*</span></label>
-                      <input type="text" id="vin" name="vin" class="form-control" placeholder="VIN Number" required>
-                    </div>
-                  </div>
-                  <div class="col-4">
-                    <div class="form-row-item">
-                      <label for="mileage" class="form-label">เลขไมล์รถ</label>
-                      <input type="number" id="mileage" name="mileage" class="form-control" placeholder="0" min="0">
-                    </div>
-                  </div>
-                </div>
+              <!-- Customer Info -->
+              <div class="form-row-item">
+                <label for="ownerName" class="form-label">ชื่อ-นามสกุล <span class="text-danger">*</span></label>
+                <input type="text" id="ownerName" name="ownerName" class="form-control" placeholder="ชื่อ นามสกุล" required>
               </div>
 
-              <div class="col-12 col-md-6">
-                <div class="row g-2">
-                  <div class="col-7">
-                    <div class="form-row-item">
-                      <label for="sale_date" class="form-label">วันที่ขายรถ</label>
-                      <input type="date" id="sale_date" name="sale_date" class="form-control">
-                    </div>
-                  </div>
-                  <div class="col-5">
-                    <div class="form-row-item">
-                      <label class="form-label">อายุการใช้งาน</label>
-                      <input type="text" id="vehicle_age_display" class="form-control" placeholder="-- ปี -- เดือน -- วัน 0 ชั่วโมง" readonly style="background-color: #ffffff; color: #fd0000; font-weight: 600;">
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-12 col-md-6">
-                <div class="form-row-item">
-                  <label for="ownerName" class="form-label">ชื่อ-นามสกุล (ผู้ซื้อ) <span class="text-danger">*</span></label>
-                  <input type="text" id="ownerName" name="ownerName" class="form-control" placeholder="ชื่อ นามสกุล" required>
-                </div>
-              </div>
-
-              <div class="col-12 col-md-6">
-                <div class="form-row-item">
-                  <label for="ownerPhone" class="form-label">เบอร์โทรศัพท์ <span class="text-danger">*</span></label>
-                  <input type="text" id="ownerPhone" name="ownerPhone" class="form-control" placeholder="เบอร์โทรศัพท์" required>
-                </div>
+              <div class="form-row-item">
+                <label for="ownerPhone" class="form-label">เบอร์โทรศัพท์ <span class="text-danger">*</span></label>
+                <input type="text" id="ownerPhone" name="ownerPhone" class="form-control" placeholder="เบอร์โทรศัพท์" required>
               </div>
             </div>
 
@@ -521,30 +501,25 @@ require_once __DIR__ . '/../backend/index_handler.php';
               </div>
             </div>
 
-            <div class="row g-3">
-              <div class="col-12">
-                <h5 class="fw-bold mb-3" style="color: #222; font-size: 1rem;">ผลการตรวจเช็คปัญหา :</h5>
+            <div class="mt-4">
+              <h5 class="fw-bold mb-3" style="color: #222; font-size: 1rem;">ผลการตรวจเช็คปัญหา :</h5>
+              <div class="mb-3">
+                <label for="inspectMethod" class="form-label fw-bold mb-2">วิธีตรวจเช็ค</label>
+                <textarea id="inspectMethod" name="inspectMethod" rows="3" class="form-control" placeholder="วิธีการตรวจเช็คปัญหา" required></textarea>
               </div>
-              <div class="col-12 col-md-6">
-                <div class="mb-3">
-                  <label for="inspectMethod" class="form-label fw-semibold">วิธีตรวจเช็ค</label>
-                  <textarea id="inspectMethod" name="inspectMethod" rows="3" class="form-control" placeholder="วิธีตรวจเช็ค" required></textarea>
-                </div>
+              <div class="mb-3">
+                <label for="inspectCause" class="form-label fw-bold mb-2">สาเหตุของปัญหา</label>
+                <textarea id="inspectCause" name="inspectCause" rows="3" class="form-control" placeholder="สาเหตุของปัญหา" required></textarea>
               </div>
-              <div class="col-12 col-md-6">
-                <div class="mb-3">
-                  <label for="inspectCause" class="form-label fw-semibold">สาเหตุของปัญหา</label>
-                  <textarea id="inspectCause" name="inspectCause" rows="3" class="form-control" placeholder="สาเหตุของปัญหา" required></textarea>
-                </div>
-              </div>
-              <div class="col-12">
-                <div class="alert alert-info mb-0" style="background-color: #fff6f6; border-left: 4px solid var(--primary-orange); font-size: 0.95rem;">
-                  <strong>***หมายเหตุ :</strong>
-                  <ol style="margin: 6px 0 0 18px; padding: 0;">
-                    <li>รถมือสองมีปัญหาปรึกษาช่างมือสอง เบอร์โทรศัพท์ พี่สีเมือง 061-0190011 พี่บัว 093-3197117 หรือ 042-71135 ต่อ 201</li>
-                    <li>รถใหม่มีปัญหาปรึกษาศูนย์บริการ Honda 086-4594656 Yamaha 086-4550614 Vespa 099-1285556</li>
-                  </ol>
-                </div>
+            </div>
+
+            <div class="mt-4">
+              <div class="alert alert-info mb-0" style="background-color: #fff6f6; border-left: 4px solid var(--primary-orange); font-size: 0.95rem;">
+                <strong>***หมายเหตุ :</strong>
+                <ol style="margin: 6px 0 0 18px; padding: 0;">
+                  <li>รถมือสองมีปัญหาปรึกษาช่างมือสอง เบอร์โทรศัพท์ พี่สีเมือง 061-0190011 พี่บัว 093-3197117 หรือ 042-71135 ต่อ 201</li>
+                  <li>รถใหม่มีปัญหาปรึกษาศูนย์บริการ Honda 086-4594656 Yamaha 086-4550614 Vespa 099-1285556</li>
+                </ol>
               </div>
             </div>
           </div>
@@ -670,8 +645,6 @@ require_once __DIR__ . '/../backend/index_handler.php';
               </div>
             </div>
 
-            
-
             <section id="partsSection" class="d-none mt-4">
               <div class="row g-3">
                 <div class="col-12">
@@ -695,7 +668,7 @@ require_once __DIR__ . '/../backend/index_handler.php';
                     </table>
                   </div>
                   <div class="d-flex justify-content-between align-items-center mt-3" style="width: 100%;">
-                    <div></div> <!-- spacer -->
+                    <div></div>
                     <button type="button" id="addPart" class="btn-parts-add px-4" style="border-radius:20px; font-weight: 600;">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                       เพิ่มรายการ
@@ -709,22 +682,21 @@ require_once __DIR__ . '/../backend/index_handler.php';
                   <div id="partsImgPreview" class="parts-img-preview" style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 15px;"></div>
                 </div>
 
-                <!-- Approver Section (Visible for RepairBranch / SendHQ) -->
-                <div id="approverSection" class="card d-none mt-3 p-3" style="background: #fffdf9; border: 1px dashed var(--primary-orange);">
-                  <h4 class="fw-bold mb-3"><svg class="icon small" aria-hidden="true"><use xlink:href="#icon-claim"></use></svg> ผู้อนุมัติการดำเนินการ</h4>
-                  <div class="row g-2">
-                    <div class="col-12 col-md-4">
-                      <label class="form-label fs-sm fw-600">รหัสพนักงาน</label>
-                      <select name="approver_id" class="form-select employee-select" data-target-name="approver_name" data-target-sig="approver_signature">
+                <div id="approverSection" class="section-sub-card d-none mt-4" style="border-top: 4px solid var(--primary-orange);">
+                  <div class="section-sub-title"><i class="fas fa-signature"></i> ผู้อนุมัติการดำเนินการ</div>
+                  <div class="claim-form-grid-3">
+                    <div class="form-row-item" style="grid-template-columns: 100px 1fr;">
+                      <label class="icon-label"><i class="fas fa-id-badge"></i> รหัสพนักงาน</label>
+                      <select name="approver_id" class="form-select employee-select border-primary-subtle" data-target-name="approver_name" data-target-sig="approver_signature">
                         <option value="">-- เลือกพนักงาน --</option>
                       </select>
                     </div>
-                    <div class="col-12 col-md-4">
-                      <label class="form-label fs-sm fw-600">ชื่อผู้อนุมัติ</label>
+                    <div class="form-row-item" style="grid-template-columns: 80px 1fr;">
+                      <label class="icon-label"><i class="fas fa-user-check"></i> ชื่อผู้อนุมัติ</label>
                       <input type="text" name="approver_name" class="form-control bg-light" readonly placeholder="ชื่อพนักงาน">
                     </div>
-                    <div class="col-12 col-md-4">
-                      <label class="form-label fs-sm fw-600">ลายเซ็นต์</label>
+                    <div class="form-row-item" style="grid-template-columns: 80px 1fr;">
+                      <label class="icon-label"><i class="fas fa-pen-nib"></i> ลายเซ็นต์</label>
                       <input type="text" name="approver_signature" class="form-control bg-light" readonly placeholder="ลายเซ็นต์">
                     </div>
                   </div>
@@ -763,107 +735,110 @@ require_once __DIR__ . '/../backend/index_handler.php';
           </div>
 
           <div class="tab-pane fade" id="tab-replace" role="tabpanel" aria-labelledby="tab-replace-tab">
-            <div id="replaceBlock" class="card d-none mt-4 p-4">
-              <h5 class="fw-bold mb-4" style="color: #222; font-size: 1rem;">รายละเอียดการเปลี่ยนคันใหม่</h5>
+            <div id="replaceBlock" class="card d-none mt-4 p-4 shadow-sm border-0">
+              <h5 class="fw-bold mb-4" style="color: var(--primary-orange);"><i class="fas fa-sync-alt me-2"></i> รายละเอียดการเปลี่ยนคันใหม่</h5>
               
-              <div class="row g-3 mb-3">
-                <div class="col-12">
-                  <label class="form-label fw-semibold">รถคันเก่า : คงเหลือเงินดาวน์</label>
-                </div>
-                <div class="col-12 col-md-6">
-                  <div class="input-group">
-                    <input type="number" class="form-control" name="old_down_balance" placeholder="0.00" step="0.01" min="0">
-                    <span class="input-group-text">บาท</span>
-                  </div>
-                </div>
-              </div>
-
-              <h6 class="fw-bold mb-3 mt-4" style="color: #333; font-size: 0.95rem;">รายละเอียดรถคันใหม่</h6>
-
-              <div class="row g-3 mb-3">
-                <div class="col-12 col-md-6">
-                  <div class="d-flex gap-3 align-items-center">
-                    <div style="flex: 1; min-width: 0;">
-                        <label class="form-label fw-semibold">รถคันใหม่ : คงเหลือเงินดาวน์</label>
-                        <div class="input-group">
-                          <input type="number" class="form-control" name="new_down_balance" placeholder="0.00" step="0.01" min="0">
-                          <span class="input-group-text">บาท</span>
-                        </div>
+              <!-- Group 1: Financial Details -->
+              <div class="section-sub-card mb-4">
+                <div class="section-sub-title"><i class="fas fa-wallet"></i> ยอดเงินคงเหลือ (เงินดาวน์)</div>
+                <div class="claim-form-grid">
+                  <div class="form-row-item">
+                    <label class="icon-label"><i class="fas fa-car"></i> รถคันเก่า</label>
+                    <div class="input-group money-input-group">
+                      <input type="number" class="form-control" name="old_down_balance" placeholder="0.00" step="0.01" min="0">
+                      <span class="input-group-text">บาท</span>
                     </div>
-                    <div style="flex: 1; min-width: 0;">
-                      <label class="form-label fw-semibold">ประเภทรถ</label>
-                      <div class="d-flex gap-3 align-items-center" style="height: 30px;">
-                        <div class="form-check m-0">
-                          <input class="form-check-input" type="radio" name="replaceType" id="replaceType_new" value="รถใหม่">
-                          <label class="form-check-label" for="replaceType_new">รถใหม่</label>
-                        </div>
-                        <div class="form-check m-0">
-                          <input class="form-check-input" type="radio" name="replaceType" id="replaceType_used" value="รถมือสอง">
-                          <label class="form-check-label" for="replaceType_used">รถมือสอง</label>
-                        </div>
-                      </div>
+                  </div>
+                  <div class="form-row-item">
+                    <label class="icon-label"><i class="fas fa-star text-success"></i> รถคันใหม่</label>
+                    <div class="input-group money-input-group">
+                      <input type="number" class="form-control" name="new_down_balance" placeholder="0.00" step="0.01" min="0">
+                      <span class="input-group-text">บาท</span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div class="row g-3 mb-3">
-                <div class="col-12 col-md-6">
-                  <div class="d-flex gap-10" style="gap: 10px;">
-                    <div style="flex: 1; min-width: 0;">
-                      <label for="replaceModel" class="form-label fw-semibold">รุ่น</label>
-                      <input type="text" id="replaceModel" name="replace_model" class="form-control" placeholder="รุ่น">
-                    </div>
-                    <div style="flex: 1; min-width: 0;">
-                      <label for="replaceColor" class="form-label fw-semibold">สี</label>
-                      <input type="text" id="replaceColor" name="replace_color" class="form-control" placeholder="สี">
-                    </div>
-                    <div style="flex: 1; min-width: 0;">
-                      <label for="replaceVin" class="form-label fw-semibold">เลขตัวถัง</label>
-                      <input type="text" id="replaceVin" name="replace_vin" class="form-control" placeholder="เลขตัวถัง / VIN">
-                    </div>
-                  </div>
-                </div>
+              <!-- Group 2: Vehicle Specs -->
+              <div class="section-sub-card mb-4">
+                <div class="section-sub-title"><i class="fas fa-info-circle"></i> ข้อมูลรถคันใหม่</div>
                 
-                <div class="col-12 col-md-6">
-                  <label for="replaceReceiveDate" class="form-label fw-semibold">วันที่รับรถ</label>
-                  <input type="date" id="replaceReceiveDate" name="replace_receive_date" class="form-control">
-                </div>
-              </div>
-
-              <div class="row g-3 mb-3">
-                <div class="col-12">
-                  <label for="replaceReason" class="form-label fw-semibold">สาเหตุที่เปลี่ยนคัน</label>
-                    <input type="text" id="replaceReason" name="replace_reason" class="form-control" placeholder="ระบุสาเหตุการเปลี่ยนคัน">
-                </div>
-              </div>
-
-
-                <div class="row g-3 mb-3">
-                <div class="col-12 col-md-6">
-                    <div class="row g-2">
-                      <div class="col-4">
-                        <label for="replace_id" class="form-label fw-semibold">รหัสพนักงาน</label>
-                        <select id="replace_id" name="replace_id" class="form-select employee-select" data-target-name="replace_name" data-target-sig="replace_signature">
-                           <option value="">-- เลือก --</option>
-                        </select>
+                <div class="claim-form-grid mb-3">
+                  <div class="form-row-item" style="grid-template-columns: 100px 1fr;">
+                    <label class="icon-label"><i class="fas fa-tags"></i> ประเภทรถ</label>
+                    <div class="d-flex gap-3 align-items-center bg-white border rounded px-3 h-100">
+                      <div class="form-check m-0">
+                        <input class="form-check-input replace-car-type" type="radio" name="replaceType" id="replaceType_new" value="รถใหม่" checked>
+                        <label class="form-check-label" for="replaceType_new">รถใหม่</label>
                       </div>
-                      <div class="col-4">
-                        <label for="replace_name" class="form-label fw-semibold">ชื่อพนักงาน</label>
-                        <input type="text" id="replace_name" name="replace_name" class="form-control bg-light" readonly placeholder="ชื่อพนักงาน">
-                      </div>
-                      <div class="col-4">
-                        <label for="replace_signature" class="form-label fw-semibold">ลายเซ็นต์</label>
-                        <input type="text" id="replace_signature" name="replace_signature" class="form-control bg-light" readonly placeholder="ลายเซ็นต์">
+                      <div class="form-check m-0">
+                        <input class="form-check-input replace-car-type" type="radio" name="replaceType" id="replaceType_used" value="รถมือสอง">
+                        <label class="form-check-label" for="replaceType_used">รถมือสอง</label>
                       </div>
                     </div>
+                  </div>
+
+                  <div id="replaceGradeSection" class="form-row-item d-none" style="grid-template-columns: 100px 1fr;">
+                    <label class="icon-label text-primary-orange"><i class="fas fa-medal"></i> เกรดรถ <span class="text-danger">*</span></label>
+                    <select name="replace_used_grade" class="form-select border-primary-subtle">
+                      <option value="">-- เลือกเกรด --</option>
+                      <option value="A_premium">A พรีเมี่ยม</option>
+                      <option value="A_w6">A รับประกันเครื่องยนต์ 6 เดือน</option>
+                      <option value="C_w1">C รับประกันเครื่องยนต์ 1 เดือน</option>
+                      <option value="C_as_is">C ตามสภาพไม่รับประกัน</option>
+                    </select>
+                  </div>
                 </div>
-                
-                <div class="col-12 col-md-6">
-                    <label for="replace_approve_date" class="form-label fw-semibold">วันที่อนุมัติ</label>
+
+                <div class="claim-form-grid-3 mb-3">
+                  <div class="form-row-item" style="grid-template-columns: 60px 1fr;">
+                    <label for="replaceModel" class="icon-label"><i class="fas fa-car-side"></i> รุ่น</label>
+                    <input type="text" id="replaceModel" name="replace_model" class="form-control" placeholder="รุ่น">
+                  </div>
+                  <div class="form-row-item" style="grid-template-columns: 60px 1fr;">
+                    <label for="replaceColor" class="icon-label"><i class="fas fa-palette"></i> สี</label>
+                    <input type="text" id="replaceColor" name="replace_color" class="form-control" placeholder="ระบุสี">
+                  </div>
+                  <div class="form-row-item" style="grid-template-columns: 100px 1fr;">
+                    <label for="replaceVin" class="icon-label"><i class="fas fa-fingerprint"></i> เลขตัวถัง</label>
+                    <input type="text" id="replaceVin" name="replace_vin" class="form-control" placeholder="เลขตัวถัง / VIN">
+                  </div>
+                </div>
+
+                <div class="mt-3">
+                  <label for="replaceReason" class="icon-label mb-2"><i class="fas fa-comment-dots"></i> สาเหตุที่เปลี่ยนคัน</label>
+                  <textarea id="replaceReason" name="replace_reason" class="form-control" placeholder="ระบุรายละเอียดสาเหตุที่ต้องเปลี่ยนรถคันใหม่..." rows="2"></textarea>
+                </div>
+              </div>
+
+              <!-- Group 3: Approval Details -->
+              <div class="section-sub-card">
+                <div class="section-sub-title"><i class="fas fa-check-circle"></i> ผู้อนุมัติการเปลี่ยนรถ</div>
+                <div class="claim-form-grid-3 mb-2">
+                  <div class="form-row-item" style="grid-template-columns: 100px 1fr;">
+                    <label class="icon-label"><i class="fas fa-id-badge"></i> รหัสพนักงาน</label>
+                    <select id="replace_id" name="replace_id" class="form-select employee-select border-primary-subtle" data-target-name="replace_name" data-target-sig="replace_signature">
+                      <option value="">-- เลือก --</option>
+                    </select>
+                  </div>
+                  <div class="form-row-item" style="grid-template-columns: 80px 1fr;">
+                    <label class="icon-label"><i class="fas fa-user-check"></i> ชื่อผู้อนุมัติ</label>
+                    <input type="text" id="replace_name" name="replace_name" class="form-control bg-light" readonly placeholder="ชื่อพนักงาน">
+                  </div>
+                  <div class="form-row-item" style="grid-template-columns: 80px 1fr;">
+                    <label class="icon-label"><i class="fas fa-pen-nib"></i> ลายเซ็นต์</label>
+                    <input type="text" id="replace_signature" name="replace_signature" class="form-control bg-light" readonly placeholder="ลายเซ็นต์">
+                  </div>
+                </div>
+                <div class="claim-form-grid-3">
+                  <div class="form-row-item" style="grid-template-columns: 100px 1fr;">
+                    <label class="icon-label"><i class="fas fa-calendar-check"></i> วันที่อนุมัติ</label>
                     <input type="date" id="replace_approve_date" name="replace_approve_date" class="form-control" value="<?= date('Y-m-d') ?>">
+                  </div>
+                  <div></div>
+                  <div></div>
                 </div>
-            </div>
+              </div>
 
               <div class="row mt-3 mb-0">
                 <div class="col-12">
@@ -874,14 +849,17 @@ require_once __DIR__ . '/../backend/index_handler.php';
               </div>
             </div>
           </div>
-        </div> </div> <hr class="my-4" style="border-color: #ececec;">
-      <div class="row g-3 mb-3" style="padding: 0 12px;">
-        <div class="col-12 col-md-6">
-          <div class="mb-3">
-            <label for="recorder" class="form-label fw-semibold">ผู้บันทึกส่งเคลม <span class="text-danger">*</span></label>
-            <input type="text" id="recorder" name="recorder" class="form-control" placeholder="ชื่อผู้บันทึก" required>
-          </div>
+        </div> 
+      </div> 
+      
+      <hr class="my-4" style="border-color: #ececec;">
+      
+      <div class="claim-form-grid mt-4" style="padding: 0 12px;">
+        <div class="form-row-item">
+          <label for="recorder" class="form-label fw-semibold">ผู้บันทึกส่งเคลม <span class="text-danger">*</span></label>
+          <input type="text" id="recorder" name="recorder" class="form-control" placeholder="ชื่อผู้บันทึก" required>
         </div>
+        <div></div> <!-- Spacer for 2-column grid -->
       </div>
 
       <div class="row mt-2 mb-3" style="padding: 0 12px;">
@@ -894,6 +872,7 @@ require_once __DIR__ . '/../backend/index_handler.php';
       <div id="result" class="result mt-3" role="status" aria-live="polite" style="display: none; padding: 0 12px;"></div>
     </form>
   </main>
+</div> <!-- End of main-content -->
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-cndY3KSa6nw2pNpGFAvZrKpT8829k3KgAC45Eynl0qsnI9qZC6Qys9VbDomvY1vG" crossorigin="anonymous"></script>
   
@@ -1039,7 +1018,7 @@ require_once __DIR__ . '/../backend/index_handler.php';
 
       // show grade select only for used cars and keep it inline with brand
       const gradeFields = document.querySelectorAll('.grade-field');
-      const usedGradeCol = document.getElementById('gradeLabel');
+      const usedGradeCol = document.getElementById('usedGradeBlock');
       function updateGradeVisibility(){
         const checkedType = document.querySelector('input[name="carType"]:checked');
         const used = checkedType && checkedType.value === 'used';
@@ -1433,6 +1412,19 @@ require_once __DIR__ . '/../backend/index_handler.php';
         });
       });
 
+      // --- จัดการรการเปลี่ยนคันใหม่ : เกรด รถมือสอง ---
+      document.querySelectorAll('.replace-car-type').forEach(radio => {
+        radio.addEventListener('change', function() {
+          const section = document.getElementById('replaceGradeSection');
+          if (this.value === 'รถมือสอง') {
+            section.classList.remove('d-none');
+          } else {
+            section.classList.add('d-none');
+            // reset grade value
+            section.querySelector('select').value = '';
+          }
+        });
+      });
     })();
   </script>
 </body>

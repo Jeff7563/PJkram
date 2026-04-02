@@ -50,6 +50,24 @@ try {
 
     $cType = $claim['claim_type'] ?? '';
 
+    $val = !empty($claim['claim_images']) ? $claim['claim_images'] : '[]';
+    $allImages = json_decode($val, true);
+    if (!is_array($allImages)) $allImages = [];
+    
+    $problemImages = [];
+    $partsImages = [];
+    $vinLabel = !empty($claim['vin']) ? str_replace(['/', '\\', ' '], '_', $claim['vin']) : 'UnknownVIN';
+
+    foreach ($allImages as $img) {
+        if (!empty($img) && is_string($img)) {
+            if (strpos($img, 'ภาพอะไหล่ที่เคลม') !== false) {
+                $partsImages[] = $img;
+            } else {
+                $problemImages[] = $img;
+            }
+        }
+    }
+
 } catch (Exception $e) {
     die("เกิดข้อผิดพลาด: " . $e->getMessage());
 }
@@ -108,7 +126,7 @@ try {
                                         </div>
                                     </div>
                                     <div class="row align-items-center">
-                                        <label class="col-sm-4 col-form-label fw-600">ประเภทงาน</label>
+                                        <label class="col-sm-4 col-form-label fw-600">ประเภทการเคลม</label>
                                         <div class="col-sm-8">
                                             <select name="claimCategory" class="form-select border-2" required>
                                                 <option value="เคลมรถก่อนขาย" <?= $claim['claim_category'] == 'pre-sale' || $claim['claim_category'] == 'เคลมรถก่อนขาย' ? 'selected' : '' ?>>เคลมรถก่อนขาย</option>
@@ -201,107 +219,133 @@ try {
                             </div>
 
                             <!-- ส่วนผู้อนุมัติการซ่อม -->
-                            <div id="repairApproverSection" class="mt-4 p-3 rounded-3 border bg-white shadow-sm <?= ($cType === 'RepairBranch' || $cType === 'SendHQ') ? '' : 'd-none' ?>">
-                                <div class="fw-bold mb-3 text-primary-orange"><i class="fas fa-signature me-1"></i> ผู้อนุมัติการซ่อม :</div>
+                            <div id="repairApproverSection" class="section-sub-card mt-4 <?= ($cType === 'RepairBranch' || $cType === 'SendHQ') ? '' : 'd-none' ?>" style="border-top: 4px solid var(--primary-orange);">
+                                <div class="section-sub-title"><i class="fas fa-signature"></i> ผู้อนุมัติการซ่อม</div>
                                 <div class="row g-3">
-                                    <div class="col-md-12 position-relative">
-                                        <label class="form-label fw-600">ผู้อนุมัติการซ่อม <span class="text-danger">*</span></label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="fas fa-search"></i></span>
-                                            <input type="text" id="search-approver-repair" class="form-control" placeholder="พิมพ์ชื่อพนักงาน..." value="<?= htmlspecialchars($claim['repair_app_name'] ?? '') ?>">
-                                        </div>
-                                        <div id="repair-dropdown-list" class="search-dropdown-list shadow-lg"></div>
-                                        <input type="hidden" name="repair_id" id="repair_id" value="<?= htmlspecialchars($claim['repair_app_id'] ?? '') ?>">
-                                        <input type="hidden" name="repair_name" id="repair_name" value="<?= htmlspecialchars($claim['repair_app_name'] ?? '') ?>">
-                                        <input type="hidden" name="repair_signature" id="repair_signature" value="<?= htmlspecialchars($claim['repair_app_sig'] ?? '') ?>">
+                                    <div class="col-12 col-md-4">
+                                        <label class="icon-label"><i class="fas fa-id-badge"></i> รหัสพนักงาน</label>
+                                        <select name="repair_id" id="repair_id" class="form-select employee-select" data-target-name="repair_name" data-target-sig="repair_signature">
+                                            <option value="<?= htmlspecialchars($claim['repair_app_id'] ?? '') ?>"><?= htmlspecialchars($claim['repair_app_id'] ?? '-- เลือกพนักงาน --') ?></option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <label class="icon-label"><i class="fas fa-user-check"></i> ชื่อผู้อนุมัติ</label>
+                                        <input type="text" name="repair_name" id="repair_name" class="form-control bg-light" readonly placeholder="ชื่อพนักงาน" value="<?= htmlspecialchars($claim['repair_app_name'] ?? '') ?>">
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <label class="icon-label"><i class="fas fa-pen-nib"></i> ลายเซ็นต์</label>
+                                        <input type="text" name="repair_signature" id="repair_signature" class="form-control bg-light" readonly placeholder="ลายเซ็นต์" value="<?= htmlspecialchars($claim['repair_app_sig'] ?? '') ?>">
                                     </div>
                                 </div>
                             </div>
 
                             <!-- ส่วนรายละเอียดขอเปลี่ยนคันใหม่ -->
-                            <div id="replaceBlock" class="mt-4 p-4 rounded-4 border shadow-sm <?= ($cType === 'ReplaceVehicle') ? '' : 'd-none' ?>" style="background-color: #fffaf5; border-color: #ffe0b2 !important;">
-                                <div class="fw-bold mb-4 border-bottom pb-2 fs-5" style="color: #d32f2f;"><i class="fas fa-exchange-alt me-2"></i> รายละเอียดการเปลี่ยนคันใหม่</div>
-                                <div class="row g-4 mb-4">
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-bold text-dark">ยอดเงินรถคัน<span class="text-danger">เก่า</span> (คงเหลือเงินดาวน์)</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text bg-white border-2 text-muted"><i class="fas fa-money-bill-wave"></i></span>
-                                            <input type="number" step="0.01" name="old_down_balance" class="form-control border-2" placeholder="0.00" value="<?= htmlspecialchars($claim['old_down_balance'] ?? '') ?>">
-                                            <span class="input-group-text bg-white fw-bold border-2">บาท</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-bold text-dark">ยอดเงินรถคัน<span class="text-success">ใหม่</span> (คงเหลือเงินดาวน์)</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text bg-white border-2 text-muted"><i class="fas fa-money-bill-wave"></i></span>
-                                            <input type="number" step="0.01" name="new_down_balance" class="form-control border-2" placeholder="0.00" value="<?= htmlspecialchars($claim['new_down_balance'] ?? '') ?>">
-                                            <span class="input-group-text bg-white fw-bold border-2">บาท</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="fw-bold mb-2 text-secondary mt-3">รายละเอียดรถคันใหม่</div>
-                                <div class="row g-3">
-                                    <div class="col-md-4">
-                                        <label class="form-label fw-600">ประเภทรถ</label>
-                                        <div class="d-flex gap-3 mt-2">
-                                            <div class="form-check">
-                                                <input class="form-check-input rep-car-type" type="radio" name="replaceType" id="repNew" value="new" <?= ($claim['rp_type'] ?? '') == 'new' ? 'checked' : '' ?>>
-                                                <label class="form-check-label" for="repNew">รถใหม่</label>
+                            <div id="replaceBlock" class="card mt-4 p-4 shadow-sm border-0 <?= ($cType === 'ReplaceVehicle') ? '' : 'd-none' ?>">
+                                <h5 class="fw-bold mb-4"><i class="fas fa-sync-alt me-2"></i> รายละเอียดการเปลี่ยนคันใหม่</h5>
+                                
+                                <!-- Group 1: Financial Details -->
+                                <div class="section-sub-card mb-4">
+                                    <div class="section-sub-title"><i class="fas fa-wallet"></i> ยอดเงินคงเหลือ (เงินดาวน์)</div>
+                                    <div class="row g-3">
+                                        <div class="col-12 col-md-6">
+                                            <label class="icon-label"><i class="fas fa-car"></i> รถคันเก่า</label>
+                                            <div class="input-group money-input-group">
+                                                <input type="number" step="0.01" name="old_down_balance" class="form-control" placeholder="0.00" value="<?= htmlspecialchars($claim['old_down_balance'] ?? '') ?>">
+                                                <span class="input-group-text">บาท</span>
                                             </div>
-                                            <div class="form-check">
-                                                <input class="form-check-input rep-car-type" type="radio" name="replaceType" id="repUsed" value="used" <?= ($claim['rp_type'] ?? '') == 'used' ? 'checked' : '' ?>>
-                                                <label class="form-check-label" for="repUsed">รถมือสอง</label>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <label class="icon-label"><i class="fas fa-star text-success"></i> รถคันใหม่</label>
+                                            <div class="input-group money-input-group">
+                                                <input type="number" step="0.01" name="new_down_balance" class="form-control" placeholder="0.00" value="<?= htmlspecialchars($claim['new_down_balance'] ?? '') ?>">
+                                                <span class="input-group-text">บาท</span>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4 rep-grade-field <?= ($claim['rp_type'] ?? '') == 'used' ? '' : 'd-none' ?>" id="repGradeField">
-                                        <label class="form-label fw-600">เกรด</label>
-                                        <select name="replaceUsedGrade" class="form-select border-2">
-                                            <option value="">-- เลือกเกรด --</option>
-                                            <option value="A_premium" <?= ($claim['rp_used_grade'] ?? '') == 'A_premium' ? 'selected' : '' ?>>A พรีเมี่ยม</option>
-                                            <option value="A_w6" <?= ($claim['rp_used_grade'] ?? '') == 'A_w6' ? 'selected' : '' ?>>A (ประกัน 6 ด.)</option>
-                                            <option value="C_w1" <?= ($claim['rp_used_grade'] ?? '') == 'C_w1' ? 'selected' : '' ?>>C (ประกัน 1 ด.)</option>
-                                            <option value="C_as_is" <?= ($claim['rp_used_grade'] ?? '') == 'C_as_is' ? 'selected' : '' ?>>C (ตามสภาพ)</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label fw-600">รุ่น / สี</label>
-                                        <div class="input-group">
-                                            <input type="text" name="replace_model" class="form-control" placeholder="รุ่น" value="<?= htmlspecialchars($claim['rp_model'] ?? '') ?>">
-                                            <input type="text" name="replace_color" class="form-control" placeholder="สี" value="<?= htmlspecialchars($claim['rp_color'] ?? '') ?>">
+                                </div>
+
+                                <!-- Group 2: Vehicle Specs -->
+                                <div class="section-sub-card mb-4">
+                                    <div class="section-sub-title"><i class="fas fa-info-circle"></i> ข้อมูลรถคันใหม่</div>
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label class="icon-label"><i class="fas fa-tags"></i> ประเภทรถ</label>
+                                            <div class="d-flex gap-3 align-items-center" style="height: 38px; background: #fff; border: 1px solid #eee; padding: 0 15px; border-radius: 8px;">
+                                                <div class="form-check m-0">
+                                                    <input class="form-check-input rep-car-type" type="radio" name="replaceType" id="repNew" value="รถใหม่" <?= (($claim['rp_type'] ?? '') == 'รถใหม่' || ($claim['rp_type'] ?? '') == 'new') ? 'checked' : '' ?>>
+                                                    <label class="form-check-label" for="repNew">รถใหม่</label>
+                                                </div>
+                                                <div class="form-check m-0">
+                                                    <input class="form-check-input rep-car-type" type="radio" name="replaceType" id="repUsed" value="รถมือสอง" <?= (($claim['rp_type'] ?? '') == 'รถมือสอง' || ($claim['rp_type'] ?? '') == 'used') ? 'checked' : '' ?>>
+                                                    <label class="form-check-label" for="repUsed">รถมือสอง</label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4 rep-grade-field <?= ($claim['rp_type'] ?? '') == 'รถมือสอง' || ($claim['rp_type'] ?? '') == 'used' ? '' : 'd-none' ?>" id="repGradeField">
+                                            <label class="icon-label text-primary-orange"><i class="fas fa-medal"></i> เกรดรถมือสอง <span class="text-danger">*</span></label>
+                                            <select name="replaceUsedGrade" class="form-select border-primary-subtle">
+                                                <option value="">-- เลือกเกรด --</option>
+                                                <option value="A_premium" <?= ($claim['rp_used_grade'] ?? '') == 'A_premium' ? 'selected' : '' ?>>A พรีเมี่ยม</option>
+                                                <option value="A_w6" <?= ($claim['rp_used_grade'] ?? '') == 'A_w6' ? 'selected' : '' ?>>A รับประกันเครื่องยนต์ 6 เดือน</option>
+                                                <option value="C_w1" <?= ($claim['rp_used_grade'] ?? '') == 'C_w1' ? 'selected' : '' ?>>C รับประกันเครื่องยนต์ 1 เดือน</option>
+                                                <option value="C_as_is" <?= ($claim['rp_used_grade'] ?? '') == 'C_as_is' ? 'selected' : '' ?>>C ตามสภาพไม่รับประกัน</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <label class="icon-label"><i class="fas fa-calendar-alt"></i> วันที่รับรถ</label>
+                                            <input type="date" name="replace_receive_date" class="form-control" value="<?= !empty($claim['rp_receive_date']) ? date('Y-m-d', strtotime($claim['rp_receive_date'])) : '' ?>">
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label fw-600">เลขตัวถัง (คันใหม่)</label>
-                                        <input type="text" name="replace_vin" class="form-control" placeholder="เลขตัวถัง / VIN" value="<?= htmlspecialchars($claim['replace_vin'] ?? '') ?>">
+
+                                    <div class="row g-3 mt-1">
+                                        <div class="col-md-4">
+                                            <label class="icon-label"><i class="fas fa-car-side"></i> รุ่น</label>
+                                            <input type="text" name="replace_model" class="form-control" placeholder="ระบุรุ่น" value="<?= htmlspecialchars($claim['rp_model'] ?? '') ?>">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="icon-label"><i class="fas fa-palette"></i> สี</label>
+                                            <input type="text" name="replace_color" class="form-control" placeholder="ระบุสี" value="<?= htmlspecialchars($claim['rp_color'] ?? '') ?>">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="icon-label"><i class="fas fa-fingerprint"></i> เลขตัวถัง (คันใหม่)</label>
+                                            <input type="text" name="replace_vin" class="form-control" placeholder="เลขตัวถัง / VIN" value="<?= htmlspecialchars($claim['replace_vin'] ?? '') ?>">
+                                        </div>
                                     </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label fw-600">วันที่รับรถ</label>
-                                        <input type="date" name="replace_receive_date" class="form-control" value="<?= !empty($claim['rp_receive_date']) ? date('Y-m-d', strtotime($claim['rp_receive_date'])) : '' ?>">
+
+                                    <div class="row g-3 mt-1">
+                                        <div class="col-12">
+                                            <label class="icon-label"><i class="fas fa-comment-dots"></i> สาเหตุที่เปลี่ยนคัน</label>
+                                            <textarea name="replace_reason" class="form-control" rows="2" placeholder="ระบุรายละเอียดสาเหตุที่ต้องเปลี่ยนรถคันใหม่..."><?= htmlspecialchars($claim['rp_reason'] ?? '') ?></textarea>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="mt-3">
-                                    <label class="form-label fw-600">สาเหตุที่เปลี่ยนคัน</label>
-                                    <textarea name="replace_reason" class="form-control" rows="2"><?= htmlspecialchars($claim['rp_reason'] ?? '') ?></textarea>
-                                </div>
-
-                                <div class="row g-3 mt-2">
-                                    <div class="col-md-6 position-relative">
-                                        <label class="form-label fw-600">ผู้อนุมัติ <span class="text-danger">*</span></label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="fas fa-search"></i></span>
-                                            <input type="text" id="search-approver-replace" class="form-control" placeholder="ค้นหาชื่อผู้อนุมัติ..." value="<?= htmlspecialchars($claim['rp_app_name'] ?? '') ?>">
+                                <!-- Group 3: Approval Details -->
+                                <div class="section-sub-card">
+                                    <div class="section-sub-title"><i class="fas fa-check-circle"></i> ผู้อนุมัติการเปลี่ยนรถ</div>
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label class="icon-label"><i class="fas fa-id-badge"></i> รหัสพนักงาน</label>
+                                            <select name="replace_id" id="replace_id" class="form-select employee-select" data-target-name="replace_name" data-target-sig="replace_signature">
+                                                <option value="<?= htmlspecialchars($claim['rp_app_id'] ?? '') ?>"><?= htmlspecialchars($claim['rp_app_id'] ?? '-- เลือกพนักงาน --') ?></option>
+                                            </select>
                                         </div>
-                                        <div id="replace-dropdown-list" class="search-dropdown-list shadow-lg"></div>
-                                        <input type="hidden" name="replace_id" id="replace_id" value="<?= htmlspecialchars($claim['rp_app_id'] ?? '') ?>">
-                                        <input type="hidden" name="replace_name" id="replace_name" value="<?= htmlspecialchars($claim['rp_app_name'] ?? '') ?>">
-                                        <input type="hidden" name="replace_signature" id="replace_signature" value="<?= htmlspecialchars($claim['rp_app_sig'] ?? '') ?>">
+                                        <div class="col-md-4">
+                                            <label class="icon-label"><i class="fas fa-user-check"></i> ชื่อผู้อนุมัติ</label>
+                                            <input type="text" name="replace_name" id="replace_name" class="form-control bg-light" readonly value="<?= htmlspecialchars($claim['rp_app_name'] ?? '') ?>">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="icon-label"><i class="fas fa-pen-nib"></i> ลายเซ็นต์</label>
+                                            <input type="text" name="replace_signature" id="replace_signature" class="form-control bg-light" readonly value="<?= htmlspecialchars($claim['rp_app_sig'] ?? '') ?>">
+                                        </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label fw-600">วันที่อนุมัติ</label>
-                                        <input type="date" name="replace_approve_date" class="form-control" value="<?= !empty($claim['rp_app_date']) ? date('Y-m-d', strtotime($claim['rp_app_date'])) : '' ?>">
+                                    <div class="row g-3 mt-1">
+                                        <div class="col-md-4">
+                                            <label class="icon-label"><i class="fas fa-calendar-check"></i> วันที่อนุมัติ</label>
+                                            <input type="date" name="replace_approve_date" class="form-control" value="<?= !empty($claim['rp_app_date']) ? date('Y-m-d', strtotime($claim['rp_app_date'])) : '' ?>">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -316,19 +360,19 @@ try {
                                 <div class="row align-items-center mb-3">
                                     <label class="col-sm-4 col-form-label fw-600 req">ชื่อ-นามสกุล</label>
                                     <div class="col-sm-8">
-                                        <input type="text" name="ownerName" class="form-control border-2 text-danger fw-bold" value="<?= htmlspecialchars($claim['owner_name'] ?? '') ?>" required>
+                                        <input type="text" name="ownerName" class="form-control border-2" value="<?= htmlspecialchars($claim['owner_name'] ?? '') ?>" required>
                                     </div>
                                 </div>
                                 <div class="row align-items-center mb-3">
                                     <label class="col-sm-4 col-form-label fw-600">เบอร์โทรศัพท์</label>
                                     <div class="col-sm-8">
-                                        <input type="text" name="ownerPhone" class="form-control border-2 text-danger fw-bold" value="<?= htmlspecialchars($claim['owner_phone'] ?? '') ?>">
+                                        <input type="text" name="ownerPhone" class="form-control border-2" value="<?= htmlspecialchars($claim['owner_phone'] ?? '') ?>">
                                     </div>
                                 </div>
                                 <div class="row mb-3">
                                     <label class="col-sm-4 col-form-label fw-600">ที่อยู่</label>
                                     <div class="col-sm-8">
-                                        <textarea name="ownerAddress" class="form-control border-2 text-danger fw-bold" rows="3"><?= htmlspecialchars($claim['owner_address'] ?? '') ?></textarea>
+                                        <textarea name="ownerAddress" class="form-control border-2" rows="3"><?= htmlspecialchars($claim['owner_address'] ?? '') ?></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -337,14 +381,14 @@ try {
                                 <div class="row align-items-center mb-3">
                                     <label class="col-sm-4 col-form-label fw-600 req">เลขตัวถัง (VIN)</label>
                                     <div class="col-sm-8">
-                                        <input type="text" name="vin" id="vin_number" class="form-control border-2 text-danger fw-bold" value="<?= htmlspecialchars($claim['vin'] ?? '') ?>" required>
+                                        <input type="text" name="vin" id="vin_number" class="form-control border-2" value="<?= htmlspecialchars($claim['vin'] ?? '') ?>" required>
                                     </div>
                                 </div>
                                 <div class="row align-items-center mb-3">
                                     <label class="col-sm-4 col-form-label fw-600">เลขไมล์</label>
                                     <div class="col-sm-8">
                                         <div class="input-group">
-                                            <input type="number" name="mileage" class="form-control border-2 text-danger fw-bold" value="<?= htmlspecialchars($claim['mileage'] ?? 0) ?>">
+                                            <input type="number" name="mileage" class="form-control border-2" value="<?= htmlspecialchars($claim['mileage'] ?? 0) ?>">
                                             <span class="input-group-text">กม.</span>
                                         </div>
                                     </div>
@@ -352,7 +396,7 @@ try {
                                 <div class="row align-items-center mb-3">
                                     <label class="col-sm-4 col-form-label fw-600">วันที่ขาย</label>
                                     <div class="col-sm-8">
-                                        <input type="date" name="sale_date" id="sale_date" class="form-control border-2 text-danger fw-bold" value="<?= htmlspecialchars($claim['sale_date'] ?? '') ?>">
+                                        <input type="date" name="sale_date" id="sale_date" class="form-control border-2" value="<?= htmlspecialchars($claim['sale_date'] ?? '') ?>">
                                     </div>
                                 </div>
                                 <div class="row align-items-center">
@@ -394,19 +438,25 @@ try {
                             </div>
                             <div class="gallery-grid" id="gallery-grid">
                                 <?php 
-                                $savedImgs = !empty($claim['claim_images']) ? json_decode($claim['claim_images'], true) : [];
-                                if(is_array($savedImgs)):
-                                    foreach($savedImgs as $idx => $imgPath): 
-                                        $fileName = basename($imgPath);
+                                if(is_array($problemImages)):
+                                    foreach($problemImages as $idx => $imgPath): 
+                                        $ext = pathinfo($imgPath, PATHINFO_EXTENSION);
+                                        $downloadName = "รูปภาพปัญหา_" . $vinLabel . "_" . ($idx + 1) . "." . $ext;
                                 ?>
                                     <div class="gallery-item existing-item">
                                         <input type="hidden" name="existing_images[]" value="<?= htmlspecialchars($imgPath) ?>">
-                                        <a href="../<?= htmlspecialchars($imgPath) ?>" target="_blank">
-                                            <img src="../<?= htmlspecialchars($imgPath) ?>" class="preview-img cursor-pointer" style="width:100%; height:120px; object-fit:cover; border-radius:8px;">
-                                        </a>
-                                        <div class="img-preview-footer mt-1 d-flex justify-content-center gap-1">
-                                            <a href="../<?= htmlspecialchars($imgPath) ?>" download title="ดาวน์โหลด" class="btn btn-sm btn-secondary" style="font-size:10px; padding:2px 8px;"><i class="fas fa-download"></i></a>
-                                            <button type="button" class="btn btn-sm btn-danger btn-remove-existing" style="font-size:10px; padding:2px 8px;" title="ลบภาพนี้">❌</button>
+                                        <div class="img-wrap" style="position:relative;">
+                                            <a href="../<?= htmlspecialchars($imgPath) ?>" target="_blank">
+                                                <img src="../<?= htmlspecialchars($imgPath) ?>" class="preview-img cursor-pointer" style="width:100%; height:160px; object-fit:cover; border-radius:8px 8px 0 0;">
+                                            </a>
+                                        </div>
+                                        <div class="img-preview-footer d-flex justify-content-center gap-2 p-2 bg-light border-top">
+                                            <a href="../<?= htmlspecialchars($imgPath) ?>" download="<?= htmlspecialchars($downloadName) ?>" class="btn btn-info btn-sm px-2 text-white" style="font-size:11px; background-color: #0dcaf0 !important; border:none; min-width: 60px;">
+                                                <i class="fas fa-download"></i> โหลด
+                                            </a>
+                                            <button type="button" class="btn btn-warning btn-sm btn-remove-existing text-white" style="font-size:11px; background-color: #ffc107 !important; border:none; min-width: 60px;">
+                                                <i class="fas fa-times"></i> ลบออก
+                                            </button>
                                         </div>
                                     </div>
                                 <?php endforeach; endif; ?>
@@ -473,35 +523,62 @@ try {
                                 </tfoot>
                             </table>
                         </div>
-                        <div id="partsImgPreview" class="d-flex flex-wrap gap-2 mt-3"></div>
+                        <div id="partsImgPreview" class="gallery-grid mt-3">
+                            <?php 
+                            if(is_array($partsImages)):
+                                foreach($partsImages as $idx => $imgPath): 
+                                    $ext = pathinfo($imgPath, PATHINFO_EXTENSION);
+                                    $downloadName = "รายการอะไหล่_" . $vinLabel . "_" . ($idx + 1) . "." . $ext;
+                            ?>
+                                <div class="gallery-item existing-item">
+                                    <input type="hidden" name="existing_images[]" value="<?= htmlspecialchars($imgPath) ?>">
+                                    <div class="img-wrap" style="position:relative;">
+                                        <a href="../<?= htmlspecialchars($imgPath) ?>" target="_blank">
+                                            <img src="../<?= htmlspecialchars($imgPath) ?>" class="preview-img cursor-pointer" style="width:100%; height:160px; object-fit:cover; border-radius:8px 8px 0 0;">
+                                        </a>
+                                    </div>
+                                    <div class="img-preview-footer d-flex justify-content-center gap-2 p-2 bg-light border-top">
+                                        <a href="../<?= htmlspecialchars($imgPath) ?>" download="<?= htmlspecialchars($downloadName) ?>" class="btn btn-info btn-sm px-2 text-white" style="font-size:11px; background-color: #0dcaf0 !important; border:none; min-width: 60px;">
+                                            <i class="fas fa-download"></i> โหลด
+                                        </a>
+                                        <button type="button" class="btn btn-warning btn-sm btn-remove-existing text-white" style="font-size:11px; background-color: #ffc107 !important; border:none; min-width: 60px;">
+                                            <i class="fas fa-times"></i> ลบออก
+                                        </button>
+                                    </div>
+                                </div>
+                            <?php endforeach; endif; ?>
+                        </div>
                     </div>
 
-                    <!-- ค่าแรงและสรุปเงิน -->
-                    <div class="edit-card mb-4 border-0 shadow-sm rounded-4 p-4 bg-light">
+                    <!-- ข้อมูลการซ่อม (Job) -->
+                    <div class="job-info-card mb-4 border-0 shadow-sm rounded-4 p-4">
                         <div class="section-title mb-4 pb-2 border-bottom fw-bold fs-5">ข้อมูลการซ่อม (Job)</div>
                         <div class="row g-4">
                             <div class="col-md-6">
-                                <label class="fw-600 mb-2">เลขที่ Job</label>
-                                <input type="text" name="labor_job_no" class="form-control" placeholder="ระบุเลขที่ JOB" value="<?= htmlspecialchars($claim['job_number'] ?? '') ?>">
+                                <label class="form-label fw-bold text-secondary mb-2">เลขที่ Job</label>
+                                <input type="text" name="job_number" class="form-control pill-input" placeholder="ระบุเลขที่ JOB" value="<?= htmlspecialchars($claim['job_number'] ?? '') ?>">
                             </div>
                             <div class="col-md-6">
-                                <label class="fw-600 mb-2">จำนวนเงิน (บาท)</label>
-                                <input type="number" step="0.01" name="labor_rate" class="form-control" placeholder="ระบุจำนวนเงิน" value="<?= htmlspecialchars($claim['job_amount'] ?? '') ?>">
+                                <label class="form-label fw-bold text-secondary mb-2">จำนวนเงิน (บาท)</label>
+                                <input type="number" step="0.01" name="job_amount" class="form-control pill-input" placeholder="ระบุจำนวนเงิน" value="<?= htmlspecialchars($claim['job_amount'] ?? '') ?>">
                             </div>
                         </div>
                     </div>
 
-                    <!-- สถานะและการลงชื่อ -->
-                    <div class="edit-card border-0 shadow-sm rounded-4 p-4 mb-4" id="verification-section">
-                        <div class="section-title mb-3 pb-2 border-bottom fw-bold fs-5 text-primary-orange">สถานะและบันทึกการแก้ไข</div>
-                        <div class="row g-4 mt-1">
-                            
-                            <div class="col-12">
-                                <label class="form-label fw-bold text-dark mb-2">สถานะเอกสาร :</label>
-                                <select name="status" id="doc_status" class="form-select border-2 text-primary-orange fw-bold" style="max-width: 500px;">
+                    <!-- สถานะและการลงชื่อ (Design Updated matching Mockup) -->
+                    <div class="edit-log-card mb-5" id="verification-section">
+                        <div class="edit-log-title">ลงชื่อผู้แก้ไขเอกสาร</div>
+                        <hr style="opacity: 0.1; margin-bottom: 2rem;">
+                        
+                        <div class="row g-4">
+                            <!-- Status Row -->
+                            <div class="col-12 d-flex align-items-center gap-3 mb-2 flex-wrap">
+                                <label class="form-label fw-bold text-secondary mb-0" style="min-width: 60px;">สถานะ :</label>
+                                <select name="status" id="doc_status" class="form-select pill-select" style="max-width: 320px;">
+                                    <option value="" disabled>--กรุณาเลือกสถานะของเคส--</option>
                                     <option value="Pending" <?= $claim['status'] == 'Pending' ? 'selected' : '' ?>>ส่งไปตรวจสอบ (Pending)</option>
                                     <?php if($claim['status'] == 'Pending Fix'): ?>
-                                        <option value="Pending Fix" selected>รอแก้ไข (Pending Fix)</option>
+                                        <option value="Pending Fix" selected>รอแก้ไข </option>
                                     <?php endif; ?>
                                     <?php if(isAdmin()): ?>
                                         <option value="Approved Claim" <?= $claim['status'] == 'Approved Claim' ? 'selected' : '' ?>>อนุมัติเคลม</option>
@@ -511,33 +588,30 @@ try {
                                 </select>
                             </div>
 
-                            <?php if(!empty($claim['verify_remarks'])): ?>
+                            <!-- Notes Row -->
                             <div class="col-12">
-                                <label class="form-label fw-bold text-danger mb-2">หมายเหตุจากผู้ตรวจสอบ :</label>
-                                <textarea class="form-control border-danger text-danger bg-light" rows="2" readonly><?= htmlspecialchars($claim['verify_remarks']) ?></textarea>
-                            </div>
-                            <?php endif; ?>
-
-                            <div class="col-12 col-md-6 d-flex align-items-center gap-3">
-                                <label class="form-label fw-bold text-dark mb-0 text-nowrap" style="min-width: 120px;">ลงชื่อผู้แก้ไข <span class="text-danger">*</span></label>
-                                <input type="text" name="editor" class="form-control border-2" placeholder="ชื่อ-นามสกุล ผู้แก้ไขปัจจุบัน" required>
-                            </div>
-                            
-                            <div class="col-12 col-md-6 d-flex align-items-center gap-3">
-                                <label class="form-label fw-bold text-dark mb-0 text-nowrap" style="min-width: 120px;">วันที่แก้ไข <span class="text-danger">*</span></label>
-                                <input type="date" name="edit_date" class="form-control border-2" value="<?= date('Y-m-d') ?>" required>
+                                <label class="form-label fw-bold text-secondary mb-2">หมายเหตุ / ความเห็นของผู้แก้ไข</label>
+                                <textarea name="remarks" id="edit_remarks" class="form-control pill-textarea" placeholder="ระบุเหตุผลการแก้ไข"><?= htmlspecialchars($claim['verify_remarks'] ?? '') ?></textarea>
                             </div>
 
-                            <div class="col-12 mt-4">
-                                <label class="form-label fw-bold text-dark mb-2">เหตุผล/บันทึกการแก้ไข <span class="text-danger" id="req_remarks">*</span></label>
-                                <textarea name="remarks" id="edit_remarks" class="form-control border-2" rows="3" placeholder="ระบุสิ่งที่แก้ไข หรือรายละเอียดเพิ่มเติม..."></textarea>
+                            <!-- Inline Footer Fields & Buttons -->
+                            <div class="col-12 d-flex justify-content-between align-items-end mt-2 flex-wrap gap-4">
+                                <div class="d-flex flex-column gap-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <label class="form-label fw-bold text-secondary mb-0" style="min-width: 100px;">ลงชื่อผู้แก้ไข</label>
+                                        <input type="text" name="editor" class="form-control pill-input-sm" placeholder="ชื่อ-นามสกุล ผู้ตรวจสอบ" required value="<?= htmlspecialchars($claim['editor_id'] ?? '') ?>">
+                                    </div>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <label class="form-label fw-bold text-secondary mb-0" style="min-width: 100px;">วันที่แก้ไข</label>
+                                        <input type="text" name="edit_date" class="form-control pill-input-sm" value="<?= date('d/m/Y') ?>" readonly placeholder="00/00/0000">
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex gap-3 pb-1">
+                                    <a href="history.php" class="btn btn-pill-cancel">ยกเลิก</a>
+                                    <button type="submit" class="btn btn-pill-save px-4">บันทึกการแก้ไข</button>
+                                </div>
                             </div>
-                            
-                            <div class="col-12 text-end mt-4 pt-3 border-top">
-                                <a href="history.php" class="btn btn-secondary px-4 me-2">ยกเลิก</a>
-                                <button type="submit" class="btn btn-primary-orange px-5 text-white fw-bold">บันทึกข้อมูล</button>
-                            </div>
-
                         </div>
                     </div>
                 </div>
@@ -567,9 +641,13 @@ try {
                         div.className = 'gallery-item';
                         const fileIdx = uploadedFiles.length - 1;
                         div.innerHTML = `
-                            <img src="${evt.target.result}" class="preview-img cursor-pointer" style="width:100%; height:120px; object-fit:cover; border-radius:8px;">
-                            <div class="img-preview-footer mt-1 d-flex justify-content-center">
-                                <button type="button" class="btn btn-sm btn-danger btn-remove-new" data-idx="${fileIdx}" style="font-size:10px; padding:2px 8px;">❌</button>
+                            <div class="img-wrap" style="position:relative;">
+                                <img src="${evt.target.result}" class="preview-img cursor-pointer" style="width:100%; height:160px; object-fit:cover; border-radius:8px 8px 0 0;">
+                            </div>
+                            <div class="img-preview-footer d-flex justify-content-center gap-2 p-2 bg-light border-top">
+                                <button type="button" class="btn btn-warning btn-sm btn-remove-new text-white" data-idx="${fileIdx}" style="font-size:11px; background-color: #ffc107 !important; border:none; min-width: 60px;">
+                                    <i class="fas fa-times"></i> ลบออก
+                                </button>
                             </div>
                         `;
                         div.querySelector('.btn-remove-new').addEventListener('click', function() {
@@ -608,6 +686,7 @@ try {
             const modalImg = document.getElementById('modal-img');
             document.addEventListener('click', function(e) {
                 if (e.target.classList.contains('preview-img')) {
+                    e.preventDefault(); // ป้องกันการเปิดลิงก์ target_blank
                     modalImg.src = e.target.src;
                     imageModal.style.display = 'flex';
                 }
@@ -652,88 +731,96 @@ try {
                 calculateVehicleAge();
             }
 
-            // --- จัดการการแสดงผลตาม Claim Type ---
+            // --- จัดการการแสดงผลตาม Claim Type (Action) ---
             const repairSection = document.getElementById('repairApproverSection');
             const deliverySection = document.getElementById('repairDeliverySection');
             const replaceBlock = document.getElementById('replaceBlock');
-            document.querySelectorAll('.act-radio').forEach(r => {
-                r.addEventListener('change', function() {
-                    const val = this.value;
-                    if (val === 'ReplaceVehicle') {
-                        replaceBlock.classList.remove('d-none');
-                        repairSection.classList.add('d-none');
-                        deliverySection.classList.add('d-none');
-                    } else {
-                        replaceBlock.classList.add('d-none');
-                        repairSection.classList.remove('d-none');
-                        deliverySection.classList.remove('d-none');
-                    }
-                });
-            });
+            const partsTableSection = document.getElementById('partsTableSection');
 
-            document.querySelectorAll('.rep-car-type').forEach(r => {
-                r.addEventListener('change', function() {
-                    document.getElementById('repGradeField').style.display = (this.value === 'used') ? 'block' : 'none';
-                });
-            });
-
-            // --- ระบบค้นหาพนักงาน ---
-            let employees = [];
-            fetch('../backend/api_users.php').then(res => res.json()).then(data => { employees = data; });
-
-            function setupSearch(inputId, listId, targetIds) {
-                const input = document.getElementById(inputId);
-                const list = document.getElementById(listId);
-                if (!input || !list) return;
-                input.addEventListener('input', function() {
-                    const val = this.value.trim().toLowerCase();
-                    list.innerHTML = '';
-                    if (!val) { list.classList.remove('show'); return; }
-                    const filtered = employees.filter(e => e.name.toLowerCase().includes(val) || e.emp_id.toLowerCase().includes(val));
-                    if (filtered.length > 0) {
-                        filtered.forEach(emp => {
-                            const item = document.createElement('div');
-                            item.className = 'dropdown-item p-2';
-                            item.innerHTML = `<strong>${emp.emp_id}</strong> - ${emp.name}`;
-                            item.addEventListener('click', () => {
-                                input.value = emp.name;
-                                document.getElementById(targetIds.id).value = emp.emp_id;
-                                document.getElementById(targetIds.name).value = emp.name;
-                                document.getElementById(targetIds.sig).value = emp.signature_path || '';
-                                list.classList.remove('show');
-                            });
-                            list.appendChild(item);
-                        });
-                        list.classList.add('show');
-                    }
-                });
-                document.addEventListener('click', (e) => { if (!input.contains(e.target)) list.classList.remove('show'); });
-            }
-            setupSearch('search-approver-repair', 'repair-dropdown-list', {id: 'repair_id', name: 'repair_name', sig: 'repair_signature'});
-            setupSearch('search-approver-replace', 'replace-dropdown-list', {id: 'replace_id', name: 'replace_name', sig: 'replace_signature'});
-
-            // --- ซ่อน/แสดงส่วนต่างๆ ตามประเภทการดำเนินการ ---
-            const claimActionSelect = document.querySelector('.act-select');
-            function updateDynamicSections() {
-                const val = claimActionSelect ? claimActionSelect.value : '';
+            function updateVisibility() {
+                const checkedRadio = document.querySelector('.act-radio:checked');
+                const val = checkedRadio ? checkedRadio.value : '';
                 
-                const replaceBlock = document.getElementById('replaceBlock');
-                if (replaceBlock) {
-                    if (val === 'ReplaceVehicle') { replaceBlock.classList.remove('d-none'); replaceBlock.classList.add('d-block'); }
-                    else { replaceBlock.classList.add('d-none'); replaceBlock.classList.remove('d-block'); }
+                if (val === 'ReplaceVehicle') {
+                    if (replaceBlock) { replaceBlock.classList.remove('d-none'); replaceBlock.classList.add('d-block'); }
+                    if (repairSection) repairSection.classList.add('d-none');
+                    if (deliverySection) deliverySection.classList.add('d-none');
+                    if (partsTableSection) partsTableSection.classList.add('d-none');
+                } else {
+                    if (replaceBlock) { replaceBlock.classList.add('d-none'); replaceBlock.classList.remove('d-block'); }
+                    if (repairSection) repairSection.classList.remove('d-none');
+                    if (deliverySection) deliverySection.classList.remove('d-none');
+                    if (partsTableSection) partsTableSection.classList.remove('d-none');
                 }
-                
-                const repairDeliverySection = document.getElementById('repairDeliverySection');
-                if (repairDeliverySection) { repairDeliverySection.classList.toggle('d-none', val === 'ReplaceVehicle'); }
-                
-                const repairApproverSection = document.getElementById('repairApproverSection');
-                if (repairApproverSection) { repairApproverSection.classList.toggle('d-none', val === 'ReplaceVehicle'); }
-                
-                const partsTableSection = document.getElementById('partsTableSection');
-                if (partsTableSection) { partsTableSection.classList.toggle('d-none', val === 'ReplaceVehicle'); }
             }
-            if (claimActionSelect) claimActionSelect.addEventListener('change', updateDynamicSections);
-            updateDynamicSections();
+
+            document.querySelectorAll('.act-radio').forEach(r => {
+                r.addEventListener('change', updateVisibility);
+            });
+            updateVisibility(); // Run on load
+
+            function updateGradeVisibility() {
+                const checkedRadio = document.querySelector('.rep-car-type:checked');
+                const gradeField = document.getElementById('repGradeField');
+                if (gradeField) {
+                    const isUsed = checkedRadio && (checkedRadio.value === 'used' || checkedRadio.value === 'รถมือสอง');
+                    if (isUsed) {
+                        gradeField.classList.remove('d-none');
+                    } else {
+                        gradeField.classList.add('d-none');
+                    }
+                }
+            }
+            document.querySelectorAll('.rep-car-type').forEach(r => {
+                r.addEventListener('change', updateGradeVisibility);
+            });
+            updateGradeVisibility(); // Run on load
+
+            // --- ระบบจัดการผู้อนุมัติแบบ Dropdown ---
+            let employeeData = [];
+            
+            // ดึงข้อมูลพนักงานทั้งหมด
+            fetch('../backend/api_users.php')
+                .then(res => res.json())
+                .then(resp => {
+                    const data = resp.data || resp; // Handle both {success:true, data:[]} and raw []
+                    employeeData = Array.isArray(data) ? data : [];
+
+                        // เติมข้อมูลลงใน Dropdown ทุกตัวที่มี class employee-select
+                        document.querySelectorAll('.employee-select').forEach(select => {
+                            const currentVal = select.getAttribute('data-current') || select.value;
+                            select.innerHTML = '<option value="">-- เลือกพนักงาน --</option>';
+                            employeeData.forEach(emp => {
+                                const option = document.createElement('option');
+                                option.value = emp.employee_id;
+                                option.textContent = emp.employee_id + ' - ' + emp.name;
+                                if (emp.employee_id === currentVal) option.selected = true;
+                                select.appendChild(option);
+                            });
+                        });
+                })
+                .catch(err => console.error('Error fetching employees:', err));
+
+            // จัดการ Event เมื่อมีการเลือกพนักงาน (Autofill)
+            document.addEventListener('change', function(e) {
+                if (e.target.classList.contains('employee-select')) {
+                    const select = e.target;
+                    const empId = select.value;
+                    const targetNameId = select.getAttribute('data-target-name');
+                    const targetSigId = select.getAttribute('data-target-sig');
+                    
+                    const emp = employeeData.find(u => u.employee_id === empId);
+                    if (emp) {
+                        if (targetNameId) document.getElementById(targetNameId).value = emp.name;
+                        if (targetSigId) document.getElementById(targetSigId).value = emp.signature || '';
+                    } else {
+                        if (targetNameId) document.getElementById(targetNameId).value = '';
+                        if (targetSigId) document.getElementById(targetSigId).value = '';
+                    }
+                }
+            });
+
+
 
             // --- ตารางอะไหล่และการคำนวณ ---
             function calculateAll() {
@@ -786,8 +873,17 @@ try {
                     const reader = new FileReader();
                     reader.onload = (evt) => {
                         const wrap = document.createElement('div');
-                        wrap.style.cssText = 'position:relative; width:80px; height:80px; border-radius:5px; overflow:hidden; border:1px solid #ddd;';
-                        wrap.innerHTML = `<img src="${evt.target.result}" style="width:100%; height:100%; object-fit:cover;"><div style="position:absolute; top:0; right:0; background:red; color:white; padding:0 5px; cursor:pointer;" class="rm-p-img">×</div>`;
+                        wrap.className = 'gallery-item';
+                        wrap.innerHTML = `
+                            <div class="img-wrap" style="position:relative;">
+                                <img src="${evt.target.result}" class="preview-img cursor-pointer" style="width:100%; height:160px; object-fit:cover; border-radius:8px 8px 0 0;">
+                            </div>
+                            <div class="img-preview-footer d-flex justify-content-center gap-2 p-2 bg-light border-top">
+                                <button type="button" class="btn btn-warning btn-sm rm-p-img text-white" style="font-size:11px; background-color: #ffc107 !important; border:none; min-width: 60px;">
+                                    <i class="fas fa-times"></i> ลบออก
+                                </button>
+                            </div>
+                        `;
                         wrap.querySelector('.rm-p-img').onclick = () => { wrap.remove(); partsFiles[partsFiles.indexOf(f)] = null; };
                         document.getElementById('partsImgPreview').appendChild(wrap);
                     };

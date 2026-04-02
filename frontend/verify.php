@@ -5,16 +5,15 @@ require_once __DIR__ . '/../shared/config/db_connect.php';
 
 $id = $_GET['id'] ?? null;
 if (!$id) {
-    die("<div style='padding:20px; color:red; text-align:center;'>❌ ไม่พบรหัสการเคลม กรุณากลับไปเลือกจากหน้าตรวจสอบ</div>");
+    die("<div style='padding:20px; color:red; text-align:center;'>❌ ไม่พบรหัสการเคลม กรุณากลับไปเลือกจากหน้าประวัติ</div>");
 }
 
 try {
     $pdo = getServiceCenterPDO();
-    $table = getServiceCenterTable();
     
     $stmt = $pdo->prepare("
         SELECT c.*, 
-               rd.parts_delivery, rd.approver_id as repair_app_id, rd.approver_name as repair_app_name, rd.approver_signature as repair_app_sig, rd.job_number, rd.job_amount,
+               rd.job_number, rd.job_amount, rd.parts_delivery, rd.approver_id as repair_app_id, rd.approver_name as repair_app_name, rd.approver_signature as repair_app_sig,
                rp.old_down_balance, rp.new_down_balance, rp.replace_vin, rp.replace_brand as rp_brand, rp.replace_model as rp_model, rp.replace_color as rp_color, rp.replace_type as rp_type, rp.replace_used_grade as rp_used_grade, rp.replace_receive_date as rp_receive_date, rp.replace_reason as rp_reason, rp.approver_id as rp_app_id, rp.approver_name as rp_app_name, rp.approver_signature as rp_app_sig, rp.approve_date as rp_app_date
         FROM claims c
         LEFT JOIN claim_repair_details rd ON c.id = rd.claim_id
@@ -28,24 +27,31 @@ try {
         die("<div style='padding:20px; color:red; text-align:center;'>❌ ไม่พบข้อมูลการเคลมเลขที่ $id ในระบบ</div>");
     }
 
-    // ดึงรายการอะไหล่จากตารางแยก
     $stmtItems = $pdo->prepare("SELECT * FROM claim_items WHERE claim_id = ?");
     $stmtItems->execute([$id]);
     $items = $stmtItems->fetchAll();
 
-    // จัดรูปแบบเลขเอกสาร (C001-280369)
     $idPart = "C" . str_pad($claim['id'], 3, '0', STR_PAD_LEFT);
     $datePart = "000000";
+    $claimDateFormatted = '-'; 
+
     if (!empty($claim['claim_date']) && $claim['claim_date'] !== '0000-00-00') {
         $timestamp = strtotime($claim['claim_date']);
         if ($timestamp !== false) {
             $buddhistYearShort = substr((date('Y', $timestamp) + 543), -2);
             $datePart = date('dm', $timestamp) . $buddhistYearShort;
+            $claimDateFormatted = date('d/m/Y', $timestamp);
         }
     }
     $doc_id = $idPart . "-" . $datePart;
-    $claimDateFormatted = $claim['claim_date'] ? date('d/m/Y', strtotime($claim['claim_date'])) : '-';
-    $updatedAtFormatted = !empty($claim['updated_at']) ? date('d/m/Y H:i', strtotime($claim['updated_at'])) : '-';
+
+    $updatedAtFormatted = '-';
+    if (!empty($claim['updated_at'])) {
+        $uTimestamp = strtotime($claim['updated_at']);
+        if ($uTimestamp !== false) {
+            $updatedAtFormatted = date('d/m/Y H:i', $uTimestamp);
+        }
+    }
 
     // คำนวณอายุรถ
     $carAgeDisplay = '-';
@@ -58,9 +64,8 @@ try {
         if ($interval->y > 0) $parts[] = $interval->y . " ปี";
         if ($interval->m > 0) $parts[] = $interval->m . " เดือน";
         if ($interval->d > 0) $parts[] = $interval->d . " วัน";
-        $parts[] = $interval->h . " ชั่วโมง";
         
-        $carAgeDisplay = implode(" ", $parts);
+        $carAgeDisplay = !empty($parts) ? implode(" ", $parts) : "0 วัน";
     }
     
     // แปลงประเภทรถ และการดำเนินการ
@@ -82,6 +87,7 @@ try {
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../shared/assets/css/theme.css">
   <link rel="stylesheet" href="../shared/assets/css/styles-edit_claim.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body>
 
@@ -100,17 +106,17 @@ try {
           </div>
           <div class="col-12 col-md-6 text-md-end">
             <div class="d-flex gap-2 justify-content-md-end">
-              <a href="#verification-section" class="btn-action <?= isAdmin() ? 'bg-primary-orange' : 'bg-info' ?> text-decoration-none px-3 py-1 color-fff rounded-3 shadow-sm">
-                  <?= isAdmin() ? 'ไปยังส่วนอนุมัติ' : 'ดูผลการอนุมัติ' ?>
+              <a href="#verification-section" class="btn-action <?= isAdmin() ? 'bg-primary-orange' : 'bg-info' ?> text-decoration-none px-3 py-2 color-fff rounded-3 shadow-sm">
+                  <i class="fas fa-check-circle me-1"></i> <?= isAdmin() ? 'ไปยังส่วนอนุมัติ' : 'ดูผลการอนุมัติ' ?>
               </a>
-              <a href="<?= isAdmin() ? 'check.php' : 'history.php' ?>" class="btn-action bg-secondary text-decoration-none px-3 py-1 color-fff rounded-3 shadow-sm">ย้อนกลับ</a>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="edit-container mb-5">
+      <div class="edit-container mb-5 mt-4">
         
+        <!-- ข้อมูลเอกสาร -->
         <div class="edit-card mb-4 border-0 shadow-sm rounded-4 p-4">
           <div class="section-title mb-4 pb-2 border-bottom fw-bold fs-5">ข้อมูลเอกสาร</div>
           <div class="row g-4">
@@ -118,293 +124,128 @@ try {
               <div class="d-flex flex-column gap-3">
                 <div class="row align-items-center">
                   <label class="col-sm-4 col-form-label fw-600">สาขา</label>
-                  <div class="col-sm-8"><input type="text" class="form-control bg-light border-0" value="<?= htmlspecialchars($claim['branch']) ?>" readonly></div>
+                  <div class="col-sm-8"><input type="text" class="form-control bg-light border-0 pill-input" value="<?= htmlspecialchars($claim['branch']) ?>" readonly></div>
                 </div>
                 <div class="row align-items-center">
                   <label class="col-sm-4 col-form-label fw-600">ประเภทการเคลม</label>
                   <div class="col-sm-8">
                     <div class="row g-2">
-                       <div class="col-6"><input type="text" class="form-control bg-light border-0" value="<?= $claimCategoryDisplay ?>" readonly></div>
-                       <div class="col-6"><input type="text" class="form-control bg-light border-0" value="<?= $carTypeDisplay ?>" readonly></div>
+                       <div class="col-6"><input type="text" class="form-control bg-light border-0 pill-input" value="<?= $claimCategoryDisplay ?>" readonly></div>
+                       <div class="col-6"><input type="text" class="form-control bg-light border-0 pill-input" value="<?= $carTypeDisplay ?>" readonly></div>
                     </div>
                   </div>
                 </div>
                 <div class="row align-items-center">
                   <label class="col-sm-4 col-form-label fw-600">เลขที่เอกสาร</label>
-                  <div class="col-sm-8"><input type="text" class="form-control bg-light border-0" value="<?= $doc_id ?>" readonly></div>
-                </div>
-                <div class="row align-items-center">
-                  <label class="col-sm-4 col-form-label fw-600">วันที่เอกสาร</label>
-                  <div class="col-sm-8"><input type="text" class="form-control bg-light border-0" value="<?= $claimDateFormatted ?>" readonly></div>
+                  <div class="col-sm-8"><input type="text" class="form-control bg-light border-0 pill-input" value="<?= $doc_id ?>" readonly></div>
                 </div>
               </div>
             </div>
             
             <div class="col-12 col-lg-6">
               <div class="d-flex flex-column gap-3">
-                <div class="row align-items-center mb-3">
-                  <label class="col-sm-4 col-form-label fw-600 color-555">ผู้บันทึกส่งเคลม</label>
-                  <div class="col-sm-8"><input type="text" class="form-control bg-light border-0" value="<?= htmlspecialchars($claim['recorder_id']) ?>" readonly></div>
-                </div>
-                <div class="row align-items-center mb-3">
-                  <label class="col-sm-4 col-form-label fw-600 color-555">ผู้แก้ไขครั้งล่าสุด</label>
-                  <div class="col-sm-8"><input type="text" class="form-control bg-light border-0" value="<?= htmlspecialchars($claim['editor_id'] ?? 'ยังไม่มีการแก้ไข') ?>" readonly></div>
-                </div>
                 <div class="row align-items-center">
-                  <label class="col-sm-4 col-form-label fw-600 color-555">วันที่แก้ไข</label>
-                  <div class="col-sm-8"><input type="text" class="form-control bg-light border-0" value="<?= $updatedAtFormatted ?>" readonly></div>
+                  <label class="col-sm-4 col-form-label fw-600">วันที่เอกสาร</label>
+                  <div class="col-sm-8"><input type="text" class="form-control bg-light border-0 pill-input" value="<?= $claimDateFormatted ?>" readonly></div>
+                </div>
+                <div class="row align-items-center text-secondary">
+                  <label class="col-sm-4 col-form-label fw-600">ผู้บันทึกส่งเคลม</label>
+                  <div class="col-sm-8"><input type="text" class="form-control bg-light border-0 pill-input" value="<?= htmlspecialchars($claim['recorder_id']) ?>" readonly></div>
+                </div>
+                <div class="row align-items-center text-secondary">
+                  <label class="col-sm-4 col-form-label fw-600">วันที่แก้ไขล่าสุด</label>
+                  <div class="col-sm-8"><input type="text" class="form-control bg-light border-0 pill-input" value="<?= $updatedAtFormatted ?>" readonly></div>
                 </div>
               </div>
-            </div>
-            <div class="col-12 mt-3">
-                <div class="p-3 rounded-3" style="background-color: #f8f9fa; border: 1px solid #e9ecef;">
-                  <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold color-primary-orange" >การดำเนินการ</label>
-                        <div class="d-flex flex-wrap gap-3 mt-1">
-                            <div class="form-check">
-                                <input class="form-check-input act-radio" type="radio" name="claimAction" value="RepairBranch" id="act1" <?= $cType === 'RepairBranch' ? 'checked' : '' ?> disabled>
-                                <label class="form-check-label" for="act1">ซ่อมที่สาขา</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input act-radio" type="radio" name="claimAction" value="SendHQ" id="act2" <?= $cType === 'SendHQ' ? 'checked' : '' ?> disabled>
-                                <label class="form-check-label" for="act2">ส่งซ่อมที่สนญ.</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input act-radio" type="radio" name="claimAction" value="ReplaceVehicle" id="act3" <?= $cType === 'ReplaceVehicle' ? 'checked' : '' ?> disabled>
-                                <label class="form-check-label" for="act3">เปลี่ยนคัน/อื่นๆ</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-bold color-primary-orange">ประเภทการส่งอะไหล่</label>
-                        <div class="d-flex flex-wrap gap-3 mt-1" >
-                            <?php 
-                                $pd = $claim['parts_delivery'] ?? '';
-                                $isOtherPD = !in_array($pd, ['', 'in_stock', 'wait_hq', 'buy_outside']);
-                            ?>
-                            <div class="form-check">
-                              <input class="form-check-input pd-radio" type="radio" name="partsDelivery" id="pd_stock" value="in_stock" <?= $pd == 'in_stock' ? 'checked' : '' ?> disabled>
-                              <label class="form-check-label" for="pd_stock">ซ่อมที่สาขา</label>
-                            </div>
-                            <div class="form-check">
-                              <input class="form-check-input pd-radio" type="radio" name="partsDelivery" id="pd_hq" value="wait_hq" <?= $pd == 'wait_hq' ? 'checked' : '' ?> disabled>
-                              <label class="form-check-label" for="pd_hq">รอส่งอะไหล่ จากสนญ.</label>
-                            </div>
-                            <div class="form-check">
-                              <input class="form-check-input pd-radio" type="radio" name="partsDelivery" id="pd_buy" value="buy_outside" <?= $pd == 'buy_outside' ? 'checked' : '' ?> disabled>
-                              <label class="form-check-label" for="pd_buy">ซื้ออะไหล่ร้านนอก</label>
-                            </div>
-                            <div class="form-check">
-                              <input class="form-check-input pd-radio" type="radio" name="partsDelivery" id="pd_other" value="other" <?= ($isOtherPD && $pd != '') ? 'checked' : '' ?> disabled>
-                              <label class="form-check-label" for="pd_other">อื่นๆ</label>
-                            </div>
-                        </div>
-                        <input type="text" id="partsDeliveryOtherTextEdit" name="partsDeliveryOtherText" class="form-control mt-2 <?= ($isOtherPD && $pd != '') ? '' : 'd-none' ?>" value="<?= $isOtherPD ? htmlspecialchars($pd) : '' ?>" placeholder="ระบุการส่งอะไหล่แบบอื่นๆ" readonly>
-                        
-                        <div class="mt-4 p-3 rounded-3 shadow-sm border" style="background-color: #fff9f0; border-color: #ffdda1 !important;">
-                             <label class="form-label fw-bold text-dark mb-2">ผู้อนุมัติการซ่อม <span class="text-danger">*</span></label>
-                             <div class="input-group">
-                                 <span class="input-group-text bg-white"><i class="fas fa-user-check text-primary-orange"></i></span>
-                                 <input type="text" id="search-approver-repair" class="form-control border-secondary" placeholder="พิมพ์ชื่อผู้อนุมัติการซ่อม..." value="<?= htmlspecialchars($claim['repair_app_name'] ?? '') ?>" <?= isAdmin() ? 'required' : 'readonly' ?>>
-                             </div>
-                             <div id="repair-dropdown-list" class="search-dropdown-list shadow-lg"></div>
-                             <input type="hidden" name="repair_id" id="repair_id" value="<?= htmlspecialchars($claim['repair_app_id'] ?? '') ?>">
-                             <input type="hidden" name="repair_name" id="repair_name" value="<?= htmlspecialchars($claim['repair_app_name'] ?? '') ?>">
-                             <input type="hidden" name="repair_signature" id="repair_signature" value="<?= htmlspecialchars($claim['repair_app_sig'] ?? '') ?>">
-                             <?php if(!empty($claim['repair_app_sig'])): ?>
-                                 <small class="text-success fw-bold d-block mt-2"><i class="fas fa-check-circle me-1"></i> ลายเซ็นต์ปัจจุบัน: <?= htmlspecialchars($claim['repair_app_sig']) ?></small>
-                             <?php endif; ?>
-                        </div>
-                    </div>
-                  </div>
-
-                  <div class="replace-block mt-4 p-4 bg-white rounded-3 border shadow-sm <?= ($cType === 'ReplaceVehicle') ? 'd-block' : 'd-none' ?>" id="replaceBlock">
-                      <div class="fw-bold mb-3 fs-5" style="color: #dc3545;">รายละเอียดการเปลี่ยนคันใหม่ :</div>
-                      
-                      <div class="row g-3 mb-3">
-                          <div class="col-md-6">
-                              <label class="form-label fw-600">รถคันเก่า : คงเหลือเงินดาวน์</label>
-                              <div class="input-group">
-                                  <input type="number" step="0.01" name="old_down_balance" class="form-control border-2" placeholder="0.00" value="<?= htmlspecialchars($claim['old_down_balance'] ?? '') ?>" readonly>
-                                  <span class="input-group-text border-2">บาท</span>
-                              </div>
-                          </div>
-                          <div class="col-md-6">
-                              <label class="form-label fw-600">รถคันใหม่ : คงเหลือเงินดาวน์</label>
-                              <div class="input-group">
-                                  <input type="number" step="0.01" name="new_down_balance" class="form-control border-2" placeholder="0.00" value="<?= htmlspecialchars($claim['new_down_balance'] ?? '') ?>" readonly>
-                                  <span class="input-group-text border-2">บาท</span>
-                              </div>
-                          </div>
-                      </div>
-
-                      <div class="fw-bold mb-2 text-secondary mt-4">รายละเอียดรถคันใหม่</div>
-                      <div class="row g-3 mb-3">
-                          <div class="col-md-4">
-                              <label class="form-label fw-600">ประเภทรถ</label>
-                              <div class="d-flex gap-3 mt-2">
-                                  <div class="form-check">
-                                      <input class="form-check-input rep-car-type" type="radio" name="replaceType" id="repNew" value="new" <?= ($claim['rp_type'] ?? '') == 'new' ? 'checked' : '' ?> disabled>
-                                      <label class="form-check-label" for="repNew">รถใหม่</label>
-                                  </div>
-                                  <div class="form-check">
-                                      <input class="form-check-input rep-car-type" type="radio" name="replaceType" id="repUsed" value="used" <?= ($claim['rp_type'] ?? '') == 'used' ? 'checked' : '' ?> disabled>
-                                      <label class="form-check-label" for="repUsed">รถมือสอง</label>
-                                  </div>
-                              </div>
-                          </div>
-                          <div class="col-md-4 rep-grade-field <?= ($claim['rp_type'] ?? '') == 'used' ? '' : 'd-none' ?>" id="repGradeField">
-                              <label class="form-label fw-600">เกรด</label>
-                              <select name="replaceUsedGrade" class="form-select border-2" disabled>
-                                  <option value="">-- เลือกเกรด --</option>
-                                  <option value="A_premium" <?= ($claim['rp_used_grade'] ?? '') == 'A_premium' ? 'selected' : '' ?>>A พรีเมี่ยม</option>
-                                  <option value="A_w6" <?= ($claim['rp_used_grade'] ?? '') == 'A_w6' ? 'selected' : '' ?>>A (ประกัน 6 ด.)</option>
-                                  <option value="C_w1" <?= ($claim['rp_used_grade'] ?? '') == 'C_w1' ? 'selected' : '' ?>>C (ประกัน 1 ด.)</option>
-                                  <option value="C_as_is" <?= ($claim['rp_used_grade'] ?? '') == 'C_as_is' ? 'selected' : '' ?>>C (ตามสภาพ)</option>
-                              </select>
-                          </div>
-                          
-                          <div class="col-md-4">
-                              <label class="form-label fw-600">รุ่น</label>
-                              <input type="text" name="replace_model" class="form-control border-2" placeholder="รุ่น" value="<?= htmlspecialchars($claim['rp_model'] ?? '') ?>" readonly>
-                          </div>
-                          <div class="col-md-4">
-                              <label class="form-label fw-600">สี</label>
-                              <input type="text" name="replace_color" class="form-control border-2" placeholder="สี" value="<?= htmlspecialchars($claim['rp_color'] ?? '') ?>" readonly>
-                          </div>
-
-                          <div class="col-md-4">
-                              <label class="form-label fw-600">เลขตัวถัง (คันใหม่)</label>
-                              <input type="text" name="replace_vin" class="form-control border-2" placeholder="เลขตัวถัง / VIN" value="<?= htmlspecialchars($claim['replace_vin'] ?? '') ?>" readonly>
-                          </div>
-                          <div class="col-md-6">
-                              <label class="form-label fw-600">วันที่รับรถ</label>
-                              <input type="date" name="replace_receive_date" class="form-control border-2" value="<?= !empty($claim['rp_receive_date']) ? date('Y-m-d', strtotime($claim['rp_receive_date'])) : '' ?>" readonly>
-                          </div>
-                      </div>
-
-                      <div class="mb-3 mt-4">
-                          <label class="form-label fw-600">สาเหตุที่เปลี่ยนคัน</label>
-                          <textarea name="replace_reason" class="form-control border-2" rows="2" placeholder="ระบุสาเหตุการเปลี่ยนคัน" readonly><?= htmlspecialchars($claim['rp_reason'] ?? '') ?></textarea>
-                      </div>
-
-                      <div class="row g-3">
-                          <div class="col-md-6">
-                              <label class="form-label fw-600">ผู้อนุมัติ</label>
-                              <input type="text" name="replace_approver" class="form-control border-2" placeholder="ชื่อผู้อนุมัติ" value="<?= htmlspecialchars($claim['rp_app_name'] ?? '') ?>" readonly>
-                          </div>
-                          <div class="col-md-6">
-                              <label class="form-label fw-600">วันที่อนุมัติ</label>
-                              <input type="date" name="replace_approve_date" class="form-control border-2" value="<?= !empty($claim['rp_app_date']) ? date('Y-m-d', strtotime($claim['rp_app_date'])) : '' ?>" readonly>
-                          </div>
-                      </div>
-                      
-                      <div class="mt-4 p-3 bg-light rounded text-danger" style="font-size: 0.9rem;">
-                          <strong>***หมายเหตุ : </strong><br>
-                          1. ลูกค้าแจ้งเปลี่ยนคัน ส่งให้สินเชื่อพร้อมใบอนุมัติทุกครั้งที่มีการเปลี่ยน/ตัวจริงแนบมากับสัญญาส่งให้บัญชี<br>
-                          2. สินเชื่อเช็คประกันรถหาย / ทะเบียนแก้ไข พ.ร.บ.-ทะเบียน / บริหารสต็อก ตัดแลกเปลี่ยน / ธุรการสินเชื่อ ตรวจรอบการเปิดขาย
-                      </div>
-                  </div>
-                  </div>
-              </div>
-              
             </div>
           </div>
-        
-        
+        </div>
+
+        <!-- ข้อมูลผู้ใช้งาน -->
         <div class="edit-card mb-4 border-0 shadow-sm rounded-4 p-4">
-          <div class="section-title mb-4 pb-2 border-bottom fw-bold fs-5">ข้อมูลผู้ใช้ และข้อมูลรถ</div>
+          <div class="section-title mb-4 pb-2 border-bottom fw-bold fs-5">ข้อมูลผู้ใช้งาน และรถ</div>
           <div class="row g-4">
             <div class="col-12 col-lg-6">
               <div class="row align-items-center mb-3">
                 <label class="col-sm-4 col-form-label fw-600">ชื่อ-นามสกุล</label>
-                <div class="col-sm-8"><input type="text" class="form-control bg-light border-0 text-danger fw-bold" value="<?= htmlspecialchars($claim['owner_name']) ?>" readonly></div>
+                <div class="col-sm-8"><input type="text" class="form-control bg-light border-0 pill-input text-danger fw-bold" value="<?= htmlspecialchars($claim['owner_name']) ?>" readonly></div>
               </div>
               <div class="row align-items-center mb-3">
-                <label class="col-sm-4 col-form-label fw-600">ยี่ห้อรถ</label>
-                <div class="col-sm-8">
-                  <input type="text" class="form-control bg-light border-0 text-danger fw-bold" value="<?= htmlspecialchars($claim['car_brand'] . (!empty($claim['used_grade']) ? ' / เกรด: ' . $claim['used_grade'] : '')) ?>" readonly>
-                </div>
+                <label class="col-sm-4 col-form-label fw-600">เบอร์โทรศัพท์</label>
+                <div class="col-sm-8"><input type="text" class="form-control bg-light border-0 pill-input text-danger fw-bold" value="<?= htmlspecialchars($claim['owner_phone'] ?? '-') ?>" readonly></div>
               </div>
-              <div class="row align-items-center mb-3">
-                <label class="col-sm-4 col-form-label fw-600">เลขไมล์รถ</label>
-                <div class="col-sm-8"><input type="text" class="form-control bg-light border-0 text-danger fw-bold" value="<?= htmlspecialchars($claim['mileage'] . ' กม.') ?>" readonly></div>
-              </div>
-              <div class="row align-items-center mb-3">
-                <label class="col-sm-4 col-form-label fw-600 border-0">อายุการใช้งาน</label>
-                <div class="col-sm-8"><input type="text" class="form-control bg-light border-0 fw-bold text-danger" value="<?= $carAgeDisplay ?>" readonly></div>
+              <div class="row align-items-center">
+                <label class="col-sm-4 col-form-label fw-600">เลขตัวถัง (VIN)</label>
+                <div class="col-sm-8"><input type="text" class="form-control bg-light border-0 pill-input text-danger fw-bold" value="<?= htmlspecialchars($claim['vin']) ?>" readonly></div>
               </div>
             </div>
             <div class="col-12 col-lg-6">
               <div class="row align-items-center mb-3">
-                <label class="col-sm-4 col-form-label fw-600">เบอร์โทรศัพท์</label>
-                <div class="col-sm-8"><input type="text" class="form-control bg-light border-0 text-danger fw-bold" value="<?= htmlspecialchars($claim['owner_phone'] ?? '-') ?>" readonly></div>
+                <label class="col-sm-4 col-form-label fw-600">เลขไมล์</label>
+                <div class="col-sm-8"><input type="text" class="form-control bg-light border-0 pill-input text-danger fw-bold" value="<?= htmlspecialchars($claim['mileage'] . ' กม.') ?>" readonly></div>
               </div>
               <div class="row align-items-center mb-3">
-                <label class="col-sm-4 col-form-label fw-600">หมายเลขตัวถัง</label>
-                <div class="col-sm-8"><input type="text" class="form-control bg-light border-0 fw-bold text-danger" value="<?= htmlspecialchars($claim['vin']) ?>" readonly></div>
+                <label class="col-sm-4 col-form-label fw-600">วันที่ขาย</label>
+                <div class="col-sm-8"><input type="text" class="form-control bg-light border-0 pill-input text-danger fw-bold" value="<?= !empty($claim['sale_date']) ? date('d/m/Y', strtotime($claim['sale_date'])) : '-' ?>" readonly></div>
               </div>
-              <div class="row align-items-center mb-3">
-                <label class="col-sm-4 col-form-label fw-600">วันที่ขายรถ</label>
-                <div class="col-sm-8"><input type="text" class="form-control bg-light border-0 text-danger fw-bold" value="<?= !empty($claim['sale_date']) ? date('d/m/Y', strtotime($claim['sale_date'])) : '-' ?>" readonly></div>
+              <div class="row align-items-center">
+                <label class="col-sm-4 col-form-label fw-600 border-0">อายุรถ</label>
+                <div class="col-sm-8"><input type="text" class="form-control bg-light border-0 pill-input fw-bold text-danger" value="<?= $carAgeDisplay ?>" readonly></div>
               </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="edit-card mb-4 border-0 shadow-sm rounded-4 p-4">
-          <div class="section-title mb-4 pb-2 border-bottom fw-bold fs-5">ปัญหา</div>
-          <div class="mb-4">
-            <label class="form-label fw-600 mb-2">รายละเอียดปัญหาที่ลูกค้าแจ้ง</label>
-            <textarea class="form-control bg-light border-0" rows="3" readonly><?= htmlspecialchars($claim['problem_desc']) ?></textarea>
-          </div>
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label fw-600 mb-2">วิธีการตรวจเช็ค</label>
-              <textarea class="form-control bg-light border-0" rows="3" readonly><?= htmlspecialchars($claim['inspect_method']) ?></textarea>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label fw-600 mb-2">สาเหตุของปัญหา</label>
-              <textarea class="form-control bg-light border-0" rows="3" readonly><?= htmlspecialchars($claim['inspect_cause']) ?></textarea>
             </div>
           </div>
         </div>
 
+        <!-- รายละเอียดปัญหา -->
         <div class="edit-card mb-4 border-0 shadow-sm rounded-4 p-4">
-          <div class="section-title mb-4 pb-2 border-bottom fw-bold fs-5">รูปภาพปัญหา</div>
-          <div class="row g-3">
+          <div class="section-title mb-4 pb-2 border-bottom fw-bold fs-5">รายละเอียดปัญหา</div>
+          <div class="mb-4">
+            <label class="form-label fw-600 mb-2">อาการปัญหาที่ลูกค้าแจ้ง</label>
+            <textarea class="form-control bg-light border-0 pill-textarea" rows="3" readonly><?= htmlspecialchars($claim['problem_desc']) ?></textarea>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-600 mb-2">วิธีการตรวจเช็ค</label>
+              <textarea class="form-control bg-light border-0 pill-textarea" rows="3" readonly><?= htmlspecialchars($claim['inspect_method']) ?></textarea>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-600 mb-2">สาเหตุของปัญหา</label>
+              <textarea class="form-control bg-light border-0 pill-textarea" rows="3" readonly><?= htmlspecialchars($claim['inspect_cause']) ?></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- รูปภาพปัญหา -->
+        <div class="edit-card mb-4 border-0 shadow-sm rounded-4 p-4">
+          <div class="section-title mb-4 pb-2 border-bottom fw-bold fs-5">รูปภาพปัญหาที่พบ</div>
+          <div class="gallery-grid">
             <?php 
             $savedImgs = !empty($claim['claim_images']) ? json_decode($claim['claim_images'], true) : [];
             if(is_array($savedImgs) && count($savedImgs) > 0):
                 foreach($savedImgs as $imgPath):
                     $fileName = basename($imgPath);
             ?>
-                <div class="col-6 col-md-4 col-lg-3">
-                   <div class="border rounded-3 p-2 text-center h-100 d-flex flex-column bg-white shadow-sm hover-overlay">
-                       <a href="../<?= htmlspecialchars($imgPath) ?>" class="problem-image-link" data-bs-toggle="modal" data-bs-target="#problemImageModal">
-                           <img src="../<?= htmlspecialchars($imgPath) ?>" alt="รูปภาพเคลม" class="img-fluid rounded-2 mb-2" style="height: 140px; width: 100%; object-fit: cover;">
-                       </a>
-                       <div class="mt-auto d-flex justify-content-between align-items-center">
-                           <span class="text-truncate small text-muted d-inline-block" style="max-width: 100px;" title="<?= htmlspecialchars($fileName) ?>"><?= htmlspecialchars($fileName) ?></span>
-                           <a href="../<?= htmlspecialchars($imgPath) ?>" download="<?= htmlspecialchars($fileName) ?>" class="btn btn-sm btn-success py-0 px-2" style="font-size: 12px;">โหลด ⬇️</a>
-                       </div>
+                <div class="gallery-item">
+                   <a href="../<?= htmlspecialchars($imgPath) ?>" target="_blank">
+                       <img src="../<?= htmlspecialchars($imgPath) ?>" alt="รูปภาพเคลม">
+                   </a>
+                   <div class="img-preview-footer">
+                       <span class="img-preview-title" title="<?= htmlspecialchars($fileName) ?>"><?= htmlspecialchars($fileName) ?></span>
+                       <a href="../<?= htmlspecialchars($imgPath) ?>" download="<?= htmlspecialchars($fileName) ?>" class="img-download-link"><i class="fas fa-download"></i></a>
                    </div>
                 </div>
-            <?php 
-                endforeach;
-            else:
-            ?>
+            <?php endforeach; else: ?>
                 <div class="col-12 text-center py-4 bg-light rounded-3 border border-dashed">
                   <p class="text-muted mb-0">ไม่ได้แนบรูปภาพปัญหามาในเอกสารนี้</p>
                 </div>
             <?php endif; ?>
           </div>
         </div>
-        
+
+        <!-- รายการอะไหล่ -->
         <div class="edit-card p-0 overflow-hidden mb-4 border-0 shadow-sm rounded-4">
             <div class="p-4">
-              <div class="section-title mb-3 pb-2 border-bottom fw-bold fs-5">รายการอะไหล่</div>
+              <div class="section-title mb-3 pb-2 border-bottom fw-bold fs-5">รายการอะไหล่และค่าใช้จ่าย</div>
               <div class="table-responsive">
                 <table class="edit-table table table-hover align-middle mb-0">
                   <thead class="table-light">
@@ -418,23 +259,16 @@ try {
                       <th>หมายเหตุ</th>
                     </tr>
                   </thead>
-                  <?php
-                    $sumQty = 0;
-                    $sumMoney = 0;
-                  ?>
+                  <?php $sumQty = 0; $sumMoney = 0; ?>
                   <tbody>
-                    <tr class="group-header bg-light">
-                      <td colspan="7" class="text-danger fw-bold py-3 ps-3">รายการอะไหล่ทั้งหมด</td>
-                    </tr>
                     <?php if (count($items) > 0): ?>
                         <?php foreach ($items as $idx => $part):
                             $qty = floatval($part['quantity'] ?? 0);
                             $price = floatval($part['unit_price'] ?? 0);
                             $total = $qty * $price;
-                            $sumQty += $qty;
-                            $sumMoney += $total;
+                            $sumQty += $qty; $sumMoney += $total;
                         ?>
-                        <tr class="part-row">
+                        <tr>
                           <td><?= $idx + 1 ?></td>
                           <td><?= htmlspecialchars($part['part_code'] ?? '') ?></td>
                           <td><?= htmlspecialchars($part['part_name'] ?? '') ?></td>
@@ -449,10 +283,10 @@ try {
                     <?php endif; ?>
                   </tbody>
                   <tbody>
-                    <tr class="summary-row fw-bold bg-light">
+                    <tr class="summary-row">
                       <td colspan="4" class="py-3 ps-4 text-end">รวมยอดอะไหล่สุทธิ</td>
                       <td class="text-center text-primary-orange"><?= $sumQty ?></td>
-                      <td class="text-center text-primary-orange"><span id="total-parts-cost"><?= number_format($sumMoney, 2, '.', '') ?></span> บาท</td>
+                      <td class="text-center text-primary-orange fw-bold"><?= number_format($sumMoney, 2) ?> บาท</td>
                       <td></td>
                     </tr>
                   </tbody>
@@ -461,340 +295,137 @@ try {
             </div>
         </div>
 
-        <div class="edit-card p-4 border-0 shadow-sm rounded-4 mb-4" style="background-color: #fbfbfb;">
-            <div class="section-title mb-4 pb-2 border-bottom fw-bold fs-5">สรุปค่าแรงและจำนวนเงิน (ตรวจสอบ)</div>
-            <div class="row g-4">
-              <div class="col-12 col-lg-6">
-                <div class="bg-white p-4 rounded-4 shadow-sm h-100">
-                  <div class="d-flex flex-column gap-3">
-                    <div class="row align-items-center">
-                      <label class="col-sm-5 col-form-label fw-600">จำนวน FRT</label>
-                      <div class="col-sm-7">
-                        <div class="input-group">
-                          <input type="number" class="form-control bg-light border-0" value="0.00" readonly>
-                          <span class="input-group-text border-0 bg-light">ชม.</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row align-items-center">
-                      <label class="col-sm-5 col-form-label fw-600">FRT. Rate/hr</label>
-                      <div class="col-sm-7">
-                        <div class="input-group">
-                          <input type="number" class="form-control bg-light border-0" value="0.00" readonly>
-                          <span class="input-group-text border-0 bg-light">บาท</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row align-items-center">
-                      <label class="col-sm-5 col-form-label fw-600">รวมค่าแรง</label>
-                      <div class="col-sm-7">
-                        <div class="input-group">
-                          <input type="text" class="form-control bg-light border-0 fw-bold" value="0.00" readonly>
-                          <span class="input-group-text border-0 bg-light">บาท</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row align-items-center">
-                      <label class="col-sm-5 col-form-label fw-600">รวมค่าอะไหล่</label>
-                      <div class="col-sm-7">
-                        <div class="input-group">
-                          <input type="text" class="form-control bg-light border-0 fw-bold" value="<?= number_format($sumMoney, 2) ?>" readonly>
-                          <span class="input-group-text border-0 bg-light">บาท</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-12 col-lg-6">
-                <div class="bg-white p-4 rounded-4 shadow-sm h-100">
-                  <div class="d-flex flex-column gap-3">
-                    <div class="row align-items-center">
-                      <label class="col-sm-5 col-form-label fw-600">อัตราค่าการจัดการ</label>
-                      <div class="col-sm-7">
-                        <div class="input-group">
-                          <input type="number" class="form-control bg-light border-0" value="0.00" readonly>
-                          <span class="input-group-text border-0 bg-light">%</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row align-items-center">
-                      <label class="col-sm-5 col-form-label fw-600">ค่าการจัดการ</label>
-                      <div class="col-sm-7">
-                        <div class="input-group">
-                          <input type="text" class="form-control bg-light border-0 fw-bold" value="0.00" readonly>
-                          <span class="input-group-text border-0 bg-light">บาท</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row align-items-center">
-                      <label class="col-sm-5 col-form-label fw-600">ค่าใช้จ่ายอื่นๆ</label>
-                      <div class="col-sm-7">
-                        <div class="input-group">
-                          <input type="number" class="form-control bg-light border-0" value="0.00" readonly>
-                          <span class="input-group-text border-0 bg-light">บาท</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row align-items-center">
-                      <label class="col-sm-5 col-form-label fw-700 text-primary-orange fs-5">รวมเงินเคลมสุทธิ</label>
-                      <div class="col-sm-7">
-                        <div class="input-group shadow-sm">
-                          <input type="text" class="form-control bg-light border-2 border-primary-orange text-primary-orange fw-bold fs-5 py-2" value="<?= number_format($sumMoney, 2) ?>" readonly>
-                          <span class="input-group-text border-2 border-primary-orange bg-primary-orange color-fff fw-bold">บาท</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-        </div>
-
         <form id="verifyForm" method="POST" action="../backend/verify_handler.php">
             <input type="hidden" name="claim_id" value="<?= $claim['id'] ?>">
-            
-            <div class="edit-card border-0 shadow-sm rounded-4 p-4" id="verification-section" style="border: 2px solid var(--primary-orange) !important;">
-            <div class="section-title verification-title d-flex align-items-center mb-4 pb-2 border-bottom fw-bold fs-5 color-primary-orange">
-                <svg class="me-2" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                บันทึกผลการตรวจสอบและสรุปรายการเคลม (สำหรับผู้อนุมัติ)
+
+            <!-- ข้อมูลการซ่อม (Job Card) -->
+            <div class="job-info-card mb-4 border-0 shadow-sm rounded-4 p-4">
+                <div class="section-title mb-4 pb-2 border-bottom fw-bold fs-5">ข้อมูลการซ่อม (Job)</div>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary mb-2">เลขที่ Job</label>
+                        <input type="text" name="job_number" class="form-control pill-input" placeholder="ระบุเลขที่ JOB" value="<?= htmlspecialchars($claim['job_number'] ?? '') ?>" <?= !isAdmin() ? 'readonly' : '' ?>>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-secondary mb-2">จำนวนเงิน (บาท)</label>
+                        <input type="number" step="0.01" name="job_amount" class="form-control pill-input" placeholder="ระบุจำนวนเงิน" value="<?= htmlspecialchars($claim['job_amount'] ?? '') ?>" <?= !isAdmin() ? 'readonly' : '' ?>>
+                    </div>
+                </div>
             </div>
-            
-            <div class="row g-4 mb-4">
-                <div class="col-12 col-lg-6">
-                    <div class="p-4 bg-light rounded-4 shadow-sm h-100 border border-secondary border-opacity-10">
-                        <label class="form-label fw-bold mb-3 border-bottom pb-2 w-100 fs-6">สรุปรายการเคลม</label>
-                        <div class="d-flex flex-column gap-3">
-                            <div>
-                                <label class="form-label fw-600">เลขจ๊อบ (Job Number)</label>
-                                <input type="text" name="job_number" class="form-control border-2" placeholder="ระบุเลขจ๊อบ" value="<?= htmlspecialchars($claim['job_number'] ?? '') ?>" <?= !isAdmin() ? 'readonly' : '' ?>>
+
+            <!-- ผลการตรวจสอบและอนุมัติ -->
+            <div class="edit-log-card border-0 shadow-sm rounded-4 p-4 mb-5" id="verification-section">
+                <div class="section-title mb-4 pb-2 border-bottom fw-bold fs-5" style="color: #ff7a32;">
+                    ผลการตรวจสอบและอนุมัติ
+                </div>
+                
+                <div class="approval-grid">
+                    <!-- ฝั่งซ้าย: Checklist และ ลงนาม -->
+                    <div class="checklist-column">
+                        <label class="form-label fw-bold text-secondary mb-3">รายการตรวจสอบ (Checklist)</label>
+                        <div class="checklist-container">
+                            <label class="checklist-item">
+                                <input type="checkbox" class="checklist-checkbox" id="check1" <?= !isAdmin() ? 'disabled' : '' ?>>
+                                <span class="checklist-text">ตรวจสอบความถูกต้องของข้อมูลลูกค้าและหมายเลขตัวถัง</span>
+                            </label>
+                            <label class="checklist-item">
+                                <input type="checkbox" class="checklist-checkbox" id="check2" <?= !isAdmin() ? 'disabled' : '' ?>>
+                                <span class="checklist-text">ตรวจสอบรายละเอียดและการแนบรูปภาพประกอบของปัญหา</span>
+                            </label>
+                            <label class="checklist-item">
+                                <input type="checkbox" class="checklist-checkbox" id="check3" <?= !isAdmin() ? 'disabled' : '' ?>>
+                                <span class="checklist-text">ตรวจสอบรายการอะไหล่ ค่าแรง และยอดเคลมสุทธิว่าถูกต้องเหมาะสม</span>
+                            </label>
+                        </div>
+
+                        <div class="mt-5">
+                            <div class="row align-items-center mb-3">
+                                <label class="col-sm-4 col-form-label fw-bold text-secondary">ลงชื่อผู้ตรวจสอบ</label>
+                                <div class="col-sm-8">
+                                    <input type="text" name="verifier" class="form-control pill-input bg-light" placeholder="ชื่อ-นามสกุล ผู้ตรวจสอบ" value="<?= htmlspecialchars($claim['verifier_name'] ?? $_SESSION['user_name'] ?? '') ?>" <?= isAdmin() ? 'required' : 'readonly' ?>>
+                                </div>
                             </div>
-                            <div>
-                                <label class="form-label fw-600">ยอดเงินเคลมสุทธิ</label>
-                                <div class="input-group">
-                                    <input type="number" step="0.01" name="job_amount" class="form-control border-2" placeholder="0.00" value="<?= htmlspecialchars($claim['job_amount'] ?? '') ?>" <?= !isAdmin() ? 'readonly' : '' ?>>
-                                    <span class="input-group-text border-2 bg-white fw-bold">บาท</span>
+                            <div class="row align-items-center">
+                                <label class="col-sm-4 col-form-label fw-bold text-secondary">วันที่ตรวจสอบ</label>
+                                <div class="col-sm-8">
+                                    <input type="text" name="verify_date" class="form-control pill-input bg-light" placeholder="วว/ดด/ปปปป" value="<?= date('d/m/Y') ?>" <?= isAdmin() ? '' : 'readonly' ?>>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="col-12 col-lg-6">
-                    <div class="p-4 bg-light rounded-4 shadow-sm h-100 border border-secondary border-opacity-10">
-                    <label class="form-label fw-bold mb-3 border-bottom pb-2 w-100 fs-6">รายการตรวจสอบเบื้องต้น</label>
-                    <div class="d-flex flex-column gap-3">
-                        <input class="form-check-input border-2" type="checkbox" id="check1" style="width: 22px; height: 22px;" <?= !isAdmin() ? 'disabled' : '' ?>>
-                        <label class="form-check-label fs-md ms-2 pt-1 cursor-pointer" for="check1">ข้อมูลลูกค้าและรถถูกต้อง</label>
-                        </div>
-                        <div class="form-check custom-checkbox-lg">
-                        <input class="form-check-input border-2" type="checkbox" id="check2" style="width: 22px; height: 22px;" <?= !isAdmin() ? 'disabled' : '' ?>>
-                        <label class="form-check-label fs-md ms-2 pt-1 cursor-pointer" for="check2">เหตุผลการเคลมชัดเจน สมเหตุสมผล</label>
-                        </div>
-                        <div class="form-check custom-checkbox-lg">
-                        <input class="form-check-input border-2" type="checkbox" id="check3" style="width: 22px; height: 22px;">
-                        <label class="form-check-label fs-md ms-2 pt-1 cursor-pointer" for="check3">รายการอะไหล่และยอดเงินถูกต้อง</label>
-                        </div>
-                    </div>
-                    </div>
-                </div>
-                
-                <div class="col-12">
-                    <div class="bg-white p-4 rounded-4 shadow-sm h-100 border border-secondary border-opacity-10">
 
-                    <div class="row align-items-center mb-3">
-                        <label class="col-sm-4 col-form-label fw-bold text-dark">ผลพิจารณา <span class="text-danger">*</span></label>
-                        <div class="col-sm-8">
-                        <select name="status" class="form-select border-primary-orange border-2 fw-bold text-primary-orange" required <?= !isAdmin() ? 'disabled' : '' ?>>
-                            <option value="">-- กรุณาเลือกผลการตรวจสอบ --</option>
-                            <option value="Approved Claim" <?= $claim['status'] == 'Approved Claim' ? 'selected' : '' ?> class="text-success fw-bold">อนุมัติการเคลม (ซ่อมสาขา/ส่งซ่อม สนญ.)</option>
-                            <option value="Approved Replacement" <?= $claim['status'] == 'Approved Replacement' ? 'selected' : '' ?> class="text-success fw-bold">อนุมัติเปลี่ยนคัน (Replace Vehicle)</option>
-                            <option value="Rejected" <?= $claim['status'] == 'Rejected' ? 'selected' : '' ?> class="text-danger fw-bold">ไม่อนุมัติ</option>
-                            <option value="Pending Fix" <?= $claim['status'] == 'Pending Fix' ? 'selected' : '' ?> class="text-warning fw-bold">ตีกลับไปแก้ไข</option>
-                            <option value="Pending" <?= $claim['status'] == 'Pending' ? 'selected' : '' ?> class="text-secondary fw-bold">รอดำเนินการ</option>
-                        </select>
+                    <!-- ฝั่งขวา: ผลการพิจารณาและหมายเหตุ -->
+                    <div class="action-column d-flex flex-column">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <label class="form-label fw-bold text-secondary mb-0" style="min-width: 100px;">ผลพิจารณา</label>
+                            <select name="status" class="form-select pill-select-orange w-100" required <?= !isAdmin() ? 'disabled' : '' ?>>
+                                <option value="">--กรุณาเลือกผลการตรวจสอบ--</option>
+                                <option value="Approved Claim" <?= $claim['status'] == 'Approved Claim' ? 'selected' : '' ?>>อนุมัติการเคลม (ซ่อมสาขา/ส่งซ่อม สนญ.)</option>
+                                <option value="Approved Replacement" <?= $claim['status'] == 'Approved Replacement' ? 'selected' : '' ?>>อนุมัติเปลี่ยนคัน (Replace Vehicle)</option>
+                                <option value="Rejected" <?= $claim['status'] == 'Rejected' ? 'selected' : '' ?>>ไม่อนุมัติ</option>
+                                <option value="Pending Fix" <?= $claim['status'] == 'Pending Fix' ? 'selected' : '' ?>>ตีกลับไปแก้ไข</option>
+                                <option value="Pending" <?= $claim['status'] == 'Pending' ? 'selected' : '' ?>>รอดำเนินการ</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-secondary mb-2">หมายเหตุ / ความเห็นผู้ตรวจสอบ</label>
+                            <textarea name="verify_remarks" class="form-control pill-textarea" rows="5" placeholder="ระบุเหตุผล หากไม่อนุมัติหรือตีกลับ..." <?= !isAdmin() ? 'readonly' : '' ?>><?= htmlspecialchars($claim['verify_remarks'] ?? '') ?></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-3 mt-auto">
+                            <a href="<?= isAdmin() ? 'check.php' : 'history.php' ?>" class="btn btn-pill-cancel px-4">ยกเลิก</a>
+                            <?php if(isAdmin()): ?>
+                            <button type="submit" id="btnSubmitVerify" class="btn btn-pill-save px-4">บันทึกผลการตรวจ</button>
+                            <?php endif; ?>
                         </div>
                     </div>
-                    <div class="mb-0">
-                        <label class="form-label fw-bold mb-2">หมายเหตุ / ความเห็นผู้ตรวจสอบ</label>
-                        <textarea name="verify_remarks" class="form-control border-2" rows="3" placeholder="ระบุเหตุผล หรือข้อเสนอแนะ..." <?= !isAdmin() ? 'readonly' : '' ?>><?= htmlspecialchars($claim['verify_remarks'] ?? '') ?></textarea>
-                    </div>
-                    </div>
                 </div>
-            </div>
-            
-            <div class="row g-4 border-top pt-4 mt-2">
-                <div class="col-12 col-lg-6">
-                <div class="row align-items-center mb-3">
-                    <label class="col-sm-4 col-form-label fw-600">ผู้ตรวจสอบ <?= isAdmin() ? '<span class="text-danger">*</span>' : '' ?></label>
-                        <input type="text" name="verifier" class="form-control border-2" placeholder="ระบุชื่อผู้ตรวจสอบ..." value="<?= htmlspecialchars($claim['verifier_name'] ?? $claim['editor_id'] ?? '') ?>" <?= isAdmin() ? 'required' : 'readonly' ?>>
-                </div>
-                </div>
-                
-                <div class="col-12 col-lg-6 d-flex flex-column flex-sm-row justify-content-end align-items-stretch align-items-sm-end gap-3 mt-4 mt-lg-0">
-                    <a href="<?= isAdmin() ? 'check.php' : 'history.php' ?>" class="btn btn-secondary px-5 py-2 rounded-3 shadow-sm text-decoration-none text-center color-fff">ย้อนกลับ</a>
-                    <?php if(isAdmin()): ?>
-                    <button type="submit" id="btnSubmitVerify" class="btn-action bg-primary-orange color-fff border-0 px-5 py-2 rounded-3 shadow-sm fw-bold">บันทึกผลการตรวจสอบ</button>
-                    <?php endif; ?>
-                </div>
-            </div>
             </div>
         </form>
-        
       </div> 
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-  <div id="lightbox" class="lightbox" aria-hidden="true">
-    <div class="imgwrap">
-      <button class="close" aria-label="ปิด">✕</button>
-      <button class="nav prev" aria-label="ก่อนหน้า">‹</button>
-      <div class="imgframe"><img src="" alt="preview"><div class="counter" aria-hidden="true"></div></div>
-      <button class="nav next" aria-label="ถัดไป">›</button>
-    </div>
-  </div>
-
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const imageLinks = Array.from(document.querySelectorAll('.problem-image-link'));
-        const lightboxHtml = document.getElementById('lightbox');
-        const lightboxImage = lightboxHtml?.querySelector('.imgframe img');
-        const lightboxCounter = lightboxHtml?.querySelector('.counter');
-        let lightboxState = { index: 0, images: imageLinks.map(link => link.getAttribute('href')) };
-
-        imageLinks.forEach((link, idx) => {
-            link.addEventListener('click', function(event) {
-                event.preventDefault();
-                lightboxState.index = idx;
-                if (lightboxImage) lightboxImage.src = this.getAttribute('href');
-                if (lightboxCounter) lightboxCounter.textContent = (idx + 1) + ' / ' + lightboxState.images.length;
-                if (lightboxHtml) {
-                    lightboxHtml.classList.add('open');
-                    lightboxHtml.setAttribute('aria-hidden', 'false');
-                }
-            });
-        });
-
-        function closeLightbox() {
-            if (!lightboxHtml) return;
-            lightboxHtml.classList.remove('open');
-            lightboxHtml.setAttribute('aria-hidden', 'true');
-        }
-
-        function showLightboxIndex(index) {
-            if (!lightboxImage || !lightboxCounter || !lightboxHtml) return;
-            lightboxState.index = (index + lightboxState.images.length) % lightboxState.images.length;
-            lightboxImage.src = lightboxState.images[lightboxState.index];
-            lightboxCounter.textContent = (lightboxState.index + 1) + ' / ' + lightboxState.images.length;
-            lightboxHtml.classList.add('open');
-            lightboxHtml.setAttribute('aria-hidden', 'false');
-        }
-
-        lightboxHtml?.addEventListener('click', function(e) {
-            if (e.target.id === 'lightbox' || e.target.classList.contains('close')) {
-                closeLightbox();
-            }
-        });
-        lightboxHtml?.querySelector('.nav.next')?.addEventListener('click', function(e) {
-            e.stopPropagation();
-            showLightboxIndex(lightboxState.index + 1);
-        });
-        lightboxHtml?.querySelector('.nav.prev')?.addEventListener('click', function(e) {
-            e.stopPropagation();
-            showLightboxIndex(lightboxState.index - 1);
-        });
-        document.addEventListener('keydown', function(e) {
-            if (!lightboxHtml?.classList.contains('open')) return;
-            if (e.key === 'Escape') closeLightbox();
-            if (e.key === 'ArrowRight') showLightboxIndex(lightboxState.index + 1);
-            if (e.key === 'ArrowLeft') showLightboxIndex(lightboxState.index - 1);
-        });
-
-        // --- ระบบค้นหาออโต้สำหรับผู้อนุมัติ (Dropdown แบบ index.php) ---
-        function setupSearch(inputId, listId, targetFields) {
-            const input = document.getElementById(inputId);
-            const list = document.getElementById(listId);
-            if(!input || !list) return;
-
-            let timeout = null;
-            input.addEventListener('input', function() {
-                clearTimeout(timeout);
-                const query = this.value.trim();
-                
-                // Clear hidden fields user is typing something new
-                document.getElementById(targetFields.name).value = query;
-
-                if (query.length < 1) { list.classList.remove('show'); return; }
-
-                timeout = setTimeout(() => {
-                    fetch('../backend/api.php?action=searchUsers&q=' + encodeURIComponent(query))
-                    .then(res => res.json())
-                    .then(data => {
-                        list.innerHTML = '';
-                        if (data.length > 0) {
-                            data.forEach(user => {
-                                const div = document.createElement('div');
-                                div.className = 'search-dropdown-item';
-                                div.innerHTML = `<strong>${user.name}</strong> <small class="text-muted">(${user.employee_id})</small>`;
-                                div.addEventListener('click', () => {
-                                    input.value = user.name;
-                                    document.getElementById(targetFields.id).value = user.employee_id;
-                                    document.getElementById(targetFields.name).value = user.name;
-                                    document.getElementById(targetFields.sig).value = user.signature || user.name;
-                                    list.classList.remove('show');
-                                });
-                                list.appendChild(div);
-                            });
-                            list.classList.add('show');
-                        } else {
-                            list.classList.remove('show');
-                        }
-                    })
-                    .catch(() => list.classList.remove('show'));
-                }, 300);
-            });
-
-            document.addEventListener('click', function(e) {
-                if (e.target !== input && e.target !== list) {
-                    list.classList.remove('show');
-                }
-            });
-        }
-        setupSearch('search-approver-repair', 'repair-dropdown-list', {id: 'repair_id', name: 'repair_name', sig: 'repair_signature'});
-
         const verifyForm = document.getElementById('verifyForm');
         if (verifyForm) {
             verifyForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 
-                // Check if user has selected a valid verifier with signature
-                const vName = document.querySelector('input[name="verifier"]').value.trim();
                 const statusVal = document.querySelector('select[name="status"]').value;
                 if(statusVal === '') {
-                    showToast('❌ กรุณาเลือกผลการตรวจสอบ', 'error'); return;
+                    if(typeof showToast === 'function') showToast('❌ กรุณาเลือกผลการตรวจสอบ', 'error');
+                    else alert('กรุณาเลือกผลการตรวจสอบ');
+                    return;
                 }
                 
                 const submitBtn = document.getElementById('btnSubmitVerify');
-                const originalText = submitBtn ? submitBtn.innerHTML : 'บันทึกผลการตรวจสอบ';
-                if (submitBtn) { submitBtn.innerHTML = '⏳ กำลังบันทึก...'; submitBtn.disabled = true; }
+                const originalText = submitBtn ? submitBtn.innerHTML : 'บันทึกผลการตรวจ';
+                if (submitBtn) { submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> กำลังบันทึก...'; submitBtn.disabled = true; }
 
                 fetch('../backend/verify_handler.php', { method: 'POST', body: new FormData(this) })
                 .then(res => res.text())
                 .then(text => {
                     if (text.includes('✅')) {
-                        showToast('✅ บันทึกผลการตรวจสอบเรียบร้อยแล้ว!', 'success');
+                        if(typeof showToast === 'function') showToast('✅ บันทึกผลการตรวจสอบเรียบร้อยแล้ว!', 'success');
+                        else alert('บันทึกผลการตรวจสอบเรียบร้อยแล้ว!');
                         setTimeout(() => {
                             window.location.href = 'check.php'; 
                         }, 1500);
                     } else {
-                        showToast('❌ ' + text.replace(/(<([^>]+)>)/gi, ""), 'error');
+                        const cleanMsg = text.replace(/(<([^>]+)>)/gi, "");
+                        if(typeof showToast === 'function') showToast('❌ ' + cleanMsg, 'error');
+                        else alert('เกิดข้อผิดพลาด: ' + cleanMsg);
                         if (submitBtn) { submitBtn.innerHTML = originalText; submitBtn.disabled = false; }
                     }
                 })
                 .catch(err => {
-                    showToast('❌ เกิดข้อผิดพลาดในการเชื่อมต่อ!', 'error');
+                    if(typeof showToast === 'function') showToast('❌ เกิดข้อผิดพลาดในการเชื่อมต่อ!', 'error');
+                    else alert('เกิดข้อผิดพลาดในการเชื่อมต่อ!');
                     if (submitBtn) { submitBtn.innerHTML = originalText; submitBtn.disabled = false; }
                 });
             });

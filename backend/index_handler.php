@@ -32,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $inspectMethod = $_POST['inspectMethod'] ?? '';
         $inspectCause = $_POST['inspectCause'] ?? '';
         $claimCategory = $_POST['claimCategory'] ?? '';
+        $vin         = $_POST['vin'] ?? '';
         $recorder    = $_POST['recorder'] ?? '';
 
         $sql_claim = "INSERT INTO `claims` (

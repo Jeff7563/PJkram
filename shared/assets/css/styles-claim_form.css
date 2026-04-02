@@ -38,7 +38,7 @@ body {
 
 /* === Layout / Tabs polish === */
 #claimForm {
-  max-width: 1100px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -74,7 +74,7 @@ body {
 /* === Horizontal inline label layout === */
 .form-row-item {
   display: grid;
-  grid-template-columns: 180px 1fr;
+  grid-template-columns: 160px 1fr;
   align-items: center;
   gap: 0.9rem;
   margin-bottom: 0.82rem;
@@ -83,8 +83,17 @@ body {
 .form-row-item .form-label {
   margin-bottom: 0;
   font-weight: 700;
-  color: #222;
+  color: #444;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-row-item .form-label i {
+  color: var(--primary-orange);
+  width: 18px;
+  text-align: center;
 }
 
 .form-row-item .form-control,
@@ -93,12 +102,45 @@ body {
   width: 100%;
 }
 
+/* === Custom Layout Grid (More stable than standard Bootstrap row here) === */
+.claim-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.8rem 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.claim-form-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.8rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
 @media (max-width: 900px) {
+  .claim-form-grid, .claim-form-grid-3 {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+}
+
+/* === Vertical Field Layout (Label on Top) === */
+.field-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.82rem;
+}
+
+.field-vertical .form-label {
+  margin-bottom: 0;
+  font-weight: 700;
+  color: #444;
+}
+
+@media (max-width: 600px) {
   .form-row-item {
     display: block;
-  }
-  .form-row-item .form-label {
-    margin-bottom: 0.3rem;
   }
 }
 
@@ -363,4 +405,140 @@ textarea:focus {
 
 .gap-2 {
   gap: 0.5rem;
+}
+/* === Replacement Details Redesign === */
+.section-sub-card {
+  background: #fdfdfd;
+  border: 1px solid #f1f1f1;
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.section-sub-title {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-sub-title i {
+  color: var(--primary-orange);
+}
+
+.icon-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #444;
+}
+
+.icon-label i {
+  width: 16px;
+  text-align: center;
+  color: var(--primary-orange);
+  font-size: 0.85rem;
+}
+
+.money-input-group .input-group-text {
+  background-color: #fffaf5;
+  border-color: #e0e0e0;
+  color: #666;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.money-input-group input {
+  font-weight: 700;
+  color: #222;
+  text-align: right;
+  letter-spacing: 0.5px;
+}
+
+.grade-select-wrapper {
+  transition: all 0.3s ease;
+}
+
+/* Specific highlight for Replacement Block */
+#replaceBlock {
+  border-top: 4px solid var(--primary-orange);
+}
+
+#replaceBlock .fw-bold.mb-4 {
+  color: var(--primary-orange) !important;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#replaceBlock .fw-bold.mb-4 i {
+  font-size: 1.25rem;
+}
+
+/* === Editor Log Section (Mockup Matching) === */
+.edit-log-card {
+    border: 2px solid #ff7a32 !important;
+    border-radius: 20px !important;
+    padding: 2rem !important;
+    background: #ffffff !important;
+    box-shadow: 0 4px 20px rgba(255, 122, 50, 0.08) !important;
+}
+
+.edit-log-title {
+    color: #ff7a32 !important;
+    font-weight: 700 !important;
+    font-size: 1.1rem !important;
+    margin-bottom: 1rem !important;
+}
+
+.pill-select {
+    border: 1.5px solid #ff7a32 !important;
+    border-radius: 30px !important;
+    padding: 0.5rem 1.5rem !important;
+    color: #ff7a32 !important;
+    font-weight: 600 !important;
+    background-color: #fff !important;
+}
+
+.pill-textarea {
+    background-color: #f4f5f7 !important;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 15px !important;
+    padding: 1rem !important;
+    min-height: 120px;
+}
+
+.pill-input-sm {
+    background-color: #f4f5f7 !important;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 20px !important;
+    padding: 0.4rem 1.2rem !important;
+    font-size: 0.9rem !important;
+}
+
+.btn-pill-cancel {
+    border: 1px solid #d1d5db !important;
+    border-radius: 12px !important;
+    padding: 0.6rem 1.5rem !important;
+    color: #6b7280 !important;
+    background: #fff !important;
+    font-weight: 500 !important;
+}
+
+.btn-pill-save {
+    background: #00b551 !important;
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 0.6rem 2rem !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 12px rgba(0, 181, 81, 0.2) !important;
 }

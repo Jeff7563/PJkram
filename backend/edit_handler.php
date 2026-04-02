@@ -33,13 +33,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $vinInput = $_POST['vin'] ?? $old_data['vin'];
         $safeVin = preg_replace('/[^a-zA-Z0-9_-]/', '_', $vinInput);
 
-        if (isset($_FILES['claim_images']) && !empty($_FILES['claim_images']['name'][0])) {
-            $fileCount = count($_FILES['claim_images']['name']);
-            for ($i = 0; $i < $fileCount; $i++) {
-                if ($_FILES['claim_images']['error'][$i] === UPLOAD_ERR_OK) {
-                    $ext = pathinfo($_FILES['claim_images']['name'][$i], PATHINFO_EXTENSION);
-                    $newFileName = 'ภาพเพิ่มเติม_' . $safeVin . '_' . date('His') . '_' . rand(100,999) . '.' . $ext;
-                    if (move_uploaded_file($_FILES['claim_images']['tmp_name'][$i], $uploadDir . $newFileName)) {
+        $fieldLabels = [
+            'claim_images' => 'ภาพเพิ่มเติม',
+            'imgParts'     => 'ภาพอะไหล่ที่เคลม'
+        ];
+
+        foreach ($_FILES as $key => $fileData) {
+            $prefix = $fieldLabels[$key] ?? 'รูปภาพทั่วไป';
+            if (is_array($fileData['name'])) {
+                for ($i = 0; $i < count($fileData['name']); $i++) {
+                    if ($fileData['error'][$i] === UPLOAD_ERR_OK && !empty($fileData['name'][$i])) {
+                        $ext = pathinfo($fileData['name'][$i], PATHINFO_EXTENSION);
+                        $uniqueId = date('His') . '_' . ($i + 1) . '_' . rand(100,999);
+                        $newFileName = $prefix . '_' . $safeVin . '_' . $uniqueId . '.' . $ext;
+                        if (move_uploaded_file($fileData['tmp_name'][$i], $uploadDir . $newFileName)) {
+                            $finalImages[] = 'uploads/claims/' . $uploadFolder . '/' . $newFileName; 
+                        }
+                    }
+                }
+            } else {
+                if ($fileData['error'] === UPLOAD_ERR_OK && !empty($fileData['name'])) {
+                    $ext = pathinfo($fileData['name'], PATHINFO_EXTENSION);
+                    $uniqueId = date('His') . '_0_' . rand(100,999);
+                    $newFileName = $prefix . '_' . $safeVin . '_' . $uniqueId . '.' . $ext;
+                    if (move_uploaded_file($fileData['tmp_name'], $uploadDir . $newFileName)) {
                         $finalImages[] = 'uploads/claims/' . $uploadFolder . '/' . $newFileName; 
                     }
                 }
@@ -64,7 +81,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         $status = $_POST['status'] ?? $old_data['status'];
         $editor = $_POST['editor'] ?? '';
-        $edit_date = !empty($_POST['edit_date']) ? $_POST['edit_date'] . ' ' . date('H:i:s') : date('Y-m-d H:i:s');
+        
+        // แปลงวันที่จาก d/m/Y เป็น Y-m-d ก่อนบันทึก
+        $raw_edit_date = $_POST['edit_date'] ?? '';
+        if (strpos($raw_edit_date, '/') !== false) {
+            list($d, $m, $y) = explode('/', $raw_edit_date);
+            $edit_date = "$y-$m-$d " . date('H:i:s');
+        } else {
+            $edit_date = !empty($raw_edit_date) ? $raw_edit_date . ' ' . date('H:i:s') : date('Y-m-d H:i:s');
+        }
 
         // 4. บันทึกข้อมูลหลักลงตาราง claims
         $sql = "UPDATE `$table` SET 
@@ -103,14 +128,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $partsDelivery = $_POST['partsDelivery'] ?? null;
             if ($partsDelivery === 'other') $partsDelivery = $_POST['partsDeliveryOtherText'] ?? 'อื่นๆ';
             
+            $jobNum = $_POST['job_number'] ?? null;
+            $jobAmt = !empty($_POST['job_amount']) ? $_POST['job_amount'] : null;
+
             $check = $pdo->prepare("SELECT id FROM claim_repair_details WHERE claim_id = ?");
             $check->execute([$id]);
             if ($check->fetch()) {
-                $sql_rep = "UPDATE claim_repair_details SET parts_delivery=?, approver_id=?, approver_name=?, approver_signature=? WHERE claim_id=?";
-                $pdo->prepare($sql_rep)->execute([$partsDelivery, $_POST['repair_id'] ?? null, $_POST['repair_name'] ?? null, $_POST['repair_signature'] ?? null, $id]);
+                $sql_rep = "UPDATE claim_repair_details SET parts_delivery=?, job_number=?, job_amount=?, approver_id=?, approver_name=?, approver_signature=? WHERE claim_id=?";
+                $pdo->prepare($sql_rep)->execute([$partsDelivery, $jobNum, $jobAmt, $_POST['repair_id'] ?? null, $_POST['repair_name'] ?? null, $_POST['repair_signature'] ?? null, $id]);
             } else {
-                $sql_rep = "INSERT INTO claim_repair_details (claim_id, parts_delivery, approver_id, approver_name, approver_signature) VALUES (?, ?, ?, ?, ?)";
-                $pdo->prepare($sql_rep)->execute([$id, $partsDelivery, $_POST['repair_id'] ?? null, $_POST['repair_name'] ?? null, $_POST['repair_signature'] ?? null]);
+                $sql_rep = "INSERT INTO claim_repair_details (claim_id, parts_delivery, job_number, job_amount, approver_id, approver_name, approver_signature) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                $pdo->prepare($sql_rep)->execute([$id, $partsDelivery, $jobNum, $jobAmt, $_POST['repair_id'] ?? null, $_POST['repair_name'] ?? null, $_POST['repair_signature'] ?? null]);
             }
         } 
         

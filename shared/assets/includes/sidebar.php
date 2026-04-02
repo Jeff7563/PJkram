@@ -164,7 +164,7 @@
 </script>
 
 <!-- Toast Container -->
-<!-- <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 10000;">
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 10000;">
   <div id="liveToast" class="toast align-items-center text-white border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" style="border-radius: 12px; min-width: 250px;">
     <div class="d-flex p-2">
       <div class="toast-body fs-6 fw-medium" id="toastMessage">
@@ -173,5 +173,5 @@
       <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
     </div>
   </div>
-</div> -->
+</div>
 
