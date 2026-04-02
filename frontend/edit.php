@@ -108,6 +108,10 @@ try {
 
             <form method="POST" action="../backend/edit_handler.php" enctype="multipart/form-data">
                 <input type="hidden" name="claim_id" value="<?= $claim['id'] ?>">
+                <input type="hidden" name="claimDate" value="<?= $claim['claim_date'] ?>">
+                <input type="hidden" name="carType" value="<?= $claim['car_type'] ?>">
+                <input type="hidden" name="carBrand" value="<?= $claim['car_brand'] ?>">
+                <input type="hidden" name="usedGrade" value="<?= $claim['used_grade'] ?>">
 
                 <div class="edit-container mb-5">
                     
@@ -128,7 +132,7 @@ try {
                                     <div class="row align-items-center">
                                         <label class="col-sm-4 col-form-label fw-600">ประเภทการเคลม</label>
                                         <div class="col-sm-8">
-                                            <select name="claimCategory" class="form-select border-2" required>
+                                            <select name="claim_category" class="form-select border-2" required>
                                                 <option value="เคลมรถก่อนขาย" <?= $claim['claim_category'] == 'pre-sale' || $claim['claim_category'] == 'เคลมรถก่อนขาย' ? 'selected' : '' ?>>เคลมรถก่อนขาย</option>
                                                 <option value="เคลมปัญหาทางเทคนิค" <?= $claim['claim_category'] == 'technical' || $claim['claim_category'] == 'เคลมปัญหาทางเทคนิค' ? 'selected' : '' ?>>เคลมปัญหาทางเทคนิค</option>
                                                 <option value="เคลมรถลูกค้า" <?= $claim['claim_category'] == 'customer' || $claim['claim_category'] == 'เคลมรถลูกค้า' ? 'selected' : '' ?>>เคลมรถลูกค้า</option>
@@ -575,16 +579,13 @@ try {
                             <div class="col-12 d-flex align-items-center gap-3 mb-2 flex-wrap">
                                 <label class="form-label fw-bold text-secondary mb-0" style="min-width: 60px;">สถานะ :</label>
                                 <select name="status" id="doc_status" class="form-select pill-select" style="max-width: 320px;">
-                                    <option value="" disabled>--กรุณาเลือกสถานะของเคส--</option>
-                                    <option value="Pending" <?= $claim['status'] == 'Pending' ? 'selected' : '' ?>>ส่งไปตรวจสอบ (Pending)</option>
-                                    <?php if($claim['status'] == 'Pending Fix'): ?>
-                                        <option value="Pending Fix" selected>รอแก้ไข </option>
-                                    <?php endif; ?>
-                                    <?php if(isAdmin()): ?>
-                                        <option value="Approved Claim" <?= $claim['status'] == 'Approved Claim' ? 'selected' : '' ?>>อนุมัติเคลม</option>
-                                        <option value="Approved Replacement" <?= $claim['status'] == 'Approved Replacement' ? 'selected' : '' ?>>อนุมัติเปลี่ยนคัน</option>
-                                        <option value="Rejected" <?= $claim['status'] == 'Rejected' ? 'selected' : '' ?>>ปฏิเสธ</option>
-                                    <?php endif; ?>
+                                    <option value="">--กรุณาเลือกผลการตรวจสอบ--</option>
+                                <option value="Approved Claim" <?= $claim['status'] == 'Approved Claim' ? 'selected' : '' ?>>อนุมัติการเคลม</option>
+                                <option value="Approved Replacement" <?= $claim['status'] == 'Approved Replacement' ? 'selected' : '' ?>>อนุมัติเปลี่ยนคัน</option>
+                                <option value="Rejected" <?= $claim['status'] == 'Rejected' ? 'selected' : '' ?>>ไม่อนุมัติ</option>
+                                <option value="Rejected" <?= $claim['status'] == 'Rejected' ? 'selected' : '' ?>>เปลี่ยน  </option>
+                                <option value="Pending Fix" <?= $claim['status'] == 'Pending Fix' ? 'selected' : '' ?>>รอแก้ไข</option>
+                                <option value="Pending" <?= $claim['status'] == 'Pending' ? 'selected' : '' ?>>ดำเนินการเสร็จสิ้น</option>
                                 </select>
                             </div>
 

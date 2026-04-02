@@ -145,12 +145,13 @@ try {
                 $badgeClass = 'hc-badge'; 
                 $statusDisplay = 'รอดำเนินการ'; // ค่าเริ่มต้น
 
-                if ($dbStatus === 'Approved' || $dbStatus === 'Approved Claim' || $dbStatus === 'Approved Replacement') {
+                if ($dbStatus === 'Approved Replacement' || $dbStatus === 'Approved Claim' || $dbStatus === 'Approved') {
                     $badgeClass .= ' bg-success text-white';
-                    $statusDisplay = $dbStatus === 'Approved Replacement' ? 'อนุมัติเปลี่ยนคัน' : ($dbStatus === 'Approved Claim' ? 'อนุมัติเคลม' : 'อนุมัติ');
+                    $statusDisplay = $dbStatus === 'Approved Replacement' ? 'อนุมัติเปลี่ยนคัน' : 'อนุมัติการเคลม';
+                    if ($dbStatus === 'Approved') $statusDisplay = 'อนุมัติแล้ว';
                 } elseif ($dbStatus === 'Rejected') {
                     $badgeClass .= ' bg-danger text-white';
-                    $statusDisplay = 'ปฏิเสธ';
+                    $statusDisplay = 'ไม่อนุมัติ';
                 } elseif ($dbStatus === 'Pending Fix') {
                     $badgeClass .= ' bg-warning text-dark';
                     $statusDisplay = 'รอแก้ไข';
@@ -159,7 +160,7 @@ try {
                     $statusDisplay = 'ดำเนินการเสร็จสิ้น';
                 } elseif ($dbStatus === 'Replaced') {
                     $badgeClass .= ' bg-info text-white'; 
-                    $statusDisplay = 'เปลี่ยนคัน';
+                    $statusDisplay = 'เปลี่ยนคันเสร็จสิ้น';
                 } elseif ($dbStatus === 'Pending') {
                     $badgeClass .= ' bg-secondary text-white'; 
                     $statusDisplay = 'ส่งไปตรวจสอบ';

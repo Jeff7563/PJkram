@@ -40,18 +40,12 @@
     <a href="<?= BASE_URL_FRONTEND ?>/dashboard.php" class="nav-btn <?= ($current_page == 'dashboard.php') ? 'active' : '';?>">แดชบอร์ด</a>
     <a href="<?= BASE_URL_FRONTEND ?>/index.php" class="nav-btn <?= ($current_page == 'index.php') ? 'active' : '';?>">ฟอร์มส่งเคลม</a>
     
-    <a href="<?= BASE_URL_FRONTEND ?>/history.php" class="nav-btn <?= ($current_page == 'history.php') ? 'active' : '';?> d-flex justify-content-between align-items-center">
-        <span>ประวัติเคลม</span>
-        <?php if($pending_claims_count > 0 && !$_sidebar_is_admin): ?>
-            <span class="badge bg-danger rounded-pill shadow-sm" style="font-size:0.75rem; padding: 4px 8px;"><?= $pending_claims_count ?> รายการ</span>
-        <?php endif; ?>
+    <a href="<?= BASE_URL_FRONTEND ?>/history.php" class="nav-btn <?= ($current_page == 'history.php') ? 'active' : '';?> ">
+        ประวัติเคลม
     </a>
     
-    <a href="<?= BASE_URL_FRONTEND ?>/check.php" class="nav-btn <?= ($current_page == 'check.php') ? 'active' : '';?> d-flex justify-content-between align-items-center">
-        <span>ตรวจเช็ค</span>
-        <?php if($pending_claims_count > 0 && $_sidebar_is_admin): ?>
-            <span class="badge bg-danger rounded-pill shadow-sm animate-pulse" style="font-size:0.75rem; padding: 4px 8px;"><?= $pending_claims_count ?> ใหม่</span>
-        <?php endif; ?>
+    <a href="<?= BASE_URL_FRONTEND ?>/check.php" class="nav-btn <?= ($current_page == 'check.php') ? 'active' : '';?> ">
+        ตรวจเช็ค
     </a>
     
     <?php if ($_sidebar_is_admin): ?>
@@ -163,15 +157,4 @@
   };
 </script>
 
-<!-- Toast Container -->
-<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 10000;">
-  <div id="liveToast" class="toast align-items-center text-white border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" style="border-radius: 12px; min-width: 250px;">
-    <div class="d-flex p-2">
-      <div class="toast-body fs-6 fw-medium" id="toastMessage">
-        ข้อความแจ้งเตือน
-      </div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-    </div>
-  </div>
-</div>
 

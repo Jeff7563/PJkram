@@ -58,6 +58,13 @@ CREATE TABLE IF NOT EXISTS `claims` (
   `recorder_id` varchar(50) DEFAULT NULL,
   `editor_id` varchar(50) DEFAULT NULL,
   `claim_images` text DEFAULT NULL, -- JSON
+  
+  -- ข้อมูลการตรวจสอบ
+  `verify_remarks` text DEFAULT NULL,
+  `verifier_name` varchar(255) DEFAULT NULL,
+  `verifier_signature` varchar(255) DEFAULT NULL,
+  `verify_date` date DEFAULT NULL,
+  
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   
@@ -125,3 +132,14 @@ CREATE TABLE IF NOT EXISTS `claim_replacement_details` (
   UNIQUE KEY `uk_claim_id` (`claim_id`),
   FOREIGN KEY (`claim_id`) REFERENCES `claims`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- 6. ตารางสาขา (Branches)
+CREATE TABLE IF NOT EXISTS `branches` (
+  `id` int UNSIGNED NOT NULL AUTO_INCREMENT,
+  `branch_code` varchar(50) DEFAULT NULL,
+  `branch_name` varchar(255) NOT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_branch_name` (`branch_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT IGNORE INTO `branches` (`branch_code`, `branch_name`) VALUES ('BR001', 'สาขา สกลนคร');

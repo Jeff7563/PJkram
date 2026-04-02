@@ -31,7 +31,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $problemDesc = $_POST['problemDesc'] ?? '';
         $inspectMethod = $_POST['inspectMethod'] ?? '';
         $inspectCause = $_POST['inspectCause'] ?? '';
-        $claimCategory = $_POST['claimCategory'] ?? '';
+        $claimCategory = $_POST['claim_category'] ?? '';
+        if ($claimCategory === 'อื่นๆ') {
+            $claimCategory = $_POST['claim_category_other'] ?? 'อื่นๆ';
+        }
         $vin         = $_POST['vin'] ?? '';
         $recorder    = $_POST['recorder'] ?? '';
 
@@ -122,10 +125,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($partsDelivery === 'other') $partsDelivery = $_POST['partsDeliveryOtherText'] ?? 'อื่นๆ';
 
             $sql_repair = "INSERT INTO `claim_repair_details` (
-                claim_id, parts_delivery, approver_id, approver_name, approver_signature
-            ) VALUES (?, ?, ?, ?, ?)";
+                claim_id, parts_delivery, job_number, job_amount, approver_id, approver_name, approver_signature
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)";
             $pdo->prepare($sql_repair)->execute([
                 $claim_id, $partsDelivery, 
+                null, null, // job_number, job_amount เริ่มต้นเป็น null
                 $_POST['approver_id'] ?? null,
                 $_POST['approver_name'] ?? null,
                 $_POST['approver_signature'] ?? null
@@ -134,9 +138,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         else if ($claim_type === 'ReplaceVehicle') {
             $sql_replace = "INSERT INTO `claim_replacement_details` (
                 claim_id, old_down_balance, new_down_balance, replace_vin, replace_brand, 
-                replace_model, replace_color, replace_type, replace_receive_date, 
+                replace_model, replace_color, replace_type, replace_used_grade, replace_receive_date, 
                 replace_reason, approver_id, approver_name, approver_signature, approve_date
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             
             $pdo->prepare($sql_replace)->execute([
                 $claim_id,
@@ -147,6 +151,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_POST['replace_model'] ?? null,
                 $_POST['replace_color'] ?? null,
                 $_POST['replaceType'] ?? null,
+                $_POST['replace_used_grade'] ?? null,
                 !empty($_POST['replace_receive_date']) ? $_POST['replace_receive_date'] : null,
                 $_POST['replace_reason'] ?? null,
                 $_POST['replace_id'] ?? null,
@@ -157,11 +162,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $pdo->commit();
+        $_SESSION['flash_success'] = "บันทึกข้อมูลเคลม " . $docIdFormat . " เรียบร้อยแล้ว!";
         echo '<div style="color: #06b957; font-weight: bold; padding: 10px; border-radius: 8px; background: #e8f5e9;">✅ บันทึกข้อมูลการเคลม เรียบร้อยแล้ว!</div>';
         echo '<script>setTimeout(function(){ window.location.href = "check.php"; }, 1500);</script>';
 
     } catch (Exception $e) {
         if ($pdo->inTransaction()) $pdo->rollBack();
+        $_SESSION['flash_error'] = "เกิดข้อผิดพลาด: " . $e->getMessage();
         echo '<div style="color: #dc3545; font-weight: bold; padding: 10px; border-radius: 8px; background: #fdedea;">❌ เกิดข้อผิดพลาด: ' . $e->getMessage() . '</div>';
     }
     exit;

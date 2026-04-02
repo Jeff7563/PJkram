@@ -11,93 +11,8 @@ $currentUser = getCurrentUser();
   <title>จัดการผู้ใช้และสิทธิ์ — ระบบจัดการฟอร์มส่งเคลม</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../shared/assets/css/theme.css">
+  <link rel="stylesheet" href="../shared/assets/css/styles-admin.css">
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root { --orange: #e65100; --orange-light: #ff7a1a; }
-    body { font-family: 'Kanit', sans-serif; }
-
-    .admin-header {
-      background: linear-gradient(135deg, var(--orange), var(--orange-light));
-      color: #fff;
-      padding: 24px 32px;
-      border-radius: 20px;
-      margin-bottom: 24px;
-      box-shadow: 0 16px 48px rgba(230, 81, 0, 0.15);
-    }
-    .admin-header h2 { margin: 0; font-weight: 800; font-size: 1.4rem; }
-    .admin-header p { margin: 4px 0 0; opacity: 0.85; font-size: 0.9rem; }
-
-    .user-card {
-      background: #fff;
-      border-radius: 16px;
-      border: 1px solid #f0f0f0;
-      padding: 20px;
-      margin-bottom: 16px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.04);
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-    .user-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 14px 40px rgba(0,0,0,0.08);
-    }
-
-    .badge-role {
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 0.78rem;
-      font-weight: 700;
-    }
-    .badge-admin { background: linear-gradient(135deg, var(--orange), var(--orange-light)); color: #fff; }
-    .badge-user { background: #e3f2fd; color: #1565c0; }
-    .badge-inactive { background: #f5f5f5; color: #999; }
-
-    .tag-pill {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 12px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      margin: 2px;
-    }
-    .tag-repair { background: #e8f5e9; color: #2e7d32; }
-    .tag-sendhq { background: #e3f2fd; color: #1565c0; }
-    .tag-replace { background: #fce4ec; color: #c62828; }
-
-    .btn-add-user {
-      background: linear-gradient(135deg, var(--orange), var(--orange-light));
-      color: #fff;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 12px;
-      font-weight: 700;
-      font-family: 'Kanit', sans-serif;
-      cursor: pointer;
-      box-shadow: 0 6px 20px rgba(230, 81, 0, 0.15);
-      transition: all 0.15s ease;
-    }
-    .btn-add-user:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(230, 81, 0, 0.2); color: #fff; }
-
-    .modal-content { border-radius: 20px; border: none; }
-    .modal-header { border-bottom: 2px solid #f5f5f5; }
-    .modal-footer { border-top: 2px solid #f5f5f5; }
-
-    .form-check-tag { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 12px; border: 2px solid #eee; margin: 4px; cursor: pointer; transition: all 0.15s ease; }
-    .form-check-tag:has(input:checked) { border-color: var(--orange); background: rgba(230, 81, 0, 0.05); }
-    .form-check-tag input { accent-color: var(--orange); }
-
-    .search-bar { position: relative; }
-    .search-bar input {
-      padding: 12px 18px 12px 44px;
-      border-radius: 14px;
-      border: 2px solid #eee;
-      font-size: 0.95rem;
-      width: 100%;
-      font-family: 'Kanit', sans-serif;
-      transition: border-color 0.2s;
-    }
-    .search-bar input:focus { border-color: var(--orange); outline: none; box-shadow: 0 0 0 4px rgba(230, 81, 0, 0.06); }
-    .search-bar svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #aaa; }
-  </style>
 </head>
 <body>
 
@@ -108,13 +23,20 @@ $currentUser = getCurrentUser();
 
       <div class="admin-header d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
-          <h2>🛡️ จัดการผู้ใช้และสิทธิ์</h2>
+          <h2>จัดการผู้ใช้และสิทธิ์</h2>
           <p>เพิ่ม แก้ไข และกำหนดสิทธิ์การใช้งานระบบเคลม</p>
         </div>
-        <button class="btn-add-user" data-bs-toggle="modal" data-bs-target="#userModal" onclick="openCreateModal()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-2px; margin-right:6px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          เพิ่มผู้ใช้ใหม่
-        </button>
+        <div class="d-flex gap-2">
+          <button class="btn btn-light fw-bold px-3 py-2" style="border-radius: 12px; font-size: 0.9rem; color: var(--orange); border:none; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" 
+                  data-bs-toggle="modal" data-bs-target="#branchModal">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="vertical-align:-2px; margin-right:4px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            เพิ่มสาขา
+          </button>
+          <button class="btn-add-user" data-bs-toggle="modal" data-bs-target="#userModal" onclick="openCreateModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-2px; margin-right:6px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            เพิ่มผู้ใช้ใหม่
+          </button>
+        </div>
       </div>
 
       <!-- Filters -->
@@ -123,11 +45,10 @@ $currentUser = getCurrentUser();
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input type="text" id="searchUsers" placeholder="ค้นหาชื่อ, รหัสพนักงาน...">
         </div>
-        <div>
+        <div class="flex-grow-1" style="max-width: 250px;">
           <select id="filterBranch" class="form-select border-2 py-2 px-3 fw-bold" style="border-radius: 14px; color: var(--orange);">
             <option value="">ทุกสาขาทั้งหมด</option>
-            <option value="สาขา สกลนคร">สาขา สกลนคร</option>
-            <!-- ใส่ตรรกะดึงสาขาอื่นๆถ้ามี -->
+            <!-- ทยอยใส่จาก JS -->
           </select>
         </div>
       </div>
@@ -192,7 +113,7 @@ $currentUser = getCurrentUser();
               <label class="form-label fw-bold">สาขา</label>
               <select id="formBranch" class="form-select">
                 <option value="">-- เลือกสาขา --</option>
-                <option value="สาขา สกลนคร">สาขา สกลนคร</option>
+                <!-- ทยอยใส่จาก JS -->
               </select>
             </div>
             <div class="col-md-6">
@@ -225,6 +146,55 @@ $currentUser = getCurrentUser();
                   style="background: linear-gradient(135deg, var(--orange), var(--orange-light));" onclick="saveUser()">
             บันทึก
           </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div>
+
+  <!-- Modal: Add/Manage Branches -->
+  <div class="modal fade" id="branchModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+        <div class="modal-header px-4 py-3 border-0" style="background: linear-gradient(135deg, #ff7a32, #ff9e68); color: white;">
+          <h5 class="modal-title fw-bold">จัดการสาขาในระบบ</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body px-4 py-4">
+          <div class="row g-3 mb-4 p-3 bg-light rounded-4">
+            <div class="col-md-4">
+               <label class="form-label fw-bold text-secondary mb-2">รหัสสาขา</label>
+               <input type="text" id="newBranchCode" class="form-control" style="border-radius:12px; padding: 12px; border: 2px solid #ddd;" placeholder="เช่น BR001">
+            </div>
+            <div class="col-md-5">
+               <label class="form-label fw-bold text-secondary mb-2">ชื่อสาขา <span class="text-danger">*</span></label>
+               <input type="text" id="newBranchName" class="form-control" style="border-radius:12px; padding: 12px; border: 2px solid #ddd;" placeholder="เช่น สาขา อุดรธานี">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+               <button class="btn text-white fw-bold w-100" style="background: var(--orange); border-radius:12px; height: 50px;" onclick="saveBranch()">
+                 บันทึก
+               </button>
+            </div>
+          </div>
+
+          <div class="border-top pt-4">
+            <label class="form-label fw-bold text-secondary mb-3">รายการสาขาปัจจุบัน</label>
+            <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+              <table class="table table-hover align-middle">
+                <thead class="table-light sticky-top">
+                  <tr>
+                    <th>รหัส</th>
+                    <th>ชื่อสาขา</th>
+                    <th width="80" class="text-center">จัดการ</th>
+                  </tr>
+                </thead>
+                <tbody id="branchListBody">
+                  <!-- JS ทยอยใส่ให้ -->
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -294,21 +264,30 @@ $currentUser = getCurrentUser();
         const uHtml = `
           <div class="col-12 col-lg-6" data-search="${(u.employee_id + ' ' + u.name + ' ' + u.branch).toLowerCase()}" data-branch="${u.branch || ''}">
             <div class="user-card d-flex justify-content-between align-items-start" style="${opacity} ${cardStyle}">
-              <div class="flex-grow-1">
-                <div class="d-flex align-items-center gap-2 mb-2">
-                  <span class="fw-bold fs-6">${escHtml(u.name)}</span>
+              <div class="flex-grow-1" style="min-width: 0;">
+                <div class="d-flex align-items-center flex-wrap gap-2 mb-2">
+                  <span class="fw-bold fs-6 text-dark" style="letter-spacing: -0.2px;">${escHtml(u.name)}</span>
                   ${roleBadge}${activeBadge}
                 </div>
-                <div class="text-muted small mb-1">
-                  <strong>รหัส:</strong> ${escHtml(u.employee_id)} &nbsp;|&nbsp;
-                  <strong>สาขา:</strong> ${escHtml(u.branch || '-')} &nbsp;|&nbsp;
-                  <strong>ลายเซ็น:</strong> ${escHtml(u.signature || '-')}
+                <div class="text-muted small mb-1 d-flex flex-wrap gap-x-3 gap-y-1">
+                  <span><strong>รหัส:</strong> ${escHtml(u.employee_id)}</span>
+                  <span><strong>สาขา:</strong> ${escHtml(u.branch || '-')}</span>
+                  <span><strong>ลายเซ็น:</strong> ${escHtml(u.signature || '-')}</span>
                 </div>
-                <div class="mt-2">${tagHtml || '<span class="text-muted small border p-1 rounded">ไม่มี Tag กรองโซนซ่อม</span>'}</div>
+                <div class="mt-3 d-flex flex-wrap gap-1">${tagHtml || '<span class="text-muted small border p-1 px-2 rounded-pill" style="font-size:0.7rem; background:#fcfcfc;">ไม่มี Tag กรองเขตงาน</span>'}</div>
               </div>
-              <div class="d-flex gap-1 flex-shrink-0 ms-3">
-                <button class="btn btn-sm btn-outline-secondary" onclick="openEditModal(${u.id})" title="แก้ไข">✏️</button>
-                ${u.id != <?= $_SESSION['user_id'] ?? 0 ?> ? `<button class="btn btn-sm btn-outline-danger" onclick="deleteUser(${u.id}, '${escHtml(u.name)}')" title="ปิดการใช้งาน">🗑️</button>` : ''}
+              <div class="d-flex gap-2 flex-shrink-0 ms-3">
+                <button class="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center" 
+                        style="width:32px; height:32px; border-radius:10px; border-color:#e2e8f0;"
+                        onclick="openEditModal(${u.id})" title="แก้ไข">
+                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                ${u.id != <?= $_SESSION['user_id'] ?? 0 ?> ? `
+                <button class="btn btn-sm btn-outline-danger d-flex align-items-center justify-content-center" 
+                        style="width:32px; height:32px; border-radius:10px; border-color:#fee2e2;"
+                        onclick="deleteUser(${u.id}, '${escHtml(u.name)}')" title="ปิดการใช้งาน">
+                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                </button>` : ''}
               </div>
             </div>
           </div>
@@ -456,8 +435,102 @@ $currentUser = getCurrentUser();
       }
     }
 
+    // ระบบจัดการสาขาแบบไดนามิก
+    async function loadBranches() {
+      try {
+        const res = await fetch('../backend/branch_handler.php?action=list');
+        const json = await res.json();
+        if (json.success) {
+          const filterSel = document.getElementById('filterBranch');
+          const formSel = document.getElementById('formBranch');
+          const listBody = document.getElementById('branchListBody');
+          
+          let optionsHtml = '<option value="">ทุกสาขาทั้งหมด</option>';
+          let modalOptionsHtml = '<option value="">-- เลือกสาขา --</option>';
+          let listHtml = '';
+
+          json.data.forEach(b => {
+            const bTxt = b.branch_code ? `[${b.branch_code}] ${b.branch_name}` : b.branch_name;
+            optionsHtml += `<option value="${escHtml(b.branch_name)}">${escHtml(b.branch_name)}</option>`;
+            modalOptionsHtml += `<option value="${escHtml(b.branch_name)}">${escHtml(b.branch_name)}</option>`;
+            
+            listHtml += `
+              <tr>
+                <td class="fw-bold">${escHtml(b.branch_code || '-')}</td>
+                <td>${escHtml(b.branch_name)}</td>
+                <td class="text-center">
+                  <button class="btn btn-sm btn-outline-danger border-0" onclick="deleteBranch(${b.id}, '${escHtml(b.branch_name)}')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  </button>
+                </td>
+              </tr>
+            `;
+          });
+
+          if (filterSel) filterSel.innerHTML = optionsHtml;
+          if (formSel) formSel.innerHTML = modalOptionsHtml;
+          if (listBody) listBody.innerHTML = listHtml || '<tr><td colspan="3" class="text-center text-muted">ไม่พบข้อมูลสาขา</td></tr>';
+        }
+      } catch (e) {
+        console.error("Error loading branches:", e);
+      }
+    }
+
+    async function saveBranch() {
+      const code = document.getElementById('newBranchCode').value.trim();
+      const name = document.getElementById('newBranchName').value.trim();
+      if (!name) {
+        alert('กรุณาระบุชื่อสาขา');
+        return;
+      }
+
+      const fd = new FormData();
+      fd.append('action', 'create');
+      fd.append('branch_code', code);
+      fd.append('branch_name', name);
+
+      try {
+        const res = await fetch('../backend/branch_handler.php', { method: 'POST', body: fd });
+        const json = await res.json();
+        if (json.success) {
+          document.getElementById('newBranchCode').value = '';
+          document.getElementById('newBranchName').value = '';
+          if(typeof showToast === 'function') showToast('✅ เพิ่มสาขาเรียบร้อยแล้ว', 'success');
+          else alert('เพิ่มสาขาเรียบร้อยแล้ว');
+          loadBranches();
+        } else {
+          alert('❌ ' + json.message);
+        }
+      } catch (e) {
+        alert('❌ เกิดข้อผิดพลาดในการเชื่อมต่อ');
+      }
+    }
+
+    async function deleteBranch(id, name) {
+      if (!confirm(`ต้องการลบ "${name}" จริงหรือไม่?`)) return;
+      
+      const fd = new FormData();
+      fd.append('action', 'delete');
+      fd.append('id', id);
+
+      try {
+        const res = await fetch('../backend/branch_handler.php', { method: 'POST', body: fd });
+        const json = await res.json();
+        if (json.success) {
+          if(typeof showToast === 'function') showToast('✅ ลบสาขาเรียบร้อยแล้ว', 'success');
+          else alert('ลบสาขาเรียบร้อยแล้ว');
+          loadBranches();
+        } else {
+          alert('❌ ' + json.message);
+        }
+      } catch (e) {
+        alert('❌ เกิดข้อผิดพลาดในการเชื่อมต่อ');
+      }
+    }
+
     // โหลดตอนเปิดหน้า
     loadUsers();
+    loadBranches();
   </script>
 </body>
 </html>

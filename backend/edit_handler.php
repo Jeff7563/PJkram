@@ -67,13 +67,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // 3. เตรียมข้อมูลหลักที่จะเซฟ
         $branch = $_POST['branch'] ?? $old_data['branch'];
         $claimDate = !empty($_POST['claimDate']) ? $_POST['claimDate'] : $old_data['claim_date'];
-        $claimCategory = $_POST['claimCategory'] ?? $old_data['claim_category'];
+        $claimCategory = $_POST['claim_category'] ?? $old_data['claim_category'];
         $carType = $_POST['carType'] ?? $old_data['car_type'];
         $carBrand = $_POST['carBrand'] ?? $old_data['car_brand'];
         $usedGrade = $_POST['usedGrade'] ?? $old_data['used_grade'];
         
         $ownerName = $_POST['ownerName'] ?? $old_data['owner_name'];
         $ownerPhone = $_POST['ownerPhone'] ?? $old_data['owner_phone'];
+        $ownerAddress = $_POST['ownerAddress'] ?? $old_data['owner_address'];
         
         $problemDesc = $_POST['problemDesc'] ?? $old_data['problem_desc'];
         $inspectMethod = $_POST['inspectMethod'] ?? $old_data['inspect_method'];
@@ -94,14 +95,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // 4. บันทึกข้อมูลหลักลงตาราง claims
         $sql = "UPDATE `$table` SET 
                 branch=?, claim_type=?, claim_date=?, claim_category=?, car_type=?, car_brand=?, used_grade=?, vin=?, 
-                owner_name=?, owner_phone=?, problem_desc=?, inspect_method=?, inspect_cause=?, 
+                owner_name=?, owner_phone=?, owner_address=?, problem_desc=?, inspect_method=?, inspect_cause=?, 
                 status=?, editor_id=?, updated_at=?, claim_images=?
                 WHERE id=?";
                 
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             $branch, $claim_type, $claimDate, $claimCategory, $carType, $carBrand, $usedGrade, $vinInput,
-            $ownerName, $ownerPhone, $problemDesc, $inspectMethod, $inspectCause, 
+            $ownerName, $ownerPhone, $ownerAddress, $problemDesc, $inspectMethod, $inspectCause, 
             $status, $editor, $edit_date, $claim_images_json, $id
         ]);
 
@@ -155,11 +156,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     approver_id=?, approver_name=?, approver_signature=?, approve_date=?
                     WHERE claim_id=?";
                 $pdo->prepare($sql_repl)->execute([
-                    $old_down, $new_down, $_POST['replaceType'] ?? null, $_POST['replaceUsedGrade'] ?? null, 
-                    $_POST['replace_brand'] ?? null, $_POST['replace_model'] ?? null, $_POST['replace_color'] ?? null, 
-                    $_POST['replace_vin'] ?? null, $_POST['replace_receive_date'] ?? null, $_POST['replace_reason'] ?? null,
-                    $_POST['replace_id'] ?? null, $_POST['replace_name'] ?? null, $_POST['replace_signature'] ?? null, 
-                    $_POST['replace_approve_date'] ?? null, $id
+                    $old_down, 
+                    $new_down, 
+                    !empty($_POST['replaceType']) ? $_POST['replaceType'] : null, 
+                    !empty($_POST['replace_used_grade']) ? $_POST['replace_used_grade'] : null, 
+                    !empty($_POST['replace_brand']) ? $_POST['replace_brand'] : null, 
+                    !empty($_POST['replace_model']) ? $_POST['replace_model'] : null, 
+                    !empty($_POST['replace_color']) ? $_POST['replace_color'] : null, 
+                    !empty($_POST['replace_vin']) ? $_POST['replace_vin'] : null, 
+                    !empty($_POST['replace_receive_date']) ? $_POST['replace_receive_date'] : null, 
+                    !empty($_POST['replace_reason']) ? $_POST['replace_reason'] : null,
+                    !empty($_POST['replace_id']) ? $_POST['replace_id'] : null, 
+                    !empty($_POST['replace_name']) ? $_POST['replace_name'] : null, 
+                    !empty($_POST['replace_signature']) ? $_POST['replace_signature'] : null, 
+                    !empty($_POST['replace_approve_date']) ? $_POST['replace_approve_date'] : null, 
+                    $id
                 ]);
             } else {
                 $sql_repl = "INSERT INTO claim_replacement_details (
@@ -168,11 +179,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     approver_id, approver_name, approver_signature, approve_date
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 $pdo->prepare($sql_repl)->execute([
-                    $id, $old_down, $new_down, $_POST['replaceType'] ?? null, $_POST['replaceUsedGrade'] ?? null, 
-                    $_POST['replace_brand'] ?? null, $_POST['replace_model'] ?? null, $_POST['replace_color'] ?? null, 
-                    $_POST['replace_vin'] ?? null, $_POST['replace_receive_date'] ?? null, $_POST['replace_reason'] ?? null,
-                    $_POST['replace_id'] ?? null, $_POST['replace_name'] ?? null, $_POST['replace_signature'] ?? null, 
-                    $_POST['replace_approve_date'] ?? null
+                    $id, 
+                    $old_down, 
+                    $new_down, 
+                    !empty($_POST['replaceType']) ? $_POST['replaceType'] : null, 
+                    !empty($_POST['replace_used_grade']) ? $_POST['replace_used_grade'] : null, 
+                    !empty($_POST['replace_brand']) ? $_POST['replace_brand'] : null, 
+                    !empty($_POST['replace_model']) ? $_POST['replace_model'] : null, 
+                    !empty($_POST['replace_color']) ? $_POST['replace_color'] : null, 
+                    !empty($_POST['replace_vin']) ? $_POST['replace_vin'] : null, 
+                    !empty($_POST['replace_receive_date']) ? $_POST['replace_receive_date'] : null, 
+                    !empty($_POST['replace_reason']) ? $_POST['replace_reason'] : null,
+                    !empty($_POST['replace_id']) ? $_POST['replace_id'] : null, 
+                    !empty($_POST['replace_name']) ? $_POST['replace_name'] : null, 
+                    !empty($_POST['replace_signature']) ? $_POST['replace_signature'] : null, 
+                    !empty($_POST['replace_approve_date']) ? $_POST['replace_approve_date'] : null
                 ]);
             }
         }

@@ -20,25 +20,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
     
-    $updated_at = date('Y-m-d H:i:s'); 
-
     require_once __DIR__ . '/../shared/config/db_connect.php';
+    require_once __DIR__ . '/auth.php'; // เพื่อดึงลายเซ็นจาก Session
+
+    $verifier_signature = $_SESSION['user_signature'] ?? null;
+    $updated_at = date('Y-m-d H:i:s'); 
 
     try {
         $pdo = getServiceCenterPDO();
 
-        // ตรวจสอบและเพิ่มคอลัมน์ที่จำเป็นหากยังไม่มี
-        try { $pdo->query("ALTER TABLE `claims` ADD COLUMN `verifier_name` VARCHAR(255) DEFAULT NULL;"); } catch(Exception $e){}
-        try { $pdo->query("ALTER TABLE `claims` ADD COLUMN `verify_date` DATE DEFAULT NULL;"); } catch(Exception $e){}
-
         // อัปเดตข้อมูลการตรวจสอบหลัก
         $sql = "UPDATE `claims` SET 
-                status=?, verify_remarks=?, verifier_name=?, verify_date=?, updated_at=? 
+                status=?, verify_remarks=?, verifier_name=?, verifier_signature=?, verify_date=?, updated_at=? 
                 WHERE id=?";
                  
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
-            $status, $verify_remarks, $verifier_name, $verify_date, $updated_at, $id
+            $status, $verify_remarks, $verifier_name, $verifier_signature, $verify_date, $updated_at, $id
         ]);
         
         // อัปเดตข้อมูลการซ่อม (Job Number, Job Amount)

@@ -1,9 +1,9 @@
 <?php
 $dbConfig = [
     'enabled' => true,
-    'host' => 'db',            
+    'host' => 'db',            // หากใช้ Docker-compose ให้ใช้ 'db', หากรัน Local/XAMPP ให้เปลี่ยนเป็น 'localhost'
     'port' => 3306,
-    'dbname' => 'service_center',        // เปลี่ยนจาก service_center เป็น pjkram ให้ตรงกับ docker-compose.yml
+    'dbname' => 'service_center', 
     'user' => 'root',
     'pass' => 'root',          
     'table' => 'claims',

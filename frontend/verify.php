@@ -360,11 +360,12 @@ try {
                             <label class="form-label fw-bold text-secondary mb-0" style="min-width: 100px;">ผลพิจารณา</label>
                             <select name="status" class="form-select pill-select-orange w-100" required <?= !isAdmin() ? 'disabled' : '' ?>>
                                 <option value="">--กรุณาเลือกผลการตรวจสอบ--</option>
-                                <option value="Approved Claim" <?= $claim['status'] == 'Approved Claim' ? 'selected' : '' ?>>อนุมัติการเคลม (ซ่อมสาขา/ส่งซ่อม สนญ.)</option>
-                                <option value="Approved Replacement" <?= $claim['status'] == 'Approved Replacement' ? 'selected' : '' ?>>อนุมัติเปลี่ยนคัน (Replace Vehicle)</option>
+                                <option value="Approved Claim" <?= $claim['status'] == 'Approved Claim' ? 'selected' : '' ?>>อนุมัติการเคลม</option>
+                                <option value="Approved Replacement" <?= $claim['status'] == 'Approved Replacement' ? 'selected' : '' ?>>อนุมัติเปลี่ยนคัน</option>
                                 <option value="Rejected" <?= $claim['status'] == 'Rejected' ? 'selected' : '' ?>>ไม่อนุมัติ</option>
-                                <option value="Pending Fix" <?= $claim['status'] == 'Pending Fix' ? 'selected' : '' ?>>ตีกลับไปแก้ไข</option>
-                                <option value="Pending" <?= $claim['status'] == 'Pending' ? 'selected' : '' ?>>รอดำเนินการ</option>
+                                <option value="Rejected" <?= $claim['status'] == 'Rejected' ? 'selected' : '' ?>>เปลี่ยน  </option>
+                                <option value="Pending Fix" <?= $claim['status'] == 'Pending Fix' ? 'selected' : '' ?>>รอแก้ไข</option>
+                                <option value="Pending" <?= $claim['status'] == 'Pending' ? 'selected' : '' ?>>ดำเนินการเสร็จสิ้น</option>
                             </select>
                         </div>
 
