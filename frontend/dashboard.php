@@ -5,23 +5,30 @@ require_once __DIR__ . '/../shared/config/db_connect.php';
 
 try {
     $pdo = getServiceCenterPDO();
-    
+    $is_admin = isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
+    $user_branch = $_SESSION['branch'] ?? '';
+
     // 1. นำข้อมูลภาพรวมออกมา (Summary Cards)
-    $stmtCount = $pdo->query("SELECT COUNT(*) as total FROM claims");
+    $whereClause = $is_admin ? "" : " WHERE branch = " . $pdo->quote($user_branch);
+    
+    // เคสทั้งหมด
+    $stmtCount = $pdo->query("SELECT COUNT(*) as total FROM claims" . $whereClause);
     $totalClaims = $stmtCount->fetch()['total'];
 
-    $stmtStatus = $pdo->query("SELECT status, COUNT(*) as count FROM claims GROUP BY status");
-    $statusData = $stmtStatus->fetchAll(PDO::FETCH_KEY_PAIR);
+    // แยกตามสถานะ (ละเอียด)
+    $stmtStatus = $pdo->query("SELECT status, COUNT(*) as count FROM claims" . $whereClause . " GROUP BY status");
+    $statusCounts = $stmtStatus->fetchAll(PDO::FETCH_KEY_PAIR);
     
-    $pending = $statusData['Pending'] ?? 0;
-    $approved = $statusData['Approved'] ?? 0;
-    $rejected = $statusData['Rejected'] ?? 0;
+    // สรุปยอดสำหรับการ์ด
+    $pending = ($statusCounts['Pending'] ?? 0) + ($statusCounts['Pending Fix'] ?? 0);
+    $approved = ($statusCounts['Approved Claim'] ?? 0) + ($statusCounts['Approved Replacement'] ?? 0);
+    $rejected = $statusCounts['Rejected'] ?? 0;
 
     // 2. ข้อมูลรายเดือน (Monthly Trend)
     $stmtMonthly = $pdo->query("
         SELECT DATE_FORMAT(claim_date, '%Y-%m') as month, COUNT(*) as total 
         FROM claims 
-        WHERE claim_date IS NOT NULL 
+        " . $whereClause . ($is_admin ? " WHERE " : " AND ") . " claim_date IS NOT NULL 
         GROUP BY month 
         ORDER BY month ASC 
         LIMIT 12
@@ -30,11 +37,13 @@ try {
     $months = array_column($monthlyData, 'month');
     $monthlyCounts = array_column($monthlyData, 'total');
 
-    // 3. ข้อมูลรายสาขา (Branch Breakdown)
-    $stmtBranch = $pdo->query("SELECT branch, COUNT(*) as total FROM claims GROUP BY branch ORDER BY total DESC");
-    $branchData = $stmtBranch->fetchAll(PDO::FETCH_ASSOC);
-    $branches = array_column($branchData, 'branch');
-    $branchCounts = array_column($branchData, 'total');
+    // 3. ข้อมูลแยกตามประเภท (Category Breakdown)
+    $stmtCat = $pdo->query("SELECT claim_category, COUNT(*) as total FROM claims" . $whereClause . " GROUP BY claim_category");
+    $catData = $stmtCat->fetchAll(PDO::FETCH_ASSOC);
+    
+    // 4. รายการล่าสุด 5 เคส
+    $recentStmt = $pdo->query("SELECT id, owner_name, vin, status, claim_date FROM claims" . $whereClause . " ORDER BY id DESC LIMIT 5");
+    $recentItems = $recentStmt->fetchAll(PDO::FETCH_ASSOC);
 
 } catch (Exception $e) {
     die("Error loading dashboard data: " . $e->getMessage());
@@ -48,87 +57,127 @@ try {
     <title>Dashboard - ระบบจัดการเคลม</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../shared/assets/css/theme.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .stat-card {
             border-radius: 20px;
             padding: 25px;
             color: white;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             height: 100%;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: none;
         }
         .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+        }
+        .stat-card::after {
+            content: "";
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 100px;
+            height: 100px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
         }
         .bg-gradient-orange { background: linear-gradient(135deg, #f2722b, #ff9b50); }
         .bg-gradient-blue   { background: linear-gradient(135deg, #2c3e50, #4ca1af); }
         .bg-gradient-green  { background: linear-gradient(135deg, #00b551, #00e676); }
         .bg-gradient-red    { background: linear-gradient(135deg, #e74c3c, #ff5252); }
         
-        .stat-number { font-size: 2.8rem; font-weight: 700; line-height: 1; }
-        .stat-label { font-size: 1.1rem; opacity: 0.9; font-weight: 500; }
-        .stat-icon { font-size: 2rem; opacity: 0.3; align-self: flex-end; }
+        .stat-number { font-size: 2.2rem; font-weight: 700; line-height: 1.2; margin: 10px 0; }
+        .stat-label { font-size: 1rem; opacity: 0.85; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-icon-box { 
+            width: 45px; height: 45px; background: rgba(255,255,255,0.2); 
+            border-radius: 12px; display: flex; align-items: center; 
+            justify-content: center; font-size: 1.2rem; margin-bottom: 5px;
+        }
         
         .chart-container {
             background: white;
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.03);
-            margin-bottom: 25px;
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+            margin-bottom: 30px;
+            border: 1px solid #f0f0f0;
         }
-        .chart-title { font-weight: 700; margin-bottom: 20px; color: #333; }
+        .section-title { font-weight: 700; font-size: 1.25rem; margin-bottom: 25px; color: #2c3e50; display: flex; align-items: center; gap: 10px; }
+        .card-table { border-radius: 20px; overflow: hidden; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.04); }
+        .table thead th { background: #f8f9fa; border-bottom: 1px solid #eee; padding: 15px 20px; font-weight: 600; color: #666; }
+        .table tbody td { padding: 18px 20px; border-bottom: 1px solid #f5f5f5; vertical-align: middle; }
+        
+        .badge-status {
+            padding: 6px 12px; border-radius: 30px; font-size: 0.75rem; font-weight: 600;
+        }
+        .status-pending { background: #fff7ed; color: #f2722b; }
+        .status-approved { background: #f0fdf4; color: #00b551; }
+        .status-rejected { background: #fef2f2; color: #e74c3c; }
     </style>
 </head>
-<body>
+<body class="bg-light">
 
 <?php include __DIR__ . '/../shared/assets/includes/sidebar.php'; ?>
 
 <div class="main-content">
-    <div class="container-fluid">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="fw-bold m-0" style="color: #2c3e50;">ภาพรวมระบบจัดการเคลม</h2>
-            <div class="text-muted fw-500">อัปเดตล่าสุด: <?= date('d/m/Y H:i') ?></div>
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-5 mt-2">
+            <div>
+                <h2 class="fw-bold m-0" style="color: #1e293b; letter-spacing: -0.5px;">Dashboard</h2>
+                <p class="text-muted m-0 mt-1">ยินดีต้อนรับกลับ, 🎬 ภาพรวมระบบจัดการเคลมของคุณ</p>
+            </div>
+            <div class="bg-white px-4 py-2 rounded-pill shadow-sm border">
+                <span class="text-muted fw-500 fs-sm"><i class="far fa-calendar-alt me-2"></i><?= date('d M Y H:i') ?></span>
+            </div>
         </div>
 
+        <!-- Summary Cards -->
         <div class="row g-4 mb-5">
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="stat-card bg-gradient-blue">
-                    <div class="stat-label">รายการเคลมทั้งหมด</div>
-                    <div class="stat-number"><?= $totalClaims ?></div>
-                    <div class="stat-icon">📑</div>
+                <div class="stat-card bg-gradient-blue text-white">
+                    <div class="stat-icon-box"><i class="fas fa-file-invoice"></i></div>
+                    <div class="stat-label">Total Claims</div>
+                    <div class="stat-number"><?= number_format($totalClaims) ?></div>
+                    <div class="fs-xs opacity-75">เคสทั้งหมดในระบบ</div>
                 </div>
             </div>
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="stat-card bg-gradient-orange">
-                    <div class="stat-label">รอดำเนินการ</div>
-                    <div class="stat-number"><?= $pending ?></div>
-                    <div class="stat-icon">⏳</div>
+                <div class="stat-card bg-gradient-orange text-white">
+                    <div class="stat-icon-box"><i class="fas fa-clock"></i></div>
+                    <div class="stat-label">Pending Approval</div>
+                    <div class="stat-number"><?= number_format($pending) ?></div>
+                    <div class="fs-xs opacity-75">รอตรวจสอบและแก้ไข</div>
                 </div>
             </div>
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="stat-card bg-gradient-green">
-                    <div class="stat-label">อนุมัติแล้ว</div>
-                    <div class="stat-number"><?= $approved ?></div>
-                    <div class="stat-icon">✅</div>
+                <div class="stat-card bg-gradient-green text-white">
+                    <div class="stat-icon-box"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-label">Approved</div>
+                    <div class="stat-number"><?= number_format($approved) ?></div>
+                    <div class="fs-xs opacity-75">อนุมัติแล้วทั้งหมด</div>
                 </div>
             </div>
             <div class="col-12 col-sm-6 col-xl-3">
-                <div class="stat-card bg-gradient-red">
-                    <div class="stat-label">ปฏิเสธ</div>
-                    <div class="stat-number"><?= $rejected ?></div>
-                    <div class="stat-icon">❌</div>
+                <div class="stat-card bg-gradient-red text-white">
+                    <div class="stat-icon-box"><i class="fas fa-times-circle"></i></div>
+                    <div class="stat-label">Rejected</div>
+                    <div class="stat-number"><?= number_format($rejected) ?></div>
+                    <div class="fs-xs opacity-75">ไม่อนุมัติ / ยกเลิก</div>
                 </div>
             </div>
         </div>
 
         <div class="row g-4">
+            <!-- Charts Section -->
             <div class="col-12 col-lg-8">
                 <div class="chart-container">
-                    <h5 class="chart-title">📈 แนวโน้มการเคลมรายเดือน</h5>
+                    <div class="section-title"><i class="fas fa-chart-line text-primary"></i> Monthly Performance</div>
                     <div style="height: 350px;">
                         <canvas id="monthlyChart"></canvas>
                     </div>
@@ -136,9 +185,58 @@ try {
             </div>
             <div class="col-12 col-lg-4">
                 <div class="chart-container">
-                    <h5 class="chart-title">🏢 ยอดเคลมแยกตามสาขา</h5>
+                    <div class="section-title"><i class="fas fa-chart-pie text-orange"></i> Category Breakdown</div>
                     <div style="height: 350px;">
-                        <canvas id="branchChart"></canvas>
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activities -->
+            <div class="col-12">
+                <div class="chart-container p-0 overflow-hidden">
+                    <div class="p-4 d-flex justify-content-between align-items-center border-bottom">
+                        <h5 class="m-0 fw-bold d-flex align-items-center gap-2"><i class="fas fa-history text-secondary"></i> รายการเคลมล่าสุด</h5>
+                        <a href="history.php" class="btn btn-sm btn-outline-secondary rounded-pill px-3">ดูประวัติทั้งหมด</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>ผู้ใช้งาน / VIN</th>
+                                    <th>วันที่ส่งเคลม</th>
+                                    <th>สถานะ</th>
+                                    <th class="text-end">การจัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if(count($recentItems) > 0): ?>
+                                    <?php foreach($recentItems as $item): 
+                                        $stClass = str_contains($item['status'], 'Approved') ? 'status-approved' : (str_contains($item['status'], 'Pending') ? 'status-pending' : 'status-rejected');
+                                    ?>
+                                    <tr>
+                                        <td><span class="fw-bold">C<?= str_pad($item['id'], 3, '0', STR_PAD_LEFT) ?></span></td>
+                                        <td>
+                                            <div class="fw-600"><?= htmlspecialchars($item['owner_name']) ?></div>
+                                            <div class="text-muted fs-xs"><?= htmlspecialchars($item['vin']) ?></div>
+                                        </td>
+                                        <td><?= date('d/m/Y', strtotime($item['claim_date'])) ?></td>
+                                        <td><span class="badge-status <?= $stClass ?>"><?= $item['status'] ?></span></td>
+                                        <td class="text-end">
+                                            <?php if($is_admin): ?>
+                                                <a href="verify.php?id=<?= $item['id'] ?>" class="btn btn-sm btn-light border rounded-pill px-3">ตรวจสอบ</a>
+                                            <?php else: ?>
+                                                <a href="edit.php?id=<?= $item['id'] ?>" class="btn btn-sm btn-light border rounded-pill px-3">ดูรายละเอียด</a>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr><td colspan="5" class="text-center py-5 text-muted">ยังไม่มีรายการข้อมูลในระบบ</td></tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -147,8 +245,12 @@ try {
 </div>
 
 <script>
-    // Monthly Trend Chart
+    // 📊 Monthly Trend Chart (Premium Style)
     const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+    const monthlyBg = monthlyCtx.createLinearGradient(0, 0, 0, 400);
+    monthlyBg.addColorStop(0, 'rgba(242, 114, 43, 0.2)');
+    monthlyBg.addColorStop(1, 'rgba(242, 114, 43, 0)');
+
     new Chart(monthlyCtx, {
         type: 'line',
         data: {
@@ -157,37 +259,76 @@ try {
                 label: 'จำนวนเคส',
                 data: <?= json_encode($monthlyCounts) ?>,
                 borderColor: '#f2722b',
-                backgroundColor: 'rgba(242, 114, 43, 0.1)',
+                backgroundColor: monthlyBg,
                 borderWidth: 4,
                 tension: 0.4,
                 fill: true,
-                pointRadius: 6,
+                pointRadius: 4,
                 pointBackgroundColor: '#fff',
                 pointBorderColor: '#f2722b',
-                pointBorderWidth: 3
+                pointBorderWidth: 2,
+                pointHoverRadius: 7
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#1e293b',
+                    padding: 12,
+                    titleFont: { size: 14, weight: 'bold' },
+                    bodyFont: { size: 13 },
+                    displayColors: false,
+                    callbacks: {
+                        label: function(context) { return 'จำนวน: ' + context.parsed.y + ' เคส'; }
+                    }
+                }
+            },
             scales: {
-                y: { beginAtZero: true, grid: { borderDash: [5, 5] } },
-                x: { grid: { display: false } }
+                y: { 
+                    beginAtZero: true, 
+                    grid: { borderDash: [5, 5], color: '#f0f0f0' },
+                    ticks: { font: { size: 12 }, color: '#94a3b8' }
+                },
+                x: { 
+                    grid: { display: false },
+                    ticks: { font: { size: 12 }, color: '#94a3b8' }
+                }
             }
         }
     });
 
-    // Branch Chart
-    const branchCtx = document.getElementById('branchChart').getContext('2d');
-    new Chart(branchCtx, {
+    // 🥧 Category Breakdown Chart
+    <?php
+        $catLabels = [];
+        $catCounts = [];
+        $catColors = [
+            'pre-sale' => '#f2722b',
+            'technical' => '#3b82f6',
+            'customer' => '#10b981',
+            'default' => '#94a3b8'
+        ];
+        $bgColors = [];
+        foreach($catData as $cat) {
+            $label = $cat['claim_category'] === 'pre-sale' ? 'ก่อนขาย' : ($cat['claim_category'] === 'technical' ? 'ปัญหาเทคนิค' : 'ลูกค้า');
+            $catLabels[] = $label;
+            $catCounts[] = $cat['total'];
+            $bgColors[] = $catColors[$cat['claim_category']] ?? $catColors['default'];
+        }
+    ?>
+    
+    const catCtx = document.getElementById('categoryChart').getContext('2d');
+    new Chart(catCtx, {
         type: 'doughnut',
         data: {
-            labels: <?= json_encode($branches) ?>,
+            labels: <?= json_encode($catLabels) ?>,
             datasets: [{
-                data: <?= json_encode($branchCounts) ?>,
-                backgroundColor: ['#f2722b', '#2c3e50', '#00b551', '#e74c3c', '#f39c12'],
-                borderWidth: 0,
+                data: <?= json_encode($catCounts) ?>,
+                backgroundColor: <?= json_encode($bgColors) ?>,
+                borderWidth: 5,
+                borderColor: '#ffffff',
                 hoverOffset: 15
             }]
         },
@@ -195,9 +336,17 @@ try {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+                legend: { 
+                    position: 'bottom', 
+                    labels: { 
+                        usePointStyle: true, 
+                        padding: 25,
+                        font: { size: 12, weight: '500' },
+                        color: '#475569'
+                    } 
+                }
             },
-            cutout: '70%'
+            cutout: '75%'
         }
     });
 </script>

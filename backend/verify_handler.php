@@ -6,9 +6,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         die('❌ ไม่พบ ID ที่ต้องการตรวจสอบ');
     }
 
-    $status = $_POST['status'] ?? 'Pending';
-    $verify_remarks = $_POST['verify_remarks'] ?? '';
-    $verifier_name = $_POST['verifier'] ?? '';
+    $status = (isset($_POST['status']) && trim($_POST['status']) !== '') ? trim($_POST['status']) : 'Pending';
+    $verify_remarks = (isset($_POST['verify_remarks']) && trim($_POST['verify_remarks']) !== '') ? trim($_POST['verify_remarks']) : null;
+    $verifier_name = (isset($_POST['verifier']) && trim($_POST['verifier']) !== '') ? trim($_POST['verifier']) : null;
     
     // แปลงวันที่ตรวจสอบ d/m/Y -> Y-m-d
     $verify_date_raw = $_POST['verify_date'] ?? '';
@@ -40,9 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
         
         // อัปเดตข้อมูลการซ่อม (Job Number, Job Amount)
-        $job_num = $_POST['job_number'] ?? null;
-        $job_amt = $_POST['job_amount'] ?? null;
-        if ($job_amt === '') $job_amt = null;
+        $job_num = (isset($_POST['job_number']) && trim($_POST['job_number']) !== '') ? trim($_POST['job_number']) : null;
+        $job_amt = (isset($_POST['job_amount']) && trim($_POST['job_amount']) !== '') ? trim($_POST['job_amount']) : null;
 
         // ตรวจสอบว่ามีข้อมูลใน claim_repair_details หรือยัง
         $checkRd = $pdo->prepare("SELECT COUNT(*) FROM claim_repair_details WHERE claim_id = ?");

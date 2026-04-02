@@ -1,0 +1,382 @@
+/**
+ * PJclaim Application Main CSS (Consolidated)
+ * -----------------------------------------
+ * This file replaces multiple CSS files into a single optimized source.
+ */
+
+/* === 1. Variables & Global Reset === */
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --primary-orange: #f2722b;
+  --secondary-orange: #ff7a32;
+  --light-orange: #f9b27d;
+  --orange-600: #ff7a1a;
+  --orange-hover: #e66a2a;
+  
+  --bg-color: #fcf9f2;
+  --surface-color: #ffffff;
+  --text-color: #333333;
+  --muted-color: #6b6b6b;
+  --border-color: #eaeaea;
+  
+  --btn-green: #00b551;
+  --btn-red: #ff2a2a;
+  --btn-warning: #ffc107;
+  
+  --sidebar-w: 290px;
+  --soft-shadow: rgba(16,24,40,0.06);
+  --card-shadow: 0 6px 20px rgba(0,0,0,0.03);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Kanit', sans-serif;
+  margin: 0;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  display: flex;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* === 2. Layout Structure === */
+
+/* Sidebar */
+.sidebar {
+  width: var(--sidebar-w);
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  padding-right: 55px;
+  position: fixed;
+  height: 100vh;
+  z-index: 100;
+  top: 0;
+  left: 0;
+  box-shadow: 2px 0 15px rgba(0,0,0,0.03);
+}
+
+.sidebar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 35px;
+  height: 100%;
+  background: linear-gradient(to bottom, #ff9b50, #da5400);
+}
+
+.logo-container {
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  box-shadow: 0 10px 30px rgba(16,24,40,0.15);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 40px;
+  background: linear-gradient(135deg, #ff7a1a, #ff8a3d);
+  border: 6px solid #ffffff;
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.logo-container img {
+  width: 86%;
+  height: 86%;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+.nav-menu {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.nav-btn {
+  display: block;
+  text-align: center;
+  padding: 12px 10px;
+  border-radius: 30px;
+  text-decoration: none;
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: #555;
+  background-color: var(--light-orange);
+  transition: all 0.25s ease;
+}
+
+.nav-btn.active {
+  background-color: var(--primary-orange);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(242, 114, 43, 0.3);
+}
+
+/* Sidebar User Info */
+.sidebar-user-info {
+  margin-top: auto; 
+  padding: 25px 20px; 
+  border-top: 1px solid #eee; 
+  width: 100%;
+}
+
+/* Main Content Area */
+.main-content {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  padding: 40px;
+  width: calc(100% - var(--sidebar-w));
+  transition: all 0.25s ease;
+}
+
+/* Mobile Layout Helpers */
+.hamburger-btn {
+  display: none;
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  z-index: 205;
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  border: none;
+  background: var(--primary-orange);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 200;
+}
+
+.sidebar-overlay.visible { display: block; }
+
+@media (max-width: 1024px) {
+  .hamburger-btn { display: flex; }
+  .sidebar { transform: translateX(-100%); transition: transform 0.25s ease; }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar::after { display: none; }
+  .main-content { margin-left: 0; width: 100%; padding: 70px 20px 20px; }
+}
+
+/* === 3. UI Components === */
+
+/* Cards */
+.pj-card, .edit-card, .data-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid rgba(16,24,40,0.03);
+  box-shadow: var(--card-shadow);
+  margin-bottom: 25px;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.pj-card:hover, .edit-card:hover, .data-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.06);
+}
+
+.section-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #f2f2f2;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Buttons */
+.btn-pill {
+    border-radius: 30px;
+    padding: 8px 25px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-orange {
+  background-color: var(--primary-orange);
+  color: #fff;
+}
+.btn-orange:hover {
+  background-color: var(--orange-hover);
+  box-shadow: 0 6px 15px rgba(242, 114, 43, 0.3);
+}
+
+.btn-green { background-color: var(--btn-green); color: #fff; }
+.btn-green:hover { box-shadow: 0 6px 15px rgba(0, 181, 81, 0.3); }
+
+.btn-red { background-color: var(--btn-red); color: #fff; }
+.btn-red:hover { box-shadow: 0 6px 15px rgba(255, 30, 30, 0.3); }
+
+.btn-pill-save {
+    background: var(--btn-green) !important;
+    border-radius: 12px !important;
+    padding: 0.6rem 2rem !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 12px rgba(0, 181, 81, 0.2) !important;
+}
+
+/* Forms */
+.pill-input {
+    border: 1px solid #e5e7eb !important;
+    border-radius: 12px !important;
+    padding: 0.6rem 1rem !important;
+    font-size: 0.95rem !important;
+    width: 100%;
+}
+.pill-input:focus {
+    border-color: var(--primary-orange) !important;
+    box-shadow: 0 0 0 3px rgba(242, 114, 43, 0.1) !important;
+    outline: none;
+}
+
+.pill-select-orange {
+    border: 1.5px solid var(--primary-orange) !important;
+    border-radius: 12px !important;
+    padding: 0.6rem 1rem !important;
+    color: var(--primary-orange) !important;
+    font-weight: 600 !important;
+    background-color: #fff;
+}
+
+.pill-textarea {
+    background-color: #f4f5f7 !important;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 15px !important;
+    padding: 1rem !important;
+    min-height: 120px;
+    width: 100%;
+}
+
+/* Badges */
+.status-pill {
+    padding: 6px 16px;
+    border-radius: 30px;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.status-approve { background-color: var(--btn-green); }
+.status-reject  { background-color: var(--btn-red); }
+.status-return  { background-color: var(--btn-warning); color: #333; }
+.status-pending { background-color: #a3a3a3; }
+
+/* Tables */
+.pj-table-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+}
+
+.pj-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.pj-table thead th {
+    background-color: #f8f9fa;
+    color: #495057;
+    font-weight: 600;
+    padding: 15px;
+    text-align: left;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.pj-table tbody td {
+    padding: 15px;
+    border-bottom: 1px solid #f1f3f5;
+    vertical-align: middle;
+}
+
+/* Checklist Styles */
+.checklist-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    cursor: pointer;
+}
+
+.checklist-checkbox {
+    width: 24px;
+    height: 24px;
+    accent-color: var(--primary-orange);
+}
+
+/* === 4. Utilities === */
+.d-flex { display: flex !important; }
+.align-items-center { align-items: center !important; }
+.justify-content-between { justify-content: space-between !important; }
+.flex-column { flex-direction: column !important; }
+.gap-3 { gap: 1rem !important; }
+.w-100 { width: 100% !important; }
+.fw-bold { font-weight: 700 !important; }
+.fs-5 { font-size: 1.25rem !important; }
+.mb-4 { margin-bottom: 1.5rem !important; }
+.text-danger { color: var(--btn-red) !important; }
+
+/* Filter Bar Styles */
+.filter-bar {
+  background: white;
+  padding: 15px 30px;
+  border-radius: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  box-shadow: var(--card-shadow);
+}
+
+/* Gallery / Image Preview */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.gallery-item {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #eee;
+    background: #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+}
+
+.gallery-item img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+}

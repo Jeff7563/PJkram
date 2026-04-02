@@ -226,12 +226,19 @@ try {
                     $fileName = basename($imgPath);
             ?>
                 <div class="gallery-item">
-                   <a href="../<?= htmlspecialchars($imgPath) ?>" target="_blank">
+                   <div class="img-preview-container cursor-pointer" onclick="openImageModal('../<?= htmlspecialchars($imgPath) ?>')">
                        <img src="../<?= htmlspecialchars($imgPath) ?>" alt="รูปภาพเคลม">
-                   </a>
-                   <div class="img-preview-footer">
+                   </div>
+                   <div class="img-preview-footer text-center">
                        <span class="img-preview-title" title="<?= htmlspecialchars($fileName) ?>"><?= htmlspecialchars($fileName) ?></span>
-                       <a href="../<?= htmlspecialchars($imgPath) ?>" download="<?= htmlspecialchars($fileName) ?>" class="img-download-link"><i class="fas fa-download"></i></a>
+                       <?php 
+                           $ext = pathinfo($fileName, PATHINFO_EXTENSION);
+                           $cleanDownloadName = str_replace(['/', '\\'], '_', htmlspecialchars($fileName)); // Default
+                           // Create clean name: Prefix_VIN
+                           $prefixName = explode('_', $fileName)[0] ?? 'รูปภาพ';
+                           $cleanDownloadName = $prefixName . '_' . htmlspecialchars($claim['vin']) . '.' . $ext;
+                       ?>
+                       <a href="../<?= htmlspecialchars($imgPath) ?>" download="<?= $cleanDownloadName ?>" class="img-download-link"><i class="fas fa-download"></i></a>
                    </div>
                 </div>
             <?php endforeach; else: ?>
@@ -388,9 +395,40 @@ try {
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Modal ขยายรูป -->
+    <div class="modal-overlay" id="image-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; justify-content:center; align-items:center; transition: all 0.3s ease;">
+        <div style="position:absolute; top:20px; right:30px; color:white; font-size:45px; cursor:pointer;" onclick="closeImageModal()">×</div>
+        <img src="" id="modal-img" style="max-width:90%; max-height:90%; object-fit:contain; border-radius: 12px; box-shadow: 0 5px 30px rgba(0,0,0,0.5);">
+    </div>
 
-  <script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    // --- ฟังก์ชันขยายรูปภาพ ---
+    function openImageModal(src) {
+        const modal = document.getElementById('image-modal');
+        const modalImg = document.getElementById('modal-img');
+        if (modal && modalImg) {
+            modalImg.src = src;
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // ป้องกันการ Scroll หลังพื้นหลัง
+        }
+    }
+
+    function closeImageModal() {
+        const modal = document.getElementById('image-modal');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto'; // คืนค่าการ Scroll
+        }
+    }
+
+    // ปิด Modal เมื่อคลิกพื้นหลัง
+    window.addEventListener('click', function(e) {
+        const modal = document.getElementById('image-modal');
+        if (e.target === modal) closeImageModal();
+    });
+
     document.addEventListener('DOMContentLoaded', function() {
         const verifyForm = document.getElementById('verifyForm');
         if (verifyForm) {

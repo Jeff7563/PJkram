@@ -10,30 +10,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
         // 2. เตรียมข้อมูลหลัก (Claims Table)
-        $claimAction = $_POST['claimAction'] ?? 'Other';
+        $claim_action = $_POST['claim_action'] ?? 'Other';
         $claimTypeMap = [
             'repairBranch'   => 'RepairBranch',
             'sendHQ'         => 'SendHQ',
             'replaceVehicle' => 'ReplaceVehicle',
             'other'          => 'Other'
         ];
-        $claim_type = $claimTypeMap[$claimAction] ?? 'Other';
+        $claim_type = $claimTypeMap[$claim_action] ?? 'Other';
 
-        $branch      = $_POST['branch'] ?? '';
-        $claimDate   = !empty($_POST['claimDate']) ? $_POST['claimDate'] : date('Y-m-d');
-        $saleDate    = !empty($_POST['sale_date']) ? $_POST['sale_date'] : null;
-        $carType     = $_POST['carType'] ?? '';
-        $carBrand    = $_POST['carBrand'] ?? '';
-        $usedGrade   = $_POST['usedGrade'] ?? '';
-        $ownerName   = $_POST['ownerName'] ?? '';
-        $ownerPhone  = $_POST['ownerPhone'] ?? '';
-        $mileage     = $_POST['mileage'] ?? '';
-        $problemDesc = $_POST['problemDesc'] ?? '';
-        $inspectMethod = $_POST['inspectMethod'] ?? '';
-        $inspectCause = $_POST['inspectCause'] ?? '';
-        $claimCategory = $_POST['claim_category'] ?? '';
-        if ($claimCategory === 'อื่นๆ') {
-            $claimCategory = $_POST['claim_category_other'] ?? 'อื่นๆ';
+        $branch        = $_POST['branch'] ?? '';
+        $claim_date    = !empty($_POST['claim_date']) ? $_POST['claim_date'] : date('Y-m-d');
+        $sale_date     = !empty($_POST['sale_date']) ? $_POST['sale_date'] : null;
+        $car_type      = $_POST['car_type'] ?? '';
+        $car_brand     = $_POST['car_brand'] ?? '';
+        $used_grade    = $_POST['used_grade'] ?? '';
+        $owner_name    = $_POST['owner_name'] ?? '';
+        $owner_phone   = $_POST['owner_phone'] ?? '';
+        $mileage       = $_POST['mileage'] ?? '';
+        $problem_desc  = $_POST['problem_desc'] ?? '';
+        $inspect_method = $_POST['inspect_method'] ?? '';
+        $inspect_cause = $_POST['inspect_cause'] ?? '';
+        $claim_category = $_POST['claim_category'] ?? '';
+        if ($claim_category === 'อื่นๆ') {
+            $claim_category = $_POST['claim_other_text'] ?? 'อื่นๆ';
         }
         $vin         = $_POST['vin'] ?? '';
         $recorder    = $_POST['recorder'] ?? '';
@@ -46,9 +46,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         $stmt_claim = $pdo->prepare($sql_claim);
         $stmt_claim->execute([
-            $claim_type, $claimDate, $saleDate, $vin, $mileage, $carType, $carBrand, $usedGrade,
-            $ownerName, $ownerPhone, $problemDesc, $inspectMethod, $inspectCause,
-            $claimCategory, $branch, $recorder
+            $claim_type, $claim_date, $sale_date, $vin, $mileage, $car_type, $car_brand, $used_grade,
+            $owner_name, $owner_phone, $problem_desc, $inspect_method, $inspect_cause,
+            $claim_category, $branch, $recorder
         ]);
 
         $claim_id = $pdo->lastInsertId();
@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 for ($i = 0; $i < count($fileData['name']); $i++) {
                     if ($fileData['error'][$i] === UPLOAD_ERR_OK && !empty($fileData['name'][$i])) {
                         $ext = pathinfo($fileData['name'][$i], PATHINFO_EXTENSION);
-                        $uniqueId = date('His') . '_' . ($i + 1);
+                        $uniqueId = ($i + 1);
                         $newFileName = $prefix . '_' . $safeVin . '_' . $uniqueId . '.' . $ext;
                         if (move_uploaded_file($fileData['tmp_name'][$i], $uploadDir . $newFileName)) {
                             $savedImages[] = 'uploads/claims/' . $uploadFolder . '/' . $newFileName; 
@@ -89,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 if ($fileData['error'] === UPLOAD_ERR_OK && !empty($fileData['name'])) {
                     $ext = pathinfo($fileData['name'], PATHINFO_EXTENSION);
-                    $uniqueId = date('His') . '_0';
+                    $uniqueId = '1';
                     $newFileName = $prefix . '_' . $safeVin . '_' . $uniqueId . '.' . $ext;
                     if (move_uploaded_file($fileData['tmp_name'], $uploadDir . $newFileName)) {
                         $savedImages[] = 'uploads/claims/' . $uploadFolder . '/' . $newFileName; 
@@ -121,14 +121,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // 4. บันทึกรายละเอียดเฉพาะประเภท
         if ($claim_type === 'RepairBranch' || $claim_type === 'SendHQ') {
-            $partsDelivery = $_POST['partsDelivery'] ?? '';
-            if ($partsDelivery === 'other') $partsDelivery = $_POST['partsDeliveryOtherText'] ?? 'อื่นๆ';
+            $parts_delivery = $_POST['parts_delivery'] ?? '';
+            if ($parts_delivery === 'other') $parts_delivery = $_POST['parts_delivery_other_text'] ?? 'อื่นๆ';
 
             $sql_repair = "INSERT INTO `claim_repair_details` (
                 claim_id, parts_delivery, job_number, job_amount, approver_id, approver_name, approver_signature
             ) VALUES (?, ?, ?, ?, ?, ?, ?)";
             $pdo->prepare($sql_repair)->execute([
-                $claim_id, $partsDelivery, 
+                $claim_id, $parts_delivery, 
                 null, null, // job_number, job_amount เริ่มต้นเป็น null
                 $_POST['approver_id'] ?? null,
                 $_POST['approver_name'] ?? null,
@@ -144,20 +144,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             $pdo->prepare($sql_replace)->execute([
                 $claim_id,
-                !empty($_POST['old_down_balance']) ? $_POST['old_down_balance'] : null,
-                !empty($_POST['new_down_balance']) ? $_POST['new_down_balance'] : null,
-                $_POST['replace_vin'] ?? null,
-                $_POST['replace_brand'] ?? null,
-                $_POST['replace_model'] ?? null,
-                $_POST['replace_color'] ?? null,
-                $_POST['replaceType'] ?? null,
-                $_POST['replace_used_grade'] ?? null,
-                !empty($_POST['replace_receive_date']) ? $_POST['replace_receive_date'] : null,
-                $_POST['replace_reason'] ?? null,
-                $_POST['replace_id'] ?? null,
-                $_POST['replace_name'] ?? null,
-                $_POST['replace_signature'] ?? null,
-                !empty($_POST['replace_approve_date']) ? $_POST['replace_approve_date'] : date('Y-m-d')
+                (isset($_POST['old_down_balance']) && trim($_POST['old_down_balance']) !== '') ? trim($_POST['old_down_balance']) : null,
+                (isset($_POST['new_down_balance']) && trim($_POST['new_down_balance']) !== '') ? trim($_POST['new_down_balance']) : null,
+                (isset($_POST['replace_vin']) && trim($_POST['replace_vin']) !== '') ? trim($_POST['replace_vin']) : null,
+                (isset($_POST['replace_brand']) && trim($_POST['replace_brand']) !== '') ? trim($_POST['replace_brand']) : null,
+                (isset($_POST['replace_model']) && trim($_POST['replace_model']) !== '') ? trim($_POST['replace_model']) : null,
+                (isset($_POST['replace_color']) && trim($_POST['replace_color']) !== '') ? trim($_POST['replace_color']) : null,
+                (isset($_POST['replace_type']) && trim($_POST['replace_type']) !== '') ? trim($_POST['replace_type']) : null,
+                (isset($_POST['replace_used_grade']) && trim($_POST['replace_used_grade']) !== '') ? trim($_POST['replace_used_grade']) : null,
+                (isset($_POST['replace_receive_date']) && trim($_POST['replace_receive_date']) !== '') ? trim($_POST['replace_receive_date']) : null,
+                (isset($_POST['replace_reason']) && trim($_POST['replace_reason']) !== '') ? trim($_POST['replace_reason']) : null,
+                (isset($_POST['replace_id']) && trim($_POST['replace_id']) !== '') ? trim($_POST['replace_id']) : null,
+                (isset($_POST['replace_name']) && trim($_POST['replace_name']) !== '') ? trim($_POST['replace_name']) : null,
+                (isset($_POST['replace_signature']) && trim($_POST['replace_signature']) !== '') ? trim($_POST['replace_signature']) : null,
+                (isset($_POST['replace_approve_date']) && trim($_POST['replace_approve_date']) !== '') ? trim($_POST['replace_approve_date']) : date('Y-m-d')
             ]);
         }
 

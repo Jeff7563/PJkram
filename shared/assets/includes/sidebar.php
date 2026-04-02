@@ -83,13 +83,20 @@
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(231, 76, 60, 0.1);
   }
+  @keyframes pulse-red {
+    0% { box-shadow: 0 0 0 0 rgba(255, 77, 79, 0.4); }
+    70% { box-shadow: 0 0 0 6px rgba(255, 77, 79, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 77, 79, 0); }
+  }
 </style>
 
   <?php if ($_sidebar_logged_in): ?>
   <div class="sidebar-user-info">
     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-        <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #f2722b, #ff9b50); color: #fff; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem; flex-shrink: 0; box-shadow: 0 4px 10px rgba(242, 114, 43, 0.2); border: 2px solid #fff;">
-            <?= mb_substr($_sidebar_user_name, 0, 1, 'UTF-8') ?>
+        <div style="flex-shrink: 0;">
+            <div style="width: 44px; height: 44px; background: linear-gradient(135deg, #f2722b, #ff9b50); color: #fff; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(242, 114, 43, 0.2); border: 2px solid #fff;">
+                <?= mb_substr($_sidebar_user_name, 0, 1, 'UTF-8') ?>
+            </div>
         </div>
         <div style="overflow: hidden; flex: 1;">
             <div style="font-weight: 700; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #333; margin-bottom: 2px;">
@@ -137,9 +144,11 @@
   window.showToast = function(message, type = 'success') {
     const toastEl = document.getElementById('liveToast');
     const toastMsg = document.getElementById('toastMessage');
-    if (!toastEl || !toastMsg) return;
-
-    toastMsg.textContent = message;
+    if (!toastEl || !toastMsg) {
+        console.log('Toast Elements missing. Message:', message);
+        alert(message);
+        return;
+    }
     toastEl.classList.remove('bg-primary', 'bg-success', 'bg-danger', 'bg-warning', 'bg-info', 'text-dark');
     
     if (type === 'success') {

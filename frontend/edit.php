@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../backend/auth.php';
-requireLogin();
+requireAdmin();
 require_once __DIR__ . '/../shared/config/db_connect.php';
 
 $id = $_GET['id'] ?? null;
@@ -87,6 +87,7 @@ try {
     <?php 
         $current_page = 'history.php'; 
         include __DIR__ . '/../shared/assets/includes/sidebar.php'; 
+        include __DIR__ . '/../shared/includes/components/toast.php';
     ?>
 
     <div class="main-content">
@@ -108,10 +109,10 @@ try {
 
             <form method="POST" action="../backend/edit_handler.php" enctype="multipart/form-data">
                 <input type="hidden" name="claim_id" value="<?= $claim['id'] ?>">
-                <input type="hidden" name="claimDate" value="<?= $claim['claim_date'] ?>">
-                <input type="hidden" name="carType" value="<?= $claim['car_type'] ?>">
-                <input type="hidden" name="carBrand" value="<?= $claim['car_brand'] ?>">
-                <input type="hidden" name="usedGrade" value="<?= $claim['used_grade'] ?>">
+                <input type="hidden" name="claim_date" value="<?= $claim['claim_date'] ?>">
+                <input type="hidden" name="car_type" value="<?= $claim['car_type'] ?>">
+                <input type="hidden" name="car_brand" value="<?= $claim['car_brand'] ?>">
+                <input type="hidden" name="used_grade" value="<?= $claim['used_grade'] ?>">
 
                 <div class="edit-container mb-5">
                     
@@ -187,15 +188,15 @@ try {
                                     <label class="form-label fw-bold color-primary-orange">การดำเนินการ</label>
                                     <div class="mt-2 text-dark">
                                         <div class="form-check form-check-inline">
-                                            <input class="form-check-input act-radio" type="radio" name="claimAction" value="RepairBranch" id="actRepair" <?= $cType === 'RepairBranch' ? 'checked' : '' ?>>
+                                            <input class="form-check-input act-radio" type="radio" name="claim_action" value="RepairBranch" id="actRepair" <?= $cType === 'RepairBranch' ? 'checked' : '' ?>>
                                             <label class="form-check-label fw-bold" for="actRepair">ซ่อมที่สาขา</label>
                                         </div>
                                         <div class="form-check form-check-inline">
-                                            <input class="form-check-input act-radio" type="radio" name="claimAction" value="SendHQ" id="actHQ" <?= $cType === 'SendHQ' ? 'checked' : '' ?>>
+                                            <input class="form-check-input act-radio" type="radio" name="claim_action" value="SendHQ" id="actHQ" <?= $cType === 'SendHQ' ? 'checked' : '' ?>>
                                             <label class="form-check-label fw-bold" for="actHQ">ส่งซ่อมที่สนญ.</label>
                                         </div>
                                         <div class="form-check form-check-inline">
-                                            <input class="form-check-input act-radio" type="radio" name="claimAction" value="ReplaceVehicle" id="actReplace" <?= $cType === 'ReplaceVehicle' ? 'checked' : '' ?>>
+                                            <input class="form-check-input act-radio" type="radio" name="claim_action" value="ReplaceVehicle" id="actReplace" <?= $cType === 'ReplaceVehicle' ? 'checked' : '' ?>>
                                             <label class="form-check-label fw-bold" for="actReplace">เปลี่ยนคันใหม่</label>
                                         </div>
                                     </div>
@@ -206,16 +207,16 @@ try {
                                         <div class="d-flex flex-wrap gap-3 mt-1">
                                             <?php $pd = $claim['parts_delivery'] ?? ''; ?>
                                             <div class="form-check">
-                                                <input class="form-check-input pd-radio" type="radio" name="partsDelivery" value="in_stock" id="pd1" <?= $pd == 'in_stock' ? 'checked' : '' ?>>
-                                                <label class="form-check-label" for="pd1">มีอะไหล่ในสต็อก</label>
+                                                <input class="form-check-input pd-radio" type="radio" name="parts_delivery" value="in_stock" id="pd1" <?= $pd == 'in_stock' ? 'checked' : '' ?>>
+                                                <label class="form-check-label" for="pd1">ซ่อมที่สาขา</label>
                                             </div>
                                             <div class="form-check">
-                                                <input class="form-check-input pd-radio" type="radio" name="partsDelivery" value="wait_hq" id="pd2" <?= $pd == 'wait_hq' ? 'checked' : '' ?>>
-                                                <label class="form-check-label" for="pd2">รอเบิกจาก สนญ.</label>
+                                                <input class="form-check-input pd-radio" type="radio" name="parts_delivery" value="wait_hq" id="pd2" <?= $pd == 'wait_hq' ? 'checked' : '' ?>>
+                                                <label class="form-check-label" for="pd2">ส่งซ่อมที่สนญ.</label>
                                             </div>
                                             <div class="form-check">
-                                                <input class="form-check-input pd-radio" type="radio" name="partsDelivery" value="buy_outside" id="pd3" <?= $pd == 'buy_outside' ? 'checked' : '' ?>>
-                                                <label class="form-check-label" for="pd3">ซื้อร้านภายนอก</label>
+                                                <input class="form-check-input pd-radio" type="radio" name="parts_delivery" value="buy_outside" id="pd3" <?= $pd == 'buy_outside' ? 'checked' : '' ?>>
+                                                <label class="form-check-label" for="pd3">ซื้ออะไหล่ร้านนอก</label>
                                             </div>
                                         </div>
                                     </div>
@@ -276,11 +277,11 @@ try {
                                             <label class="icon-label"><i class="fas fa-tags"></i> ประเภทรถ</label>
                                             <div class="d-flex gap-3 align-items-center" style="height: 38px; background: #fff; border: 1px solid #eee; padding: 0 15px; border-radius: 8px;">
                                                 <div class="form-check m-0">
-                                                    <input class="form-check-input rep-car-type" type="radio" name="replaceType" id="repNew" value="รถใหม่" <?= (($claim['rp_type'] ?? '') == 'รถใหม่' || ($claim['rp_type'] ?? '') == 'new') ? 'checked' : '' ?>>
+                                                    <input class="form-check-input rep-car-type" type="radio" name="replace_type" id="repNew" value="รถใหม่" <?= (($claim['rp_type'] ?? '') == 'รถใหม่' || ($claim['rp_type'] ?? '') == 'new') ? 'checked' : '' ?>>
                                                     <label class="form-check-label" for="repNew">รถใหม่</label>
                                                 </div>
                                                 <div class="form-check m-0">
-                                                    <input class="form-check-input rep-car-type" type="radio" name="replaceType" id="repUsed" value="รถมือสอง" <?= (($claim['rp_type'] ?? '') == 'รถมือสอง' || ($claim['rp_type'] ?? '') == 'used') ? 'checked' : '' ?>>
+                                                    <input class="form-check-input rep-car-type" type="radio" name="replace_type" id="repUsed" value="รถมือสอง" <?= (($claim['rp_type'] ?? '') == 'รถมือสอง' || ($claim['rp_type'] ?? '') == 'used') ? 'checked' : '' ?>>
                                                     <label class="form-check-label" for="repUsed">รถมือสอง</label>
                                                 </div>
                                             </div>
@@ -288,7 +289,7 @@ try {
 
                                         <div class="col-md-4 rep-grade-field <?= ($claim['rp_type'] ?? '') == 'รถมือสอง' || ($claim['rp_type'] ?? '') == 'used' ? '' : 'd-none' ?>" id="repGradeField">
                                             <label class="icon-label text-primary-orange"><i class="fas fa-medal"></i> เกรดรถมือสอง <span class="text-danger">*</span></label>
-                                            <select name="replaceUsedGrade" class="form-select border-primary-subtle">
+                                            <select name="replace_used_grade" class="form-select border-primary-subtle">
                                                 <option value="">-- เลือกเกรด --</option>
                                                 <option value="A_premium" <?= ($claim['rp_used_grade'] ?? '') == 'A_premium' ? 'selected' : '' ?>>A พรีเมี่ยม</option>
                                                 <option value="A_w6" <?= ($claim['rp_used_grade'] ?? '') == 'A_w6' ? 'selected' : '' ?>>A รับประกันเครื่องยนต์ 6 เดือน</option>
@@ -364,19 +365,19 @@ try {
                                 <div class="row align-items-center mb-3">
                                     <label class="col-sm-4 col-form-label fw-600 req">ชื่อ-นามสกุล</label>
                                     <div class="col-sm-8">
-                                        <input type="text" name="ownerName" class="form-control border-2" value="<?= htmlspecialchars($claim['owner_name'] ?? '') ?>" required>
+                                        <input type="text" name="owner_name" class="form-control border-2" value="<?= htmlspecialchars($claim['owner_name'] ?? '') ?>" required>
                                     </div>
                                 </div>
                                 <div class="row align-items-center mb-3">
                                     <label class="col-sm-4 col-form-label fw-600">เบอร์โทรศัพท์</label>
                                     <div class="col-sm-8">
-                                        <input type="text" name="ownerPhone" class="form-control border-2" value="<?= htmlspecialchars($claim['owner_phone'] ?? '') ?>">
+                                        <input type="text" name="owner_phone" class="form-control border-2" value="<?= htmlspecialchars($claim['owner_phone'] ?? '') ?>">
                                     </div>
                                 </div>
                                 <div class="row mb-3">
                                     <label class="col-sm-4 col-form-label fw-600">ที่อยู่</label>
                                     <div class="col-sm-8">
-                                        <textarea name="ownerAddress" class="form-control border-2" rows="3"><?= htmlspecialchars($claim['owner_address'] ?? '') ?></textarea>
+                                        <textarea name="owner_address" class="form-control border-2" rows="3"><?= htmlspecialchars($claim['owner_address'] ?? '') ?></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -419,15 +420,15 @@ try {
                         <div class="row g-4">
                             <div class="col-12">
                                 <label class="form-label fw-600">อาการปัญหาที่ลูกค้าแจ้ง</label>
-                                <textarea name="problemDesc" class="form-control border-2" rows="3" required><?= htmlspecialchars($claim['problem_desc'] ?? '') ?></textarea>
+                                <textarea name="problem_desc" class="form-control border-2" rows="3" required><?= htmlspecialchars($claim['problem_desc'] ?? '') ?></textarea>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-600">วิธีการตรวจเช็ค</label>
-                                <textarea name="inspectMethod" class="form-control border-2" rows="3"><?= htmlspecialchars($claim['inspect_method'] ?? '') ?></textarea>
+                                <textarea name="inspect_method" class="form-control border-2" rows="3"><?= htmlspecialchars($claim['inspect_method'] ?? '') ?></textarea>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-600">สาเหตุของปัญหา</label>
-                                <textarea name="inspectCause" class="form-control border-2" rows="3"><?= htmlspecialchars($claim['inspect_cause'] ?? '') ?></textarea>
+                                <textarea name="inspect_cause" class="form-control border-2" rows="3"><?= htmlspecialchars($claim['inspect_cause'] ?? '') ?></textarea>
                             </div>
                         </div>
 
@@ -583,7 +584,7 @@ try {
                                 <option value="Approved Claim" <?= $claim['status'] == 'Approved Claim' ? 'selected' : '' ?>>อนุมัติการเคลม</option>
                                 <option value="Approved Replacement" <?= $claim['status'] == 'Approved Replacement' ? 'selected' : '' ?>>อนุมัติเปลี่ยนคัน</option>
                                 <option value="Rejected" <?= $claim['status'] == 'Rejected' ? 'selected' : '' ?>>ไม่อนุมัติ</option>
-                                <option value="Rejected" <?= $claim['status'] == 'Rejected' ? 'selected' : '' ?>>เปลี่ยน  </option>
+                                <option value="Replacement" <?= $claim['status'] == 'Replacement' ? 'selected' : '' ?>>เปลี่ยนคัน</option>
                                 <option value="Pending Fix" <?= $claim['status'] == 'Pending Fix' ? 'selected' : '' ?>>รอแก้ไข</option>
                                 <option value="Pending" <?= $claim['status'] == 'Pending' ? 'selected' : '' ?>>ดำเนินการเสร็จสิ้น</option>
                                 </select>
@@ -902,7 +903,7 @@ try {
                 if(pFix && changingStatus && remarks.value.trim() === '') {
                     e.preventDefault();
                     remarks.classList.add('border-danger');
-                    showToast('❌ กรุณาระบุเหตุผล/บันทึกการแก้ไข ก่อนส่งไปตรวจสอบใหม่', 'error');
+                    window.showToast('❌ กรุณาระบุเหตุผล/บันทึกการแก้ไข ก่อนส่งไปตรวจสอบใหม่', 'error');
                     return;
                 }
 
@@ -920,17 +921,17 @@ try {
                 .then(res => res.text())
                 .then(text => {
                     if (text.includes('✅')) {
-                        showToast('✅ บันทึกข้อมูลสำเร็จ', 'success');
+                        window.showToast('✅ บันทึกข้อมูลสำเร็จ', 'success');
                         setTimeout(() => {
                              window.location.href = 'history.php';
                         }, 1500);
                     } else {
-                        showToast('❌ ' + text.replace(/<[^>]*>/g, ''), 'error');
+                        window.showToast('❌ ' + text.replace(/<[^>]*>/g, ''), 'error');
                         btn.disabled = false; btn.innerHTML = originalText;
                     }
                 })
                 .catch(() => {
-                    showToast('❌ ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้', 'error');
+                    window.showToast('❌ ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้', 'error');
                     btn.disabled = false; btn.innerHTML = originalText;
                 });
             });

@@ -14,365 +14,7 @@ require_once __DIR__ . '/../backend/index_handler.php';
   <link rel="stylesheet" href="../shared/assets/css/styles.css"> 
   <link rel="stylesheet" href="../shared/assets/css/styles-claim_form.css"> 
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root{--orange:#e65100;--orange-600:#ff7a1a;--black:#121212;--muted:#6b6b6b;--bg:#f7f8fb;--surface:#ffffff;--soft-shadow:rgba(16,24,40,0.06);--icon-card-grad:linear-gradient(135deg,#ff7a1a,#ff8a3d)}
-    *{box-sizing:border-box}
-    body{font-family:'Kanit',Inter,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:linear-gradient(180deg,#fbfbfd,#ffffff);color:var(--black);-webkit-font-smoothing:antialiased;font-size:16px;line-height:1.55;display:flex;min-height:100vh}
-    .container{max-width:1400px;margin:28px auto;padding:0 18px}
-    .header{padding:10px 0}
-    h1{color:var(--orange);margin:0;font-size:1.6rem}
-    .form-title{display:flex;align-items:center;gap:14px;margin:0}
-    /* circular badge for header logo */
-    /* circular logo style: thick white ring, strong shadow, centered and slightly overlapping */
-    .header{position:relative}
-    .header-badge{width:128px;height:128px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;padding:0;background:var(--icon-card-grad);box-shadow:0 30px 80px rgba(16,24,40,0.20);border:10px solid #ffffff;flex-shrink:0;position:relative;z-index:30;background-clip:padding-box}
-    .header-badge::after{content:'';position:absolute;inset:0;border-radius:50%;box-shadow:0 8px 20px rgba(255,255,255,0.06) inset}
-    /* keep the full logo visible (no cropping) while leaving a small inner margin from the white ring */
-    .header-badge img{width:86%;height:86%;max-width:86%;max-height:86%;object-fit:contain;object-position:center;border-radius:50%;display:block}
-    /* optional overlap effect: raise badge slightly above header content */
-    .header-badge{transform:translateY(-24px)}
-    .title-text{display:block}
-    .title-text .title{margin:0;color:var(--black);font-size:1.8rem;font-weight:800;letter-spacing:0.2px}
-    .subtitle{color:var(--muted);margin-top:6px;font-size:0.98rem;margin:0;opacity:0.92}
-    @media (max-width:760px){
-      .form-title{flex-direction:column;align-items:center;gap:8px}
-      .title-text{text-align:center}
-      .subtitle{text-align:center}
-    }
-    /* reduce space between header and the following container so the first card sits closer */
-    header + .container{margin-top:8px}
-    .card{background:var(--surface);border-radius:16px;padding:24px;border:1px solid rgba(16,24,40,0.03);box-shadow:0 12px 40px var(--soft-shadow);transition:transform .18s ease,box-shadow .18s ease}
-    .card:hover{transform:translateY(-6px);box-shadow:0 24px 60px rgba(16,24,40,0.08)}
-
-    /* Bootstrap layout helpers */
-    .field, .inline-field, .claim-row, .upload-card, .upload-card .drop-area {min-width:0}
-    .field{display:flex;flex-direction:column;gap:6px}
-    /* inline-field: label and input on same row for compact fields (e.g., VIN, owner) */
-    .inline-field{flex-direction:row;align-items:center;gap:6px}
-    /* force inline layout when needed */
-    .inline-field.keep-inline{flex-direction:row !important}
-    .inline-field.keep-inline .label-text{min-width:160px}
-    .inline-field .label-text{margin-bottom:0;min-width:120px;white-space:nowrap;color:var(--muted);font-weight:700}
-    @media (max-width: 768px) {
-      .inline-field.keep-inline, .inline-field {flex-direction:column !important;align-items:stretch !important;}
-      .inline-field .label-text, .inline-field.keep-inline .label-text {min-width:auto !important;white-space:normal !important;margin-bottom:6px;}
-      .form-grid > * {width:100% !important;}
-    }
-    /* ensure inputs/selects can shrink and not overflow their containers */
-    input[type="text"], input[type="number"], input[type="date"], select, textarea{min-width:0}
-    .inline-field .label-text.label-dark{color:var(--black);font-weight:700}
-    .inline-field input[type="text"], .inline-field input[type="number"], .inline-field input[type="date"], .inline-field select{flex:1;min-width:0}
-    .compact-number{display:inline-flex;align-items:center;gap:8px}
-    .compact-number input{width:120px;padding:8px;border-radius:8px;border:1px solid #e9e9e9;font-size:1rem;text-align:right;background:#fff}
-    .compact-number .unit{margin-left:6px;color:var(--muted);white-space:nowrap}
-    /* icon helper */
-    .icon{width:18px;height:18px;vertical-align:middle;margin-right:8px;fill:currentColor}
-    .icon.small{width:14px;height:14px;margin-right:6px}
-    @media (max-width:600px){ .compact-number input{width:100%;} .inline-field{flex-direction:column;align-items:stretch} .inline-field .label-text{margin-bottom:6px;min-width:auto} }
-    .label-text{font-weight:600;color:var(--muted);font-size:0.95rem;margin-bottom:6px}
-    /* inline grade & brand fields (keep label and select on same row) */
-    .grade-field, .brand-select{display:flex;align-items:center;gap:8px}
-    .grade-field .label-text, .brand-select .label-text{margin-bottom:0;display:inline-block;white-space:nowrap}
-    .grade-field select{min-width:180px}
-    .brand-select select{min-width:200px}
-    .label-dark{color:var(--black);font-weight:700}
-    .section-legend{font-weight:800;color:#222;margin-bottom:8px;font-size:1rem}
-    /* Ensure top-level full sections (fieldset/full) and their fields span the entire card */
-    .full .section-legend{display:block}
-    .full .field{width:100%;min-width:0}
-    .full .label-text{display:block;margin-bottom:8px}
-    .full input[type="text"], .full input[type="number"], .full input[type="date"], .full textarea, .full select{width:100%;max-width:100%;box-sizing:border-box}
-    /* grouped subfields (two-column rows that should fill the card) */
-    .subfield{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
-    .subfield .field{min-width:0}
-    .subfield .label-text{display:block;margin-bottom:8px}
-    .subfield textarea, .subfield input, .subfield select{width:100%;box-sizing:border-box}
-    .note-box{background:#fff6f6;border-left:4px solid var(--icon-card-bg);padding:10px 12px;border-radius:8px;margin-top:10px;color:#3a312f;font-size:0.95rem}
-    .note-box ol{margin:6px 0 0 18px;padding:0}
-    .note-box li{margin:6px 0}
-    input[type="text"],input[type="date"],select,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(16,24,40,0.06);font-size:1rem;font-family:'Kanit',Inter,Segoe UI,Roboto,Arial,sans-serif;background:linear-gradient(180deg,#ffffff,#fbfbff)}
-    input[type="text"]:focus,input[type="date"]:focus,select:focus,textarea:focus{border-color:var(--orange);box-shadow:0 8px 30px rgba(255,106,0,0.06);outline:none}
-    select,option{font-family:'Kanit',Inter,Segoe UI,Roboto,Arial,sans-serif}
-      input[readonly]{background:#f3f4f6;color:#333;border-color:#e6e6e6;cursor:not-allowed}
-    textarea{min-height:96px}
-
-    /* Radio / checkbox rows */
-    .radio-row{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
-    .radio-row label{display:flex;align-items:center;gap:8px;color:#333}
-    /* Use orange for checked controls where supported */
-    input[type="checkbox"], input[type="radio"]{accent-color:var(--orange)}
-    /* Replace default native controls but keep neutral (dark) border when not selected; orange only when checked */
-    input[type="radio"]{
-      -webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;border:2px solid var(--muted);background:transparent;vertical-align:middle;display:inline-block;margin-right:8px;position:relative;
-    }
-    input[type="radio"]:checked{background:var(--orange);border-color:var(--orange)}
-    input[type="radio"]:focus{outline:none;box-shadow:0 0 0 4px rgba(255,106,0,0.08)}
-    input[type="checkbox"]{
-      -webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:4px;border:2px solid var(--muted);background:transparent;vertical-align:middle;display:inline-block;margin-right:8px;position:relative;
-    }
-    input[type="checkbox"]:checked{background:var(--orange);border-color:var(--orange)}
-    /* label style when checked (JS will toggle .checked for broad support) */
-    label.checked{color:var(--orange);font-weight:700}
-
-    /* Replacement 'ประเภทรถ' pill style */
-    .replace-type{display:flex;gap:10px;align-items:center}
-    .replace-type label{background:transparent;border:1px solid #f0f0f0;padding:8px 12px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;color:#333;font-weight:600}
-    .replace-type label:hover{border-color:rgba(0,0,0,0.06)}
-    .replace-type label.checked{background:linear-gradient(90deg, rgba(230,110,40,0.12), rgba(230,110,40,0.04));border-color:var(--orange);color:var(--orange);box-shadow:0 8px 20px rgba(230,110,40,0.06)}
-
-    /* Generic pill style for checkbox/radio groups */
-    .claim-options label:not(.no-pill), .radio-row label:not(.no-pill), .replace-type label:not(.no-pill){display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:12px;border:1px solid #f2f2f2;background:transparent;cursor:pointer;font-weight:600;color:#333;transition:all .12s ease;position:relative}
-    .claim-options label:not(.no-pill):hover, .radio-row label:not(.no-pill):hover{border-color:rgba(0,0,0,0.06)}
-    .claim-options label:not(.no-pill).checked, .radio-row label:not(.no-pill).checked, .replace-type label:not(.no-pill).checked{background:linear-gradient(90deg, rgba(230,110,40,0.10), rgba(230,110,40,0.02));border-color:var(--orange);color:var(--orange);box-shadow:0 10px 24px rgba(230,110,40,0.06)}
-
-    /* circular tick indicator inside the pill */
-    .claim-options label:not(.no-pill)::before, .radio-row label:not(.no-pill)::before, .replace-type label:not(.no-pill)::before{
-      content: '';
-      width:18px; height:18px; border-radius:50%; display:inline-block; vertical-align:middle; margin-right:8px; box-sizing:border-box;
-      border:2px solid #eee; background:transparent; flex-shrink:0; transition:all .12s ease;
-      background-position:center; background-repeat:no-repeat; background-size:10px 10px;
-    }
-    .claim-options label:not(.no-pill).checked::before, .radio-row label:not(.no-pill).checked::before, .replace-type label:not(.no-pill).checked::before{
-      border-color:var(--orange);
-      background-image: radial-gradient(circle, var(--orange) 55%, transparent 56%);
-    }
-
-    /* hide native small control visuals for radios/checkboxes inside these groups */
-    .claim-options input[type="checkbox"], .claim-options input[type="radio"],
-    .radio-row input[type="checkbox"], .radio-row input[type="radio"],
-    .replace-type input[type="radio"]{
-      position: absolute !important; opacity: 0 !important; width:1px; height:1px; margin:0; padding:0;
-    }
-    /* Claim category row: make select and options inline */
-    .claim-row{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
-    .claim-row select{min-width:260px;border-radius:8px;padding:10px}
-    .claim-options label{margin-right:10px}
-    .other-inline{display:flex;align-items:center;gap:8px}
-    .other-inline input[type="text"]{display:none;margin-left:8px;padding:8px;border-radius:8px;border:1px solid #e9e9e9}
-    .replace-block{display:none;grid-column:1 / -1;margin-top:12px;gap:10px;align-items:center}
-    .replace-block .field{flex-direction:row;align-items:center;gap:10px}
-    .replace-block .field .label-text{min-width:180px}
-
-    /* Replacement inputs layout */
-    .replace-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:8px;align-items:center}
-    .replace-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;align-items:center}
-    .replace-grid .field.inline-field{flex-direction:column;align-items:flex-start;gap:6px}
-    .replace-grid .label-text,.replace-grid-2 .label-text{min-width:0;color:var(--muted);font-weight:700}
-    .replace-grid input,.replace-grid select,.replace-grid-2 input,.replace-grid-2 select{width:100%;height:44px;padding:8px 10px;border-radius:8px;border:1px solid #ececec;background:#fff;font-size:1rem}
-    .replace-grid select{appearance:auto}
-    @media (max-width:880px){ .replace-grid{grid-template-columns:1fr; } .replace-grid-2{grid-template-columns:1fr 1fr} }
-
-    /* File inputs and previews */
-    input[type="file"]{display:none}
-    .preview{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
-    .preview img{max-width:160px;border-radius:8px;border:1px solid #eee}
-    .thumb{position:relative;display:inline-block;border-radius:10px;overflow:hidden;box-shadow:0 8px 30px rgba(16,24,40,0.06);transition:transform .12s ease}
-    .thumb:hover{transform:translateY(-4px) scale(1.02)}
-    .thumb img{display:block;border-radius:8px;width:140px;height:100px;object-fit:cover}
-    .thumb .remove-btn{position:absolute;top:8px;right:8px;background:transparent;color:var(--orange);border:none;border-radius:8px;width:40px;height:40px;padding:0;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center}
-
-    /* lightbox */
-    .lightbox{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);z-index:1200}
-    .lightbox.open{display:flex}
-      input:focus,textarea:focus,select:focus,
-      input:focus-visible,textarea:focus-visible,select:focus-visible{
-        outline: none;
-        border-color: var(--orange);
-        box-shadow: 0 6px 20px rgba(255,106,0,0.06), 0 0 0 4px rgba(255,106,0,0.06);
-      }
-    .lightbox .imgwrap{max-width:90%;max-height:90%;background:#fff;padding:8px 76px;border-radius:8px;position:relative;display:flex;align-items:center;justify-content:center}
-
-    .lightbox .imgframe{position:relative;display:block}
-    .lightbox img{max-width:100%;max-height:80vh;display:block;border-radius:6px}
-
-    /* side navigation buttons overlayed at image sides */
-    .lightbox .nav{position:absolute;top:50%;transform:translateY(-50%);width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,0.92);border:none;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,0.18);z-index:1300}
-    /* place buttons outside the image frame */
-    .lightbox .nav.prev{left:calc(-56px - 18px)}
-    .lightbox .nav.next{right:calc(-56px - 18px)}
-
-    /* responsive: on small screens keep buttons overlayed inside the frame */
-    @media (max-width:740px){
-      .lightbox .imgwrap{padding:8px}
-      .lightbox .nav.prev{left:12px}
-      .lightbox .nav.next{right:12px}
-    }
-
-    .lightbox .counter{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.48);color:#fff;padding:6px 10px;border-radius:999px;font-weight:700;font-size:0.9rem}
-
-    .lightbox .close{position:absolute;top:18px;right:18px;background:#fff;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,0.12)}
-    fieldset.images{border:0;padding:0;margin:0}
-    fieldset.images legend{font-weight:800;color:#222;margin-bottom:6px}
-
-    /* Image gallery uploader */
-    .image-uploader{margin-top:6px}
-    .attach-all{display:inline-flex;align-items:center;gap:10px;padding:9px 14px;background:#06a84b;color:#fff;border-radius:8px;border:none;cursor:pointer;font-weight:700;margin-bottom:12px}
-    /* allow cards to size naturally to content to avoid inner scrollbars */
-    .image-gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:22px;justify-items:stretch;grid-auto-rows:auto;align-items:start}
-    .upload-card{background:#fff;border:1px solid #e8e8e8;border-radius:10px;min-height:160px;display:flex;align-items:center;justify-content:space-between;padding:14px;cursor:pointer;position:relative;overflow:visible}
-    .upload-card .drop-area{flex:1;height:100%;display:flex;align-items:flex-start;justify-content:flex-start;flex-direction:column;text-align:left;padding:14px;box-sizing:border-box;position:relative}
-    .upload-card.dragover{outline:3px dashed rgba(0,0,0,0.08);background:linear-gradient(180deg,#fafafa,#fff)}
-    .upload-card:hover{transform:translateY(-4px);box-shadow:0 10px 30px rgba(13,13,13,0.06);transition:transform .14s ease,box-shadow .14s ease}
-    .upload-placeholder{color:var(--black);font-weight:800;font-size:1.02rem;opacity:0.98;display:flex;align-items:center;gap:12px}
-    .upload-placeholder .icon{width:48px;height:48px;padding:8px;border-radius:12px;background:var(--icon-card-grad);color:#fff;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(255,122,50,0.12)}
-    .upload-placeholder .icon svg{width:22px;height:22px;fill:#fff}
-    .upload-hint{color:var(--muted);font-size:0.9rem;margin-top:6px}
-    /* modern floating attach-count badge (anchored to drop-area to avoid covering previews) */
-    /* attach-count shown under the title as parenthetical red text */
-    .upload-card .drop-area .attach-count{display:none;position:static;top:auto;right:auto;background:transparent;color:#c62828;padding:0;margin-top:8px;font-weight:700;font-size:0.95rem;border-radius:0;box-shadow:none;backdrop-filter:none;transition:opacity .12s ease,transform .12s ease}
-    .upload-card .drop-area .attach-count[data-show="true"]{display:block;opacity:1}
-    .upload-card .drop-area .attach-count[data-animate="pulse"]{transform:scale(1.02)}
-    /* preview container constrained to card and won't overflow */
-    .upload-card .preview{width:320px;max-width:45%;height:auto;display:flex;gap:8px;align-items:center;justify-content:center;flex-shrink:0;box-sizing:border-box;padding:6px}
-    .upload-card .preview{border-radius:8px;overflow:hidden;background:#fff}
-    .upload-card .preview img{display:block;width:100%;height:100%;max-height:100%;object-fit:cover}
-    /* when multiple images attached make previews smaller */
-    .upload-card.multi .preview{width:180px}
-    .upload-card.multi .preview img{width:100%;height:100%;object-fit:cover;border-radius:6px}
-    /* hide only the small hint when there is a preview; keep the title visible */
-    .upload-card.has-preview .drop-area .upload-hint{opacity:0;transform:translateX(-6px);pointer-events:none}
-    @media (max-width:1000px){.image-gallery{grid-template-columns:repeat(2,1fr)}}
-    @media (max-width:760px){.image-gallery{grid-template-columns:1fr} .upload-card{flex-direction:column;align-items:center} .upload-card .drop-area{text-align:center;align-items:center} .upload-card .preview{width:100%;margin-top:10px}}
-
-    /* Parts table */
-    table#partsTable{width:100%;border-collapse:collapse;margin-top:8px;table-layout:fixed}
-    table#partsTable th,table#partsTable td{text-align:left;padding:8px;border-bottom:1px solid #f5f5f5;vertical-align:middle}
-    table#partsTable thead th{background:#fafafa;font-weight:700;padding:10px 8px;border-bottom:2px solid #f0f0f0}
-    table#partsTable td{padding:6px 8px}
-    table#partsTable input{width:100%;box-sizing:border-box;padding:8px;border-radius:8px;border:1px solid #e9e9e9;height:44px;background:#fff}
-    table#partsTable input[type="number"]{text-align:right}
-    table#partsTable .idx{width:48px;text-align:center}
-    table#partsTable button.removePart{background:transparent;color:var(--orange);border:none;border-radius:10px;width:40px;height:40px;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
-
-    /* Delete icons: no background, icon colored with primary orange */
-    .thumb .remove-btn svg, table#partsTable button.removePart svg{fill:var(--orange);width:20px;height:20px}
-    /* explicit column widths for balanced layout */
-    table#partsTable thead th:nth-child(1){width:48px}
-    table#partsTable thead th:nth-child(2){width:140px}
-    table#partsTable thead th:nth-child(3){width:auto}
-    table#partsTable thead th:nth-child(4){width:96px}
-    table#partsTable thead th:nth-child(5){width:120px}
-    table#partsTable thead th:nth-child(6){width:160px}
-    table#partsTable thead th:nth-child(7){width:72px}
-    /* green add button */
-    .btn.add{background:linear-gradient(180deg,#06b957,#049a44);color:#fff;border:none;border-radius:10px;padding:10px 14px;box-shadow:0 8px 18px rgba(6,168,75,0.14);display:inline-flex;align-items:center;gap:8px}
-    /* hide small label elements inside parts table and ensure inputs fill columns */
-    table#partsTable .label-text{display:none}
-    table#partsTable td{padding:6px 6px}
-    table#partsTable td > .field{display:block}
-    table#partsTable td > input, table#partsTable td input{width:100%;border-radius:8px}
-    table#partsTable td .btn.small{margin:0}
-
-    /* Actions */
-    .actions{display:flex;gap:12px;justify-content:flex-end;margin-top:16px}
-    .btn{padding:10px 14px;border-radius:8px;border:1px solid #e6e6e6;background:#fff;font-weight:600;font-size:1rem}
-    .btn.small{padding:8px 10px;font-size:0.95rem}
-
-    /* responsive table wrapper */
-    /* allow horizontal scroll for wide tables but avoid vertical inner scrollbars */
-    .table-responsive{width:100%;overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch}
-    table#partsTable{min-width:720px}
-    .btn.primary{background:var(--orange);color:#fff;border-color:var(--orange);box-shadow:0 6px 18px rgba(255,106,0,0.12)}
-
-    /* Responsive */
-    @media (max-width:880px){
-      .label-text{font-size:0.95rem}
-      .container{padding:0 12px}
-      .inline-field{flex-direction:column;align-items:stretch}
-      .inline-field .label-text{margin-bottom:6px;min-width:auto}
-    }
-    @media (max-width:760px){
-      /* Make parts table stacked on small screens for easier data entry */
-      .table-responsive{overflow-x:auto;overflow-y:visible}
-      table#partsTable{min-width:0;border:0}
-      table#partsTable thead{display:none}
-      table#partsTable tbody tr{display:block;border-bottom:1px solid #f5f5f5;padding:10px 0;margin-bottom:8px}
-      table#partsTable td{display:flex;flex-direction:column;padding:6px 0;border-bottom:none}
-      table#partsTable td .label-text{display:block;color:var(--muted);font-size:0.95rem;margin-bottom:6px}
-      table#partsTable td input{height:44px}
-      table#partsTable .idx{display:none}
-      table#partsTable td .btn.small{align-self:flex-end;margin-top:8px}
-
-      /* Mobile-specific UX improvements */
-      body{font-size:16px}
-      .container{padding:0 12px}
-      .card{padding:18px}
-      h1,h2,h3{font-size:1.1rem}
-      .form-title{gap:10px}
-      .header-badge{width:88px;height:88px}
-      .subfield{grid-template-columns:1fr}
-      /* ensure full sections' inputs fill card on mobile */
-      .full .field{width:100%}
-      .full input[type="text"], .full textarea, .full select{width:100%}
-      /* ensure subfield controls take full width and labels sit above controls */
-      .subfield .label-text{display:block}
-      .subfield .field{width:100%}
-      .subfield textarea{min-height:88px}
-
-      /* Stack upload card contents; make preview full-width below title */
-      .upload-card{flex-direction:column;align-items:stretch;padding:12px}
-      .upload-card .drop-area{text-align:center;align-items:center;padding:12px}
-      .upload-card .preview{width:100%;max-width:100%;height:auto;margin-top:10px;justify-content:flex-start}
-      .upload-card .preview .thumb img{width:120px;height:86px}
-      .upload-card.multi .preview{width:100%}
-
-      /* Make form inputs and buttons larger for touch */
-      input[type="text"], input[type="date"], select, textarea{padding:14px;font-size:1rem}
-      .btn, .btn.small{width:100%;display:block}
-      .actions{flex-direction:column;align-items:stretch;gap:10px}
-
-      /* increase remove button target for thumbnails */
-      .thumb .remove-btn{width:44px;height:44px;top:6px;right:6px}
-
-      /* ensure lightbox nav inside on mobile (already handled) and make arrows larger */
-      .lightbox .nav{width:48px;height:48px;font-size:24px}
-
-      /* ensure labels and hints are readable */
-      .upload-placeholder{font-size:1rem}
-      .upload-hint{font-size:0.95rem}
-    }
-    /* Extra mobile adjustments to ensure fields fit within the card and avoid horizontal overflow */
-    @media (max-width:880px){
-      .inline-field.keep-inline{flex-direction:column !important}
-      .claim-row select, .brand-select select, .grade-field select{min-width:0;width:100%}
-      input[type="text"], input[type="number"], input[type="date"], select, textarea{max-width:100%;box-sizing:border-box}
-    }
-    @media (max-width:760px){
-      .claim-row{flex-direction:column;align-items:stretch;gap:10px}
-      .claim-row select{min-width:0;width:100%}
-      .replace-grid, .replace-grid-2{grid-template-columns:1fr}
-      .upload-card, .upload-card .preview, .upload-card .drop-area{width:100%;box-sizing:border-box}
-      .upload-card .preview{justify-content:flex-start}
-      input[type="text"], input[type="number"], input[type="date"], select, textarea{max-width:100%;box-sizing:border-box}
-    }
-    /* Responsive form helpers */
-    @media (max-width:768px) {
-      .inline-field {
-        flex-direction: column !important;
-        align-items: stretch !important;
-      }
-      .inline-field .label-text {
-        min-width: auto;
-        margin-bottom: 6px;
-      }
-      .inline-field.keep-inline {
-        flex-direction: column !important;
-        align-items: stretch !important;
-      }
-      .inline-field.keep-inline .label-text {
-        min-width: auto !important;
-        margin-bottom: 6px;
-      }
-    }
-    /* Container responsive */
-    @media (max-width:1024px) {
-      .container { max-width:100%; margin:20px auto; }
-    }
-    @media (max-width:768px) {
-      .container { max-width:100%; margin:16px auto; padding:0 12px; }
-      .main-content { padding:16px !important; }
-    }
-  </style>
+  <link rel="stylesheet" href="../shared/assets/css/styles-index_claim.css"> 
 </head>
 <body>
   <?php include __DIR__ . '/../shared/assets/includes/sidebar.php'; ?>
@@ -420,8 +62,8 @@ require_once __DIR__ . '/../backend/index_handler.php';
               </div>
 
               <div class="form-row-item">
-                <label for="claimDate" class="form-label">วันที่ส่งเคลม</label>
-                <input type="date" id="claimDate" name="claimDate" class="form-control" value="<?php echo date('Y-m-d'); ?>" readonly required>
+                <label for="claim_date" class="form-label">วันที่ส่งเคลม</label>
+                <input type="date" id="claim_date" name="claim_date" class="form-control" value="<?php echo date('Y-m-d'); ?>" readonly required>
               </div>
 
               <!-- Row 2: Sale Date & Vehicle Age -->
@@ -437,19 +79,19 @@ require_once __DIR__ . '/../backend/index_handler.php';
                 <label class="form-label">ประเภทรถ</label>
                 <div class="d-flex gap-4 align-items-center h-100">
                   <div class="form-check m-0">
-                    <input class="form-check-input" type="radio" name="carType" id="carTypeNew" value="new" checked required>
-                    <label class="form-check-label ms-1" for="carTypeNew">รถใหม่</label>
+                    <input class="form-check-input" type="radio" name="car_type" id="car_type_new" value="new" checked required>
+                    <label class="form-check-label ms-1" for="car_type_new">รถใหม่</label>
                   </div>
                   <div class="form-check m-0">
-                    <input class="form-check-input" type="radio" name="carType" id="carTypeUsed" value="used" required>
-                    <label class="form-check-label ms-1" for="carTypeUsed">มือสอง</label>
+                    <input class="form-check-input" type="radio" name="car_type" id="car_type_used" value="used" required>
+                    <label class="form-check-label ms-1" for="car_type_used">มือสอง</label>
                   </div>
                 </div>
               </div>
 
               <div class="form-row-item" style="grid-template-columns: 60px 1fr;">
-                <label for="carBrand" class="form-label">ยี่ห้อ</label>
-                <select id="carBrand" name="carBrand" class="form-select" required>
+                <label for="car_brand" class="form-label">ยี่ห้อ</label>
+                <select id="car_brand" name="car_brand" class="form-select" required>
                   <option value="">-- เลือกยี่ห้อ --</option>
                   <option>Honda</option>
                   <option>Yamaha</option>
@@ -457,9 +99,9 @@ require_once __DIR__ . '/../backend/index_handler.php';
                 </select>
               </div>
 
-              <div id="usedGradeBlock" class="form-row-item d-none" style="grid-template-columns: 60px 1fr;">
-                <label for="usedGrade" class="form-label">เกรด</label>
-                <select id="usedGrade" name="usedGrade" class="form-select">
+              <div id="used_grade_block" class="form-row-item d-none" style="grid-template-columns: 60px 1fr;">
+                <label for="used_grade" class="form-label">เกรด</label>
+                <select id="used_grade" name="used_grade" class="form-select">
                   <option value="">-- เลือกเกรด --</option>
                   <option value="A_premium">A พรีเมี่ยม</option>
                   <option value="A_w6">A (6ด.)</option>
@@ -482,13 +124,13 @@ require_once __DIR__ . '/../backend/index_handler.php';
 
               <!-- Customer Info -->
               <div class="form-row-item">
-                <label for="ownerName" class="form-label">ชื่อ-นามสกุล <span class="text-danger">*</span></label>
-                <input type="text" id="ownerName" name="ownerName" class="form-control" placeholder="ชื่อ นามสกุล" required>
+                <label for="owner_name" class="form-label">ชื่อ-นามสกุล <span class="text-danger">*</span></label>
+                <input type="text" id="owner_name" name="owner_name" class="form-control" placeholder="ชื่อ นามสกุล" required>
               </div>
 
               <div class="form-row-item">
-                <label for="ownerPhone" class="form-label">เบอร์โทรศัพท์ <span class="text-danger">*</span></label>
-                <input type="text" id="ownerPhone" name="ownerPhone" class="form-control" placeholder="เบอร์โทรศัพท์" required>
+                <label for="owner_phone" class="form-label">เบอร์โทรศัพท์ <span class="text-danger">*</span></label>
+                <input type="text" id="owner_phone" name="owner_phone" class="form-control" placeholder="เบอร์โทรศัพท์" required>
               </div>
             </div>
 
@@ -496,7 +138,7 @@ require_once __DIR__ . '/../backend/index_handler.php';
               <div class="col-12">
                 <h5 class="fw-bold mb-3" style="color: #222; font-size: 1rem;">รายละเอียดปัญหาที่ลูกค้าแจ้ง :</h5>
                 <div class="mb-3">
-                  <textarea id="problemDesc" name="problemDesc" rows="4" class="form-control" placeholder="อธิบายปัญหาที่ลูกค้าแจ้ง" required></textarea>
+                  <textarea id="problem_desc" name="problem_desc" rows="4" class="form-control" placeholder="อธิบายปัญหาที่ลูกค้าแจ้ง" required></textarea>
                 </div>
               </div>
             </div>
@@ -504,12 +146,12 @@ require_once __DIR__ . '/../backend/index_handler.php';
             <div class="mt-4">
               <h5 class="fw-bold mb-3" style="color: #222; font-size: 1rem;">ผลการตรวจเช็คปัญหา :</h5>
               <div class="mb-3">
-                <label for="inspectMethod" class="form-label fw-bold mb-2">วิธีตรวจเช็ค</label>
-                <textarea id="inspectMethod" name="inspectMethod" rows="3" class="form-control" placeholder="วิธีการตรวจเช็คปัญหา" required></textarea>
+                <label for="inspect_method" class="form-label fw-bold mb-2">วิธีตรวจเช็ค</label>
+                <textarea id="inspect_method" name="inspect_method" rows="3" class="form-control" placeholder="วิธีการตรวจเช็คปัญหา" required></textarea>
               </div>
               <div class="mb-3">
-                <label for="inspectCause" class="form-label fw-bold mb-2">สาเหตุของปัญหา</label>
-                <textarea id="inspectCause" name="inspectCause" rows="3" class="form-control" placeholder="สาเหตุของปัญหา" required></textarea>
+                <label for="inspect_cause" class="form-label fw-bold mb-2">สาเหตุของปัญหา</label>
+                <textarea id="inspect_cause" name="inspect_cause" rows="3" class="form-control" placeholder="สาเหตุของปัญหา" required></textarea>
               </div>
             </div>
 
@@ -600,8 +242,8 @@ require_once __DIR__ . '/../backend/index_handler.php';
               </div>
               <div class="col-12 col-md-6">
                 <div class="mb-3">
-                  <label for="claimCategory" class="form-label fw-semibold">เลือกประเภท</label>
-                  <select id="claimCategory" name="claimCategory" class="form-select">
+                  <label for="claim_category" class="form-label fw-semibold">เลือกประเภท</label>
+                  <select id="claim_category" name="claim_category" class="form-select">
                     <option value="">-- เลือกประเภทการเคลม --</option>
                     <option value="เคลมรถก่อนขาย">เคลมรถก่อนขาย</option>
                     <option value="เคลมปัญหาทางเทคนิค">เคลมปัญหาทางเทคนิค</option>
@@ -616,31 +258,31 @@ require_once __DIR__ . '/../backend/index_handler.php';
                   <div class="d-flex flex-wrap gap-2">
                     <?php if (hasTag('repairBranch')): ?>
                     <div class="form-check">
-                      <input class="form-check-input" type="radio" name="claimAction" id="claim_repair" value="repairBranch">
+                      <input class="form-check-input" type="radio" name="claim_action" id="claim_repair" value="repairBranch">
                       <label class="form-check-label" for="claim_repair">ซ่อมที่สาขา</label>
                     </div>
                     <?php endif; ?>
                     
                     <?php if (hasTag('sendHQ')): ?>
                     <div class="form-check">
-                      <input class="form-check-input" type="radio" name="claimAction" id="claim_send" value="sendHQ">
+                      <input class="form-check-input" type="radio" name="claim_action" id="claim_send" value="sendHQ">
                       <label class="form-check-label" for="claim_send">ส่งซ่อมที่สนญ.</label>
                     </div>
                     <?php endif; ?>
 
                     <?php if (hasTag('replaceVehicle')): ?>
                     <div class="form-check">
-                      <input class="form-check-input" type="radio" name="claimAction" id="claim_replace" value="replaceVehicle">
+                      <input class="form-check-input" type="radio" name="claim_action" id="claim_replace" value="replaceVehicle">
                       <label class="form-check-label" for="claim_replace">เปลี่ยนคัน</label>
                     </div>
                     <?php endif; ?>
 
                     <div class="form-check">
-                      <input class="form-check-input" type="radio" name="claimAction" id="claim_other" value="other">
+                      <input class="form-check-input" type="radio" name="claim_action" id="claim_other" value="other">
                       <label class="form-check-label" for="claim_other">อื่นๆ</label>
                     </div>
                   </div>
-                  <input type="text" id="claimOtherText" name="claimOtherText" class="form-control mt-2 d-none" placeholder="ระบุอื่นๆ">
+                  <input type="text" id="claim_other_text" name="claim_other_text" class="form-control mt-2 d-none" placeholder="ระบุอื่นๆ">
                 </div>
               </div>
             </div>
@@ -712,23 +354,23 @@ require_once __DIR__ . '/../backend/index_handler.php';
                 <div class="col-12">
                   <div class="d-flex flex-wrap gap-3">
                     <div class="form-check">
-                      <input class="form-check-input" type="radio" name="partsDelivery" id="partsDelivery_stock" value="in_stock" checked>
+                      <input class="form-check-input" type="radio" name="parts_delivery" id="partsDelivery_stock" value="in_stock" checked>
                       <label class="form-check-label" for="partsDelivery_stock">ซ่อมที่สาขา</label>
                     </div>
                     <div class="form-check">
-                      <input class="form-check-input" type="radio" name="partsDelivery" id="partsDelivery_hq" value="wait_hq">
+                      <input class="form-check-input" type="radio" name="parts_delivery" id="partsDelivery_hq" value="wait_hq">
                       <label class="form-check-label" for="partsDelivery_hq">รอส่งอะไหล่ จากสนญ.</label>
                     </div>
                     <div class="form-check">
-                      <input class="form-check-input" type="radio" name="partsDelivery" id="partsDelivery_buy" value="buy_outside">
+                      <input class="form-check-input" type="radio" name="parts_delivery" id="partsDelivery_buy" value="buy_outside">
                       <label class="form-check-label" for="partsDelivery_buy">ซื้ออะไหล่ร้านนอก</label>
                     </div>
                     <div class="form-check">
-                      <input class="form-check-input" type="radio" name="partsDelivery" id="partsDeliveryOtherRadio" value="other">
+                      <input class="form-check-input" type="radio" name="parts_delivery" id="partsDeliveryOtherRadio" value="other">
                       <label class="form-check-label" for="partsDeliveryOtherRadio">อื่นๆ</label>
                     </div>
                   </div>
-                  <input type="text" id="partsDeliveryOtherText" name="partsDeliveryOtherText" class="form-control mt-2 d-none" placeholder="ระบุอื่นๆ">
+                  <input type="text" id="parts_delivery_other_text" name="parts_delivery_other_text" class="form-control mt-2 d-none" placeholder="ระบุอื่นๆ">
                 </div>
               </div>
             </div>
@@ -768,11 +410,11 @@ require_once __DIR__ . '/../backend/index_handler.php';
                     <label class="icon-label"><i class="fas fa-tags"></i> ประเภทรถ</label>
                     <div class="d-flex gap-3 align-items-center bg-white border rounded px-3 h-100">
                       <div class="form-check m-0">
-                        <input class="form-check-input replace-car-type" type="radio" name="replaceType" id="replaceType_new" value="รถใหม่" checked>
+                        <input class="form-check-input replace-car-type" type="radio" name="replace_type" id="replaceType_new" value="รถใหม่" checked>
                         <label class="form-check-label" for="replaceType_new">รถใหม่</label>
                       </div>
                       <div class="form-check m-0">
-                        <input class="form-check-input replace-car-type" type="radio" name="replaceType" id="replaceType_used" value="รถมือสอง">
+                        <input class="form-check-input replace-car-type" type="radio" name="replace_type" id="replaceType_used" value="รถมือสอง">
                         <label class="form-check-label" for="replaceType_used">รถมือสอง</label>
                       </div>
                     </div>
@@ -878,8 +520,8 @@ require_once __DIR__ . '/../backend/index_handler.php';
   
   <script>
     (function(){
-      // set claimDate value from placeholder if empty so user can edit it
-      const _claimDate = document.getElementById('claimDate');
+      // set claim_date value from placeholder if empty so user can edit it
+      const _claimDate = document.getElementById('claim_date');
       if(_claimDate && !_claimDate.value){ _claimDate.value = _claimDate.placeholder || '<?php echo date('Y-m-d'); ?>'; }
 
       // Real-time Age of Vehicle Calculation
@@ -1018,26 +660,26 @@ require_once __DIR__ . '/../backend/index_handler.php';
 
       // show grade select only for used cars and keep it inline with brand
       const gradeFields = document.querySelectorAll('.grade-field');
-      const usedGradeCol = document.getElementById('usedGradeBlock');
+      const usedGradeCol = document.getElementById('used_grade_block');
       function updateGradeVisibility(){
-        const checkedType = document.querySelector('input[name="carType"]:checked');
+        const checkedType = document.querySelector('input[name="car_type"]:checked');
         const used = checkedType && checkedType.value === 'used';
         if(usedGradeCol) usedGradeCol.classList.toggle('d-none', !used);
       }
-      // listen for carType changes
-      document.querySelectorAll('input[name="carType"]').forEach(r => r.addEventListener('change', updateGradeVisibility));
+      // listen for car_type changes
+      document.querySelectorAll('input[name="car_type"]').forEach(r => r.addEventListener('change', updateGradeVisibility));
       updateGradeVisibility();
 
       // Claim action: single-select radios
-      const claimActionRadios = document.querySelectorAll('input[name="claimAction"]');
+      const claimActionRadios = document.querySelectorAll('input[name="claim_action"]');
       const replaceBlock = document.getElementById('replaceBlock');
       const approverSection = document.getElementById('approverSection');
       const partsSection = document.getElementById('partsSection');
-      const claimOtherTextInit = document.getElementById('claimOtherText');
+      const claimOtherTextInit = document.getElementById('claim_other_text');
 
       function updatePartsVisibility(){
         if(!partsSection) return;
-        const sel = document.querySelector('input[name="claimAction"]:checked');
+        const sel = document.querySelector('input[name="claim_action"]:checked');
         const val = sel ? sel.value : '';
         // ซ่อนตารางอะไหล่ถ้าเป็นการเปลี่ยนคัน
         const showParts = val === 'repairBranch' || val === 'sendHQ';
@@ -1050,7 +692,7 @@ require_once __DIR__ . '/../backend/index_handler.php';
       }
 
       function updateClaimActionVisibility(){
-        const sel = document.querySelector('input[name="claimAction"]:checked');
+        const sel = document.querySelector('input[name="claim_action"]:checked');
         const val = sel ? sel.value : '';
         if(replaceBlock) replaceBlock.classList.toggle('d-none', val !== 'replaceVehicle');
         if(claimOtherTextInit) { 
@@ -1062,12 +704,12 @@ require_once __DIR__ . '/../backend/index_handler.php';
       claimActionRadios.forEach(r=> r.addEventListener('change', ()=>{ updatePartsVisibility(); updateClaimActionVisibility(); updateCheckedClasses(); }));
       updatePartsVisibility(); updateClaimActionVisibility();
 
-      // show an 'other' input when partsDelivery = other is selected
-      const partsDeliveryOtherText = document.getElementById('partsDeliveryOtherText');
-      const partsDeliveryRadios = document.querySelectorAll('input[name="partsDelivery"]');
+      // show an 'other' input when parts_delivery = other is selected
+      const partsDeliveryOtherText = document.getElementById('parts_delivery_other_text');
+      const partsDeliveryRadios = document.querySelectorAll('input[name="parts_delivery"]');
       if(partsDeliveryRadios && partsDeliveryOtherText){
         function updatePartsDeliveryOther(){
-          const sel = document.querySelector('input[name="partsDelivery"]:checked');
+          const sel = document.querySelector('input[name="parts_delivery"]:checked');
           const other = sel && sel.value === 'other';
           partsDeliveryOtherText.classList.toggle('d-none', !other);
           if(!other) partsDeliveryOtherText.value = '';

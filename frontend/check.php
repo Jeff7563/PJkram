@@ -1,7 +1,7 @@
 <?php
 // 1. เชื่อมต่อฐานข้อมูล
 require_once __DIR__ . '/../backend/auth.php';
-requireLogin();
+requireAdmin();
 require_once __DIR__ . '/../shared/config/db_connect.php';
 
 try {
