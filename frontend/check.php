@@ -82,6 +82,9 @@ try {
   <?php include __DIR__ . '/../shared/assets/includes/sidebar.php'; ?>
 
   <div class="main-content">
+    <!-- Hidden Iframe for Direct PDF Export -->
+    <iframe name="export_iframe" id="export_iframe" style="display: none;"></iframe>
+
     <div class="container-fluid p-0">
     
       <div class="filter-card">
@@ -328,11 +331,21 @@ try {
       const exportBtnText = document.getElementById('exportBtnText');
       const exportIcon = document.getElementById('exportIcon');
       const exportCols = document.querySelectorAll('.export-col');
-      const rowCheckboxes = document.querySelectorAll('.row-checkbox');
       const selectAll = document.getElementById('selectAll');
+      const rowCheckboxes = document.querySelectorAll('.row-checkbox');
       const exportModal = document.getElementById('exportModal');
 
       let isExportMode = false;
+
+      // Select All Functionality
+      if (selectAll) {
+        selectAll.addEventListener('change', function() {
+          const allCheckboxes = document.querySelectorAll('.row-checkbox');
+          allCheckboxes.forEach(cb => {
+            cb.checked = selectAll.checked;
+          });
+        });
+      }
 
       if (btnExportToggle) {
         btnExportToggle.addEventListener('click', function() {
@@ -405,8 +418,8 @@ try {
       if (exportPDFBtn) {
         exportPDFBtn.addEventListener('click', function() {
           const form = document.getElementById('realExportForm');
-          form.action = '/../backend/export_pdf.php'; 
-          form.target = '_blank'; // <--- เปลี่ยนกลับเป็น _blank เพื่อเปิดแท็บใหม่ที่มีหน้าโหลด
+          form.action = '../backend/export_pdf.php'; 
+          form.target = 'export_iframe'; // <--- ส่งไปที่ Hidden Iframe สั่งพิมพ์ในหน้าเดิม
           form.submit();                  
           
           exportModal.classList.remove('show');

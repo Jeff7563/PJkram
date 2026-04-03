@@ -142,7 +142,7 @@ try {
             <div class="col-12 col-sm-6 col-xl-3">
                 <div class="stat-card bg-gradient-blue text-white">
                     <div class="stat-icon-box"><i class="fas fa-file-invoice"></i></div>
-                    <div class="stat-label">Total Claims</div>
+                    <div class="stat-label">การเคลมทั้งหมด</div>
                     <div class="stat-number"><?= number_format($totalClaims) ?></div>
                     <div class="fs-xs opacity-75">เคสทั้งหมดในระบบ</div>
                 </div>
@@ -150,7 +150,7 @@ try {
             <div class="col-12 col-sm-6 col-xl-3">
                 <div class="stat-card bg-gradient-orange text-white">
                     <div class="stat-icon-box"><i class="fas fa-clock"></i></div>
-                    <div class="stat-label">Pending Approval</div>
+                    <div class="stat-label">รอการอนุมัติ</div>
                     <div class="stat-number"><?= number_format($pending) ?></div>
                     <div class="fs-xs opacity-75">รอตรวจสอบและแก้ไข</div>
                 </div>
@@ -158,7 +158,7 @@ try {
             <div class="col-12 col-sm-6 col-xl-3">
                 <div class="stat-card bg-gradient-green text-white">
                     <div class="stat-icon-box"><i class="fas fa-check-circle"></i></div>
-                    <div class="stat-label">Approved</div>
+                    <div class="stat-label">อนุมัติแล้ว</div>
                     <div class="stat-number"><?= number_format($approved) ?></div>
                     <div class="fs-xs opacity-75">อนุมัติแล้วทั้งหมด</div>
                 </div>
@@ -166,7 +166,7 @@ try {
             <div class="col-12 col-sm-6 col-xl-3">
                 <div class="stat-card bg-gradient-red text-white">
                     <div class="stat-icon-box"><i class="fas fa-times-circle"></i></div>
-                    <div class="stat-label">Rejected</div>
+                    <div class="stat-label">ไม่อนุมัติ</div>
                     <div class="stat-number"><?= number_format($rejected) ?></div>
                     <div class="fs-xs opacity-75">ไม่อนุมัติ / ยกเลิก</div>
                 </div>
