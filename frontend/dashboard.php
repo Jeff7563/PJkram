@@ -57,70 +57,10 @@ try {
     <title>Dashboard - ระบบจัดการเคลม</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../shared/assets/css/theme.css">
-    <link rel="stylesheet" href="../shared/assets/css/styles-dashboard.css">
+    <link rel="stylesheet" href="../shared/assets/css/dashboard_v3.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        .stat-card {
-            border-radius: 20px;
-            padding: 25px;
-            color: white;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            border: none;
-        }
-        .stat-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
-        }
-        .stat-card::after {
-            content: "";
-            position: absolute;
-            top: -20px;
-            right: -20px;
-            width: 100px;
-            height: 100px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50%;
-        }
-        .bg-gradient-orange { background: linear-gradient(135deg, #f2722b, #ff9b50); }
-        .bg-gradient-blue   { background: linear-gradient(135deg, #2c3e50, #4ca1af); }
-        .bg-gradient-green  { background: linear-gradient(135deg, #00b551, #00e676); }
-        .bg-gradient-red    { background: linear-gradient(135deg, #e74c3c, #ff5252); }
-        
-        .stat-number { font-size: 2.2rem; font-weight: 700; line-height: 1.2; margin: 10px 0; }
-        .stat-label { font-size: 1rem; opacity: 0.85; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
-        .stat-icon-box { 
-            width: 45px; height: 45px; background: rgba(255,255,255,0.2); 
-            border-radius: 12px; display: flex; align-items: center; 
-            justify-content: center; font-size: 1.2rem; margin-bottom: 5px;
-        }
-        
-        .chart-container {
-            background: white;
-            border-radius: 24px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
-            margin-bottom: 30px;
-            border: 1px solid #f0f0f0;
-        }
-        .section-title { font-weight: 700; font-size: 1.25rem; margin-bottom: 25px; color: #2c3e50; display: flex; align-items: center; gap: 10px; }
-        .card-table { border-radius: 20px; overflow: hidden; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.04); }
-        .table thead th { background: #f8f9fa; border-bottom: 1px solid #eee; padding: 15px 20px; font-weight: 600; color: #666; }
-        .table tbody td { padding: 18px 20px; border-bottom: 1px solid #f5f5f5; vertical-align: middle; }
-        
-        .badge-status {
-            padding: 6px 12px; border-radius: 30px; font-size: 0.75rem; font-weight: 600;
-        }
-        .status-pending { background: #fff7ed; color: #f2722b; }
-        .status-approved { background: #f0fdf4; color: #00b551; }
-        .status-rejected { background: #fef2f2; color: #e74c3c; }
-    </style>
+
 </head>
 <body class="bg-light">
 
@@ -131,7 +71,7 @@ try {
         <div class="d-flex justify-content-between align-items-center mb-5 mt-2">
             <div>
                 <h2 class="fw-bold m-0" style="color: #1e293b; letter-spacing: -0.5px;">Dashboard</h2>
-                <p class="text-muted m-0 mt-1">ยินดีต้อนรับกลับ, 🎬 ภาพรวมระบบจัดการเคลมของคุณ</p>
+                <p class="text-muted m-0 mt-1">ภาพรวมระบบจัดการเคลม</p>
             </div>
             <div class="bg-white px-4 py-2 rounded-pill shadow-sm border">
                 <span class="text-muted fw-500 fs-sm"><i class="far fa-calendar-alt me-2"></i><?= date('d M Y H:i') ?></span>

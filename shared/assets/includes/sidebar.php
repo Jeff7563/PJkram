@@ -109,7 +109,7 @@
         </div>
     </div>
     <a href="<?= BASE_URL_FRONTEND ?>/logout.php" class="btn-logout">
-        <span>🚪 ออกจากระบบ</span>
+        <span>ออกจากระบบ</span>
     </a>
 </div>
   <?php endif; ?>

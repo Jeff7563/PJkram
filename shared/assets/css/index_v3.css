@@ -1,3 +1,547 @@
+/*
+ * styles-claim_form.css — Bootstrap 5.3 overrides + Brand theming
+ * ใช้ Bootstrap class เป็นหลัก (row, col, form-control, etc.)
+ * ไฟล์นี้เพิ่มเติม: สี, เงา, ขอบกลม, transitions เท่านั้น
+ */
+
+:root {
+  --primary-orange: #f2722b;
+  --light-orange: #f9b27d;
+  --bg-color: #fcf9f2;
+  --btn-green: #00b551;
+  --btn-red: #ff1e1e;
+  --text-color: #333333;
+}
+
+/* === Body & Background === */
+body {
+  background-color: var(--bg-color);
+}
+
+.main-content {
+  background-color: var(--bg-color);
+}
+
+/* === Card === */
+.card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+/* === Layout / Tabs polish === */
+#claimForm {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.tab-content {
+  padding-top: 0.75rem;
+}
+
+.nav-tabs {
+  border-bottom: 0;
+  margin-bottom: 1rem;
+}
+
+.nav-tabs .nav-link {
+  border: 1px solid #ececec;
+  border-radius: 0.75rem;
+  margin-right: 0.35rem;
+  color: #555;
+  background: #fff;
+  font-weight: 600;
+  padding: 0.65rem 1rem;
+}
+
+.nav-tabs .nav-link.active {
+  color: #fff;
+  background: var(--primary-orange);
+  border-color: var(--primary-orange);
+}
+
+.nav-tabs .nav-link:not(.active):hover {
+  background: #fafafa;
+}
+
+/* === Horizontal inline label layout === */
+.form-row-item {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 0.82rem;
+}
+
+.form-row-item .form-label {
+  margin-bottom: 0;
+  font-weight: 700;
+  color: #444;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-row-item .form-label i {
+  color: var(--primary-orange);
+  width: 18px;
+  text-align: center;
+}
+
+.form-row-item .form-control,
+.form-row-item .form-select,
+.form-row-item .form-check {
+  width: 100%;
+}
+
+/* === Custom Layout Grid (More stable than standard Bootstrap row here) === */
+.claim-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.8rem 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.claim-form-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.8rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .claim-form-grid, .claim-form-grid-3 {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+}
+
+/* === Vertical Field Layout (Label on Top) === */
+.field-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.82rem;
+}
+
+.field-vertical .form-label {
+  margin-bottom: 0;
+  font-weight: 700;
+  color: #444;
+}
+
+@media (max-width: 600px) {
+  .form-row-item {
+    display: block;
+  }
+}
+
+/* === Form Controls (Bootstrap overrides) === */
+.form-label {
+  font-weight: 600;
+  color: #222;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+
+.form-control,
+.form-select {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 0.65rem 0.875rem;
+  font-family: 'Kanit', sans-serif;
+  font-size: 0.95rem;
+  color: #333;
+  background-color: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--primary-orange);
+  box-shadow: 0 0 0 0.2rem rgba(242, 114, 43, 0.15);
+  outline: none;
+}
+
+.form-control::placeholder {
+  color: #999;
+  font-style: italic;
+}
+
+/* === Checkboxes & Radios === */
+.form-check-input {
+  width: 1.25em;
+  height: 1.25em;
+  border: 2px solid #ccc;
+  border-radius: 0.25em;
+  cursor: pointer;
+  accent-color: var(--primary-orange);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-check-input:checked {
+  background-color: var(--primary-orange);
+  border-color: var(--primary-orange);
+}
+
+.form-check-input:focus {
+  border-color: var(--primary-orange);
+  box-shadow: 0 0 0 0.25rem rgba(242, 114, 43, 0.25);
+}
+
+.form-check-label {
+  cursor: pointer;
+  user-select: none;
+  font-weight: 500;
+  margin-bottom: 0;
+}
+
+/* === Buttons === */
+.btn {
+  font-family: 'Kanit', sans-serif;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background-color: var(--primary-orange);
+  border-color: var(--primary-orange);
+}
+
+.btn-primary:hover {
+  background-color: #da5400;
+  border-color: #da5400;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(242, 114, 43, 0.25);
+}
+
+.btn-reset {
+  background-color: #e0e0e0;
+  border-color: #e0e0e0;
+  color: #333;
+}
+
+.btn-success:hover {
+  background-color: #009041;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 181, 81, 0.25);
+}
+
+.btn-parts-upload {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 22px;
+  background: #00b551;
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.92rem;
+  border: none;
+  outline: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Kanit', sans-serif;
+  box-shadow: 0 4px 12px rgba(0,181,81,0.28);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.btn-parts-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 22px;
+  background: var(--primary-orange, #f2722b);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.92rem;
+  border: none;
+  outline: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Kanit', sans-serif;
+  box-shadow: 0 4px 12px rgba(242,114,43,0.28);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+/* === Responsive Adjustments === */
+@media (max-width: 768px) {
+  .form-label {
+    font-size: 0.9rem;
+  }
+
+  .form-control,
+  .form-select {
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .btn {
+    width: 100%;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .card {
+    padding: 1rem;
+  }
+}
+
+/* === Textarea === */
+textarea {
+  width: 100%;
+  padding: 0.75rem 0.875rem;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  font-size: 0.95rem;
+  font-family: 'Kanit', sans-serif;
+  min-height: 100px;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+textarea:focus {
+  border-color: var(--primary-orange);
+  box-shadow: 0 0 0 0.2rem rgba(242, 114, 43, 0.15);
+  outline: none;
+}
+
+/* === Tables === */
+.table {
+  font-family: 'Kanit', sans-serif;
+  font-size: 0.95rem;
+}
+
+.table thead th {
+  background-color: #f8f8f8;
+  color: #333;
+  font-weight: 600;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.table tbody tr:hover {
+  background-color: rgba(242, 114, 43, 0.03);
+}
+
+.table td {
+  vertical-align: middle;
+  padding: 0.75rem;
+}
+
+/* === Image Preview Container === */
+.image-preview-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.preview-item {
+  position: relative;
+  width: 100px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.preview-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.preview-item .btn-remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: rgba(255, 30, 30, 0.85);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.2s;
+}
+
+.preview-item .btn-remove:hover {
+  background: rgba(255, 30, 30, 1);
+}
+
+/* === Utility Classes === */
+.d-none {
+  display: none !important;
+}
+
+.d-block {
+  display: block !important;
+}
+
+.mt-3 {
+  margin-top: 1rem;
+}
+
+.mb-3 {
+  margin-bottom: 1rem;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+/* === Replacement Details Redesign === */
+.section-sub-card {
+  background: #fdfdfd;
+  border: 1px solid #f1f1f1;
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.section-sub-title {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-sub-title i {
+  color: var(--primary-orange);
+}
+
+.icon-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #444;
+}
+
+.icon-label i {
+  width: 16px;
+  text-align: center;
+  color: var(--primary-orange);
+  font-size: 0.85rem;
+}
+
+.money-input-group .input-group-text {
+  background-color: #fffaf5;
+  border-color: #e0e0e0;
+  color: #666;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.money-input-group input {
+  font-weight: 700;
+  color: #222;
+  text-align: right;
+  letter-spacing: 0.5px;
+}
+
+.grade-select-wrapper {
+  transition: all 0.3s ease;
+}
+
+/* Specific highlight for Replacement Block */
+#replaceBlock {
+  border-top: 4px solid var(--primary-orange);
+}
+
+#replaceBlock .fw-bold.mb-4 {
+  color: var(--primary-orange) !important;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#replaceBlock .fw-bold.mb-4 i {
+  font-size: 1.25rem;
+}
+
+/* === Editor Log Section (Mockup Matching) === */
+.edit-log-card {
+    border: 2px solid #ff7a32 !important;
+    border-radius: 20px !important;
+    padding: 2rem !important;
+    background: #ffffff !important;
+    box-shadow: 0 4px 20px rgba(255, 122, 50, 0.08) !important;
+}
+
+.edit-log-title {
+    color: #ff7a32 !important;
+    font-weight: 700 !important;
+    font-size: 1.1rem !important;
+    margin-bottom: 1rem !important;
+}
+
+.pill-select {
+    border: 1.5px solid #ff7a32 !important;
+    border-radius: 30px !important;
+    padding: 0.5rem 1.5rem !important;
+    color: #ff7a32 !important;
+    font-weight: 600 !important;
+    background-color: #fff !important;
+}
+
+.pill-textarea {
+    background-color: #f4f5f7 !important;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 15px !important;
+    padding: 1rem !important;
+    min-height: 120px;
+}
+
+.pill-input-sm {
+    background-color: #f4f5f7 !important;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 20px !important;
+    padding: 0.4rem 1.2rem !important;
+    font-size: 0.9rem !important;
+}
+
+.btn-pill-cancel {
+    border: 1px solid #d1d5db !important;
+    border-radius: 12px !important;
+    padding: 0.6rem 1.5rem !important;
+    color: #6b7280 !important;
+    background: #fff !important;
+    font-weight: 500 !important;
+}
+
+.btn-pill-save {
+    background: #00b551 !important;
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 0.6rem 2rem !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 12px rgba(0, 181, 81, 0.2) !important;
+}
 :root {
   --orange: #e65100;
   --orange-600: #ff7a1a;
@@ -1400,4 +1944,193 @@ table#partsTable {
   .main-content {
     padding: 16px !important;
   }
+}
+
+/* Styles extracted from index.php for PJ Claim V3 */
+:root {
+  --primary-orange: #ff8533;
+  --success-green: #00b050;
+}
+
+.section-card {
+  background: #fff !important;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important;
+  border: 1px solid #eee;
+  display: block !important;
+  position: relative;
+  z-index: 1;
+}
+
+.section-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 20px;
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-title i {
+  display: inline-block !important; /* Make icon visible but styled */
+  color: var(--primary-orange);
+  width: 20px;
+  text-align: center;
+}
+
+/* Note Box Styles */
+.note-box {
+  background-color: #fff9f2;
+  border: 1px solid #ffe8d1;
+  border-radius: 10px;
+  padding: 18px 22px;
+  margin-top: 20px;
+  font-size: 0.92rem;
+  color: #333;
+}
+
+.note-box .note-header {
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: #d35400;
+}
+
+.note-box ol {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.note-box li {
+  margin-bottom: 6px;
+}
+
+/* Button Styles */
+.btn-orange {
+  background-color: var(--primary-orange) !important;
+  color: #fff !important;
+  border: none;
+  transition: all 0.2s;
+  font-weight: 600;
+}
+
+.btn-orange:hover {
+  background-color: #e6762d !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(230, 118, 45, 0.2);
+}
+
+.btn-green {
+  background-color: var(--success-green) !important;
+  color: #fff !important;
+  border: none;
+  transition: all 0.2s;
+  font-weight: 600;
+}
+
+.btn-green:hover {
+  background-color: #008f41 !important;
+  transform: translateY(-1px);
+}
+
+/* Radio Pill Styling (Ensure same look as mockup) */
+.radio-pill-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.radio-pill-group .form-check {
+  background: #fff;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 50px;
+  padding: 10px 24px 10px 44px;
+  min-width: 140px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.radio-pill-group .form-check:hover {
+  border-color: var(--primary-orange);
+  background-color: #fffaf7;
+}
+
+.radio-pill-group .form-check-input {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: 0;
+  cursor: pointer;
+}
+
+.radio-pill-group .form-check:has(.form-check-input:checked) {
+  border-color: var(--primary-orange);
+  background-color: #fffaf7;
+  box-shadow: 0 4px 12px rgba(255, 133, 51, 0.1);
+}
+
+/* Image Uploader */
+.image-uploader .upload-card {
+  border: 2px dashed #ddd;
+  border-radius: 14px;
+  padding: 30px;
+  background: #fafafa;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.image-uploader .upload-card:hover {
+  border-color: var(--primary-orange);
+  background: #fff;
+}
+
+.image-uploader .upload-placeholder {
+  color: #555;
+  font-weight: 600;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.image-uploader .upload-placeholder i {
+  color: var(--primary-orange);
+  font-size: 2.2rem;
+}
+
+/* Parts Table */
+#partsTable thead th {
+  background-color: #f8f9fa;
+  color: #333;
+  font-weight: 700;
+  border: none;
+  padding: 15px;
+}
+
+.btn-remove-part-orange {
+  background: var(--primary-orange);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  transition: all 0.2s;
+}
+
+.btn-remove-part-orange:hover {
+  background: #e6762d;
+  transform: scale(1.1);
+}
+
+.attach-count {
+  color: var(--primary-orange);
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: block;
+  margin-top: 6px;
 }

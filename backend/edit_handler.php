@@ -21,8 +21,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // 2. จัดการรูปภาพ (สร้าง Folder อัตโนมัติเหมือน index_handler.php)
         $finalImages = $_POST['existing_images'] ?? [];
-        
-        // กำหนดโฟลเดอร์สำหรับเคสนี้ (YYYY-MM-DD/CXXX) โดยใช้วันที่ที่สร้างรายการครั้งแรก
+
+        // --- 1. ลบไฟล์ภาพออกจากเครื่องจริง (Disk Delete) ---
+        $oldImagesRaw = !empty($old_data['claim_images']) ? $old_data['claim_images'] : '[]';
+        $oldImagesArr = json_decode($oldImagesRaw, true);
+        if (is_array($oldImagesArr)) {
+            foreach ($oldImagesArr as $oldImgPath) {
+                if (!in_array($oldImgPath, $finalImages)) {
+                    $fullPath = __DIR__ . '/../' . $oldImgPath;
+                    if (is_file($fullPath)) { @unlink($fullPath); }
+                }
+            }
+        }
+
+        // --- 2. จัดการรูปภาพใหม่ที่อัปโหลดเพิ่ม ---
         $claimDateForFolder = !empty($old_data['claim_date']) && $old_data['claim_date'] !== '0000-00-00' ? date('Y-m-d', strtotime($old_data['claim_date'])) : date('Y-m-d');
         $docIdFormat = "C" . str_pad($id, 3, '0', STR_PAD_LEFT);
         $uploadFolder = "{$claimDateForFolder}/{$docIdFormat}";
@@ -34,14 +46,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $safeVin = preg_replace('/[^a-zA-Z0-9_-]/', '_', $vinInput);
 
         $fieldLabels = [
-            'imgFullCar'  => 'ภาพรถทั้งคัน',
-            'imgSpot'     => 'ภาพจุดปัญหา',
-            'imgPart'     => 'ภาพชิ้นส่วน',
-            'imgWarranty' => 'ภาพสมุดรับประกัน',
-            'imgOdometer' => 'ภาพเลขไมล์',
-            'imgEstimate' => 'ภาพใบประเมิน',
-            'imgParts'    => 'ภาพอะไหล่ที่เคลม',
-            'claim_images' => 'ภาพเพิ่มเติม'
+            'imgFullCar'  => 'ภาพรถทั้งคัน', 'imgSpot' => 'ภาพจุดปัญหา', 'imgPart' => 'ภาพชิ้นส่วน',
+            'imgWarranty' => 'ภาพสมุดรับประกัน', 'imgOdometer' => 'ภาพเลขไมล์', 'imgEstimate' => 'ภาพใบประเมิน',
+            'imgParts' => 'ภาพอะไหล่ที่เคลม', 'claim_images' => 'ภาพเพิ่มเติม'
         ];
 
         foreach ($_FILES as $key => $fileData) {
@@ -50,8 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 for ($i = 0; $i < count($fileData['name']); $i++) {
                     if ($fileData['error'][$i] === UPLOAD_ERR_OK && !empty($fileData['name'][$i])) {
                         $ext = pathinfo($fileData['name'][$i], PATHINFO_EXTENSION);
-                        $uniqueId = ($i + 1) . '_' . rand(10, 99);
-                        $newFileName = $prefix . '_' . $safeVin . '_' . $uniqueId . '.' . $ext;
+                        $newFileName = $prefix . '_' . $safeVin . '_' . ($i + 1) . '_' . rand(10,99) . '.' . $ext;
                         if (move_uploaded_file($fileData['tmp_name'][$i], $uploadDir . $newFileName)) {
                             $finalImages[] = 'uploads/claims/' . $uploadFolder . '/' . $newFileName; 
                         }
@@ -60,8 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 if ($fileData['error'] === UPLOAD_ERR_OK && !empty($fileData['name'])) {
                     $ext = pathinfo($fileData['name'], PATHINFO_EXTENSION);
-                    $uniqueId = '1_' . rand(10, 99);
-                    $newFileName = $prefix . '_' . $safeVin . '_' . $uniqueId . '.' . $ext;
+                    $newFileName = $prefix . '_' . $safeVin . '_1_' . rand(10,99) . '.' . $ext;
                     if (move_uploaded_file($fileData['tmp_name'], $uploadDir . $newFileName)) {
                         $finalImages[] = 'uploads/claims/' . $uploadFolder . '/' . $newFileName; 
                     }

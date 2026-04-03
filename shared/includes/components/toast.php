@@ -1,6 +1,6 @@
 <?php
 /**
- * toast.php - ระบบแจ้งเตือน (Toast)
+ * toast.php - ระบบแจ้งเตือน 
  * ใช้เรียกผ่าน window.showToast(message, type)
  */
 ?>

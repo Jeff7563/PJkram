@@ -79,9 +79,21 @@ try {
             break;
           }
         }
-        if (!$matched) $uncategorizedImages[] = $img;
+        if (!$matched) {
+          $uncategorizedImages[] = $img;
+        }
       }
     }
+
+    // Helper function for counting total in a category (existing + new staged)
+    // This will be handled partly in JS, but for PHP render:
+    $getCatCount = function($prefix) use ($groupedImages) {
+        return count($groupedImages[$prefix] ?? []);
+    };
+    $getOtherCount = function() use ($uncategorizedImages) {
+        return count($uncategorizedImages);
+    };
+
 
 } catch (Exception $e) {
     die("เกิดข้อผิดพลาด: " . $e->getMessage());
@@ -95,67 +107,10 @@ try {
     <title>แก้ไขข้อมูลเคลม - ระบบจัดการฟอร์มส่งเคลม</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../shared/assets/css/theme.css">
-    <link rel="stylesheet" href="../shared/assets/css/styles-edit_claim.css">
+    <link rel="stylesheet" href="../shared/assets/css/edit_v3.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="../shared/assets/js/utils.js"></script>
-    <style>
-        :root {
-            --primary-orange: #ff8533;
-            --success-green: #00b050;
-        }
-        body { background-color: #f8f9fa; font-family: 'Kanit', sans-serif; }
-        .edit-card { 
-            background: white; border-radius: 12px; padding: 25px; 
-            box-shadow: 0 2px 15px rgba(0,0,0,0.08); border: 1px solid #eee;
-            margin-bottom: 24px;
-        }
-        .section-title {
-            font-size: 1.1rem; font-weight: 700; color: #000; 
-            border-bottom: 2px solid #f2f2f2; padding-bottom: 12px; margin-bottom: 20px;
-            display: flex; align-items: center; gap: 8px;
-        }
-        /* Note Box Styles */
-        .note-box {
-          background-color: #fff9f2;
-          border: 1px solid #ffe8d1;
-          border-radius: 10px;
-          padding: 15px 20px;
-          margin-top: 20px;
-          font-size: 0.95rem;
-          color: #333;
-        }
-        .note-box .note-header { font-weight: 800; margin-bottom: 8px; }
-        /* V3 Buttons */
-        .btn-orange { background-color: var(--primary-orange); color: #fff; border: none; }
-        .btn-orange:hover { background-color: #e6762d; color: #fff; }
-        .btn-green { background-color: var(--success-green); color: #fff; border: none; }
-        .btn-green:hover { background-color: #008f41; color: #fff; }
-        .btn-remove-part-orange {
-          background: var(--primary-orange);
-          color: #fff; border: none; border-radius: 6px;
-          width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
-        }
-        /* Radio Pill Styling */
-        .radio-pill-group { display: flex; flex-wrap: wrap; gap: 10px; }
-        .radio-pill-group .form-check {
-          background: #fff; border: 1px solid #ddd; border-radius: 50px;
-          padding: 8px 18px 8px 38px; min-width: 120px; cursor: pointer; position: relative;
-        }
-        .radio-pill-group .form-check:hover { border-color: var(--primary-orange); }
-        .radio-pill-group .form-check-input {
-          position: absolute; left: 15px; top: 50%; transform: translateY(-50%); margin: 0;
-        }
-        .radio-pill-group .form-check:has(.form-check-input:checked) {
-          border-color: var(--primary-orange); background-color: #fffaf7;
-        }
-        .attach-count { color: var(--primary-orange); font-weight: 700; }
-        .gallery-item:hover .img-controls { opacity: 1 !important; transform: translateY(0); }
-        .img-controls { transform: translateY(-5px); transition: all 0.2s ease-in-out; }
-        .btn-xs { padding: 0.1rem 0.25rem; font-size: 0.75rem; line-height: 1; }
-        .category-card:hover { border-color: #ff8533 !important; background-color: #fffaf7 !important; }
-        .gallery-item img { transition: transform 0.3s; }
-        .gallery-item:hover img { transform: scale(1.05); }
-    </style>
+
 </head>
 <body>
 
@@ -544,6 +499,9 @@ try {
                                                 <i class="fas <?= $catInfo['icon'] ?>" style="color: <?= $catInfo['color'] ?>; font-size: 14px;"></i>
                                             </div>
                                             <span class="fw-bold" style="font-size: 0.9rem;"><?= $catName ?></span>
+                                            <span class="badge rounded-pill bg-light text-dark border cat-counter" id="count-<?= $fieldId ?>" style="font-size: 0.7rem; font-weight: normal;">
+                                                <?= $getCatCount($catName) ?>
+                                            </span>
                                             
                                             <label class="ms-auto mb-0 cursor-pointer text-primary" title="เพิ่มรูปภาพ">
                                                 <i class="fas fa-plus-circle fa-lg"></i>
@@ -561,12 +519,14 @@ try {
                                                 <input type="hidden" name="existing_images[]" value="<?= htmlspecialchars($imgPath) ?>">
                                                 <img src="../<?= htmlspecialchars($imgPath) ?>" class="preview-img cursor-pointer" style="width: 100%; height: 100%; object-fit: cover;">
                                                 
-                                                <!-- Download (Bottom-Right like verify.php) -->
+                                                <span class="badge bg-dark position-absolute top-0 start-0 m-1 opacity-75" style="font-size: 7px; padding: 2px 4px;">เดิม</span>
+
+                                                <!-- Download -->
                                                 <a href="../<?= htmlspecialchars($imgPath) ?>" download="<?= $dlName ?>" class="position-absolute bottom-0 end-0 d-flex align-items-center justify-content-center bg-dark text-white opacity-75" onclick="event.stopPropagation();" title="ดาวน์โหลด" style="width: 22px; height: 22px; font-size: 10px; border-radius: 8px 0 0 0; text-decoration: none;">
                                                     <i class="fas fa-download"></i>
                                                 </a>
 
-                                                <!-- Delete (Top-Right) -->
+                                                <!-- Delete -->
                                                 <button type="button" class="btn-remove-existing position-absolute top-0 end-0 d-flex align-items-center justify-content-center bg-danger text-white border-0 opacity-75" onclick="event.stopPropagation();" title="ลบออก" style="width: 22px; height: 22px; font-size: 10px; border-radius: 0 0 0 8px;">
                                                     <i class="fas fa-times"></i>
                                                 </button>
@@ -593,6 +553,9 @@ try {
                                                 <i class="fas fa-images" style="color: #6c757d; font-size: 14px;"></i>
                                             </div>
                                             <span class="fw-bold" style="font-size: 0.9rem;">รูปอื่นๆ / เดิม</span>
+                                            <span class="badge rounded-pill bg-light text-dark border cat-counter" id="count-<?= $fieldId ?>" style="font-size: 0.7rem; font-weight: normal;">
+                                                <?= $getOtherCount() ?>
+                                            </span>
                                             
                                             <label class="ms-auto mb-0 cursor-pointer text-primary" title="เพิ่มรูปภาพ">
                                                 <i class="fas fa-plus-circle fa-lg"></i>
@@ -610,12 +573,14 @@ try {
                                                 <input type="hidden" name="existing_images[]" value="<?= htmlspecialchars($imgPath) ?>">
                                                 <img src="../<?= htmlspecialchars($imgPath) ?>" class="preview-img cursor-pointer" style="width: 100%; height: 100%; object-fit: cover;">
                                                 
-                                                <!-- Download (Bottom-Right like verify.php) -->
+                                                <span class="badge bg-dark position-absolute top-0 start-0 m-1 opacity-75" style="font-size: 7px; padding: 2px 4px;">เดิม</span>
+
+                                                <!-- Download -->
                                                 <a href="../<?= htmlspecialchars($imgPath) ?>" download="<?= $dlName ?>" class="position-absolute bottom-0 end-0 d-flex align-items-center justify-content-center bg-dark text-white opacity-75" onclick="event.stopPropagation();" title="ดาวน์โหลด" style="width: 22px; height: 22px; font-size: 10px; border-radius: 8px 0 0 0; text-decoration: none;">
                                                     <i class="fas fa-download"></i>
                                                 </a>
 
-                                                <!-- Delete (Top-Right) -->
+                                                <!-- Delete -->
                                                 <button type="button" class="btn-remove-existing position-absolute top-0 end-0 d-flex align-items-center justify-content-center bg-danger text-white border-0 opacity-75" onclick="event.stopPropagation();" title="ลบออก" style="width: 22px; height: 22px; font-size: 10px; border-radius: 0 0 0 8px;">
                                                     <i class="fas fa-times"></i>
                                                 </button>
@@ -834,7 +799,9 @@ try {
                                 </button>
                                 <span class="badge bg-success position-absolute bottom-0 start-0 m-1" style="font-size:8px;">ใหม่</span>
                             `;
-                            div.querySelector('.btn-remove-new').onclick = () => {
+                            div.querySelector('.btn-remove-new').onclick = (e) => {
+                                e.stopPropagation();
+                                // ลบออกจาก Object ที่รอส่ง
                                 categoryUploads[fieldId] = categoryUploads[fieldId].filter(f => f.id !== fileId);
                                 div.remove();
                                 updateImgCountBadge();
@@ -866,8 +833,16 @@ try {
                 if (totalText) {
                     totalText.textContent = `รวมทั้งหมด ${count} รูป`;
                 }
+
+                // Update per-category counts
+                document.querySelectorAll('.category-card').forEach(card => {
+                    const counter = card.querySelector('.cat-counter');
+                    const items = card.querySelectorAll('.gallery-item').length;
+                    if (counter) counter.textContent = items;
+                });
             }
             updateImgCountBadge();
+
 
             // --- Lightbox ---
             const imageModal = document.getElementById('image-modal');

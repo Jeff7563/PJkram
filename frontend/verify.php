@@ -96,7 +96,7 @@ try {
   <title>ตรวจสอบข้อมูลเคลม - <?= $doc_id ?></title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../shared/assets/css/theme.css">
-  <link rel="stylesheet" href="../shared/assets/css/styles-edit_claim.css">
+  <link rel="stylesheet" href="../shared/assets/css/edit_v3.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <script src="../shared/assets/js/utils.js"></script>
 </head>

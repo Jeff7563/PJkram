@@ -1,0 +1,77 @@
+
+/* Styles extracted from dashboard.php for PJ Claim V3 */
+.stat-card {
+    border-radius: 20px !important;
+    padding: 25px !important;
+    color: white !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+    display: flex !important;
+    flex-direction: column !important;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+    border: none !important;
+}
+
+.stat-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important;
+}
+
+.stat-card::after {
+    content: "";
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 100px;
+    height: 100px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 50%;
+}
+
+.bg-gradient-orange { background: linear-gradient(135deg, #f2722b, #ff9b50) !important; }
+.bg-gradient-blue   { background: linear-gradient(135deg, #2c3e50, #4ca1af) !important; }
+.bg-gradient-green  { background: linear-gradient(135deg, #00b551, #00e676) !important; }
+.bg-gradient-red    { background: linear-gradient(135deg, #e74c3c, #ff5252) !important; }
+
+.stat-number { font-size: 2.2rem; font-weight: 700; line-height: 1.2; margin: 10px 0; }
+.stat-label { font-size: 1rem; opacity: 0.9; font-weight: 500; text-transform: uppercase; letter-spacing: 0.6px; }
+.stat-icon-box { 
+    width: 48px; height: 48px; background: rgba(255,255,255,0.25); 
+    border-radius: 14px; display: flex !important; align-items: center; 
+    justify-content: center; font-size: 1.3rem; margin-bottom: 8px;
+}
+
+.chart-container {
+    background: white !important;
+    border-radius: 24px !important;
+    padding: 30px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05) !important;
+    margin-bottom: 30px;
+    border: 1px solid #f2f2f2 !important;
+}
+
+.section-title { font-weight: 700; font-size: 1.3rem; margin-bottom: 25px; color: #1e293b; display: flex !important; align-items: center; gap: 12px; }
+.card-table { border-radius: 20px; overflow: hidden; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+
+.table thead th { 
+    background: #f8fafc !important; 
+    border-bottom: 2px solid #f1f5f9 !important; 
+    padding: 18px 20px !important; 
+    font-weight: 700 !important; 
+    color: #475569 !important; 
+}
+
+.table tbody td { 
+    padding: 20px !important; 
+    border-bottom: 1px solid #f1f5f9; 
+    vertical-align: middle; 
+}
+
+.badge-status {
+    padding: 7px 14px; border-radius: 50px; font-size: 0.78rem; font-weight: 700;
+}
+.status-pending { background: #fff7ed !important; color: #f2722b !important; }
+.status-approved { background: #f0fdf4 !important; color: #00b551 !important; }
+.status-rejected { background: #fef2f2 !important; color: #e74c3c !important; }

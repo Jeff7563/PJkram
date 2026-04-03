@@ -14,9 +14,7 @@ $action = $_POST['action'] ?? $_GET['action'] ?? '';
 try {
     $pdo = getServiceCenterPDO();
 
-    // ============================================================
     // LIST — ดึงรายชื่อ User ทั้งหมด
-    // ============================================================
     if ($action === 'list') {
         $stmt = $pdo->query("SELECT id, employee_id, name, signature, role, branch, tags, is_active, created_at, updated_at FROM users ORDER BY id ASC");
         $users = $stmt->fetchAll();
@@ -24,9 +22,7 @@ try {
         exit;
     }
 
-    // ============================================================
     // CREATE — เพิ่ม User ใหม่
-    // ============================================================
     if ($action === 'create') {
         $employee_id = trim($_POST['employee_id'] ?? '');
         $name = trim($_POST['name'] ?? '');

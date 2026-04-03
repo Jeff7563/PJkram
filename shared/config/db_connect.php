@@ -1,7 +1,7 @@
 <?php
 $dbConfig = [
     'enabled' => true,
-    'host' => 'db',            // หากใช้ Docker-compose ให้ใช้ 'db', หากรัน Local/XAMPP ให้เปลี่ยนเป็น 'localhost'
+    'host' => 'db',            // หากใช้ Docker-compose ให้ใช้ 'db'
     'port' => 3306,
     'dbname' => 'service_center', 
     'user' => 'root',
