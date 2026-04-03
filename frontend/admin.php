@@ -27,10 +27,10 @@ $currentUser = getCurrentUser();
           <p>เพิ่ม แก้ไข และกำหนดสิทธิ์การใช้งานระบบเคลม</p>
         </div>
         <div class="d-flex gap-2">
-          <button class="btn btn-light fw-bold px-3 py-2" style="border-radius: 12px; font-size: 0.9rem; color: var(--orange); border:none; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" 
-                  data-bs-toggle="modal" data-bs-target="#branchModal">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="vertical-align:-2px; margin-right:4px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            เพิ่มสาขา
+          <button class="btn btn-light fw-bold px-3 py-2" style="border-radius: 12px; font-size: 0.9rem; color: #1565c0; border:none; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" 
+                  data-bs-toggle="modal" data-bs-target="#masterDataModal">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="vertical-align:-2px; margin-right:4px;"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            จัดการข้อมูล
           </button>
           <button class="btn-add-user" data-bs-toggle="modal" data-bs-target="#userModal" onclick="openCreateModal()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-2px; margin-right:6px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -134,7 +134,10 @@ $currentUser = getCurrentUser();
                   <input type="checkbox" class="form-check-input tag-check" value="sendHQ"> ส่งซ่อมที่ สนญ.
                 </label>
                 <label class="form-check-tag">
-                  <input type="checkbox" class="form-check-input tag-check" value="replaceVehicle"> เปลี่ยนคัน
+                  <input type="checkbox" class="form-check-input tag-check" value="replaceVehicleNew"> เปลี่ยนคัน - รถใหม่
+                </label>
+                <label class="form-check-tag">
+                  <input type="checkbox" class="form-check-input tag-check" value="replaceVehicleUsed"> เปลี่ยนคัน - รถมือสอง
                 </label>
               </div>
             </div>
@@ -149,8 +152,6 @@ $currentUser = getCurrentUser();
         </div>
       </div>
     </div>
-  </div>
-
   </div>
 
   <!-- Modal: Add/Manage Branches -->
@@ -200,12 +201,75 @@ $currentUser = getCurrentUser();
     </div>
   </div>
 
+  <!-- Modal: Master Data (4 Tabs) -->
+  <div class="modal fade" id="masterDataModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+        <div class="modal-header px-4 py-3 border-0" style="background: linear-gradient(135deg, #1565c0, #42a5f5); color: white;">
+          <h5 class="modal-title fw-bold">จัดการข้อมูลหลัก (Master Data)</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body px-4 py-4">
+          <!-- Tabs -->
+          <ul class="nav nav-pills mb-4 gap-2" id="masterTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active px-3 py-2 fw-bold" data-bs-toggle="pill" data-master-type="brands" type="button" style="border-radius: 12px; font-size: 0.85rem;">ยี่ห้อ</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link px-3 py-2 fw-bold" data-bs-toggle="pill" data-master-type="grades" type="button" style="border-radius: 12px; font-size: 0.85rem;">เกรด</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link px-3 py-2 fw-bold" data-bs-toggle="pill" data-master-type="claim_categories" type="button" style="border-radius: 12px; font-size: 0.85rem;">ประเภทเคลม</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link px-3 py-2 fw-bold" data-bs-toggle="pill" data-master-type="statuses" type="button" style="border-radius: 12px; font-size: 0.85rem;">สถานะ</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link px-3 py-2 fw-bold" data-bs-toggle="pill" data-master-type="branches" type="button" style="border-radius: 12px; font-size: 0.85rem;">สาขา</button>
+            </li>
+          </ul>
+
+          <!-- Add Form -->
+          <div class="row g-3 mb-4 p-3 bg-light rounded-4" id="masterAddForm">
+            <div class="col-md-5">
+              <label class="form-label fw-bold text-secondary mb-1" id="masterField1Label">ชื่อยี่ห้อ</label>
+              <input type="text" id="masterField1" class="form-control" style="border-radius:12px; padding: 10px;" placeholder="เช่น Honda">
+            </div>
+            <div class="col-md-4 d-none" id="masterField2Wrap">
+              <label class="form-label fw-bold text-secondary mb-1" id="masterField2Label">รหัส</label>
+              <input type="text" id="masterField2" class="form-control" style="border-radius:12px; padding: 10px;" placeholder="เช่น A_premium">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+              <button class="btn text-white fw-bold w-100" style="background: #1565c0; border-radius:12px; height: 46px;" onclick="saveMasterData()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-right:4px; vertical-align:-1px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                เพิ่ม
+              </button>
+            </div>
+          </div>
+
+          <!-- List Table -->
+          <div class="border-top pt-3">
+            <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light sticky-top" id="masterTableHead">
+                  <tr><th>ชื่อยี่ห้อ</th><th width="80" class="text-center">จัดการ</th></tr>
+                </thead>
+                <tbody id="masterListBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     const TAG_LABELS = {
       repairBranch: { label: 'ซ่อมที่สาขา', cls: 'tag-repair' },
       sendHQ: { label: 'ส่งซ่อม สนญ.', cls: 'tag-sendhq' },
-      replaceVehicle: { label: 'เปลี่ยนคัน', cls: 'tag-replace' }
+      replaceVehicleNew: { label: 'เปลี่ยนคัน - รถใหม่', cls: 'tag-replace' },
+      replaceVehicleUsed: { label: 'เปลี่ยนคัน - รถมือสอง', cls: 'tag-replace' }
     };
 
     let allUsers = [];
@@ -527,6 +591,162 @@ $currentUser = getCurrentUser();
         alert('❌ เกิดข้อผิดพลาดในการเชื่อมต่อ');
       }
     }
+
+    // ==============================
+    // Master Data CRUD System
+    // ==============================
+    let currentMasterType = 'brands';
+    let masterDataCache = [];
+
+    const MASTER_CONFIG = {
+      brands: {
+        label1: 'ชื่อยี่ห้อ', ph1: 'เช่น Honda', field1: 'brand_name',
+        hasField2: false,
+        headerHtml: '<tr><th>ชื่อยี่ห้อ</th><th width="80" class="text-center">จัดการ</th></tr>',
+        renderRow: (item) => `<tr><td>${escHtml(item.brand_name)}</td><td class="text-center"><button class="btn btn-sm btn-outline-danger border-0" onclick="deleteMasterData(${item.id}, '${escHtml(item.brand_name)}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td></tr>`
+      },
+      grades: {
+        label1: 'ชื่อเกรด', ph1: 'เช่น A พรีเมี่ยม', field1: 'grade_name',
+        hasField2: true, label2: 'รหัสเกรด', ph2: 'เช่น A_premium', field2: 'grade_code',
+        headerHtml: '<tr><th>รหัส</th><th>ชื่อเกรด</th><th width="80" class="text-center">จัดการ</th></tr>',
+        renderRow: (item) => `<tr><td class="fw-bold">${escHtml(item.grade_code)}</td><td>${escHtml(item.grade_name)}</td><td class="text-center"><button class="btn btn-sm btn-outline-danger border-0" onclick="deleteMasterData(${item.id}, '${escHtml(item.grade_name)}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td></tr>`
+      },
+      claim_categories: {
+        label1: 'ชื่อประเภทเคลม', ph1: 'เช่น เคลมรถก่อนขาย', field1: 'category_name',
+        hasField2: false,
+        headerHtml: '<tr><th>ชื่อประเภทเคลม</th><th width="80" class="text-center">จัดการ</th></tr>',
+        renderRow: (item) => `<tr><td>${escHtml(item.category_name)}</td><td class="text-center"><button class="btn btn-sm btn-outline-danger border-0" onclick="deleteMasterData(${item.id}, '${escHtml(item.category_name)}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td></tr>`
+      },
+      statuses: {
+        label1: 'ชื่อสถานะ (แสดงผล)', ph1: 'เช่น อนุมัติการเคลม', field1: 'status_name',
+        hasField2: true, label2: 'รหัสสถานะ (ค่า DB)', ph2: 'เช่น Approved Claim', field2: 'status_code',
+        headerHtml: '<tr><th>รหัส</th><th>ชื่อสถานะ</th><th width="80" class="text-center">จัดการ</th></tr>',
+        renderRow: (item) => `<tr><td><code>${escHtml(item.status_code)}</code></td><td>${escHtml(item.status_name)}</td><td class="text-center"><button class="btn btn-sm btn-outline-danger border-0" onclick="deleteMasterData(${item.id}, '${escHtml(item.status_name)}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td></tr>`
+      },
+      branches: {
+        label1: 'ชื่อสาขา', ph1: 'เช่น สาขากรุงเทพฯ', field1: 'branch_name',
+        hasField2: true, label2: 'รหัสสาขา', ph2: 'เช่น BKK01', field2: 'branch_code',
+        customApi: true,
+        listUrl: '../backend/branch_handler.php?action=list',
+        createUrl: '../backend/branch_handler.php',
+        deleteUrl: '../backend/branch_handler.php',
+        headerHtml: '<tr><th>รหัส</th><th>ชื่อสาขา</th><th width="80" class="text-center">จัดการ</th></tr>',
+        renderRow: (item) => `<tr><td class="fw-bold">${escHtml(item.branch_code || '-')}</td><td>${escHtml(item.branch_name)}</td><td class="text-center"><button class="btn btn-sm btn-outline-danger border-0" onclick="deleteMasterData(${item.id}, '${escHtml(item.branch_name)}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td></tr>`
+      }
+    };
+
+    // Tab switching
+    document.querySelectorAll('#masterTabs button').forEach(btn => {
+      btn.addEventListener('click', function() {
+        currentMasterType = this.dataset.masterType;
+        updateMasterFormUI();
+        loadMasterData();
+      });
+    });
+
+    function updateMasterFormUI() {
+      const config = MASTER_CONFIG[currentMasterType];
+      document.getElementById('masterField1Label').textContent = config.label1;
+      document.getElementById('masterField1').placeholder = config.ph1;
+      document.getElementById('masterField1').value = '';
+      
+      const f2wrap = document.getElementById('masterField2Wrap');
+      if (config.hasField2) {
+        f2wrap.classList.remove('d-none');
+        document.getElementById('masterField2Label').textContent = config.label2;
+        document.getElementById('masterField2').placeholder = config.ph2;
+        document.getElementById('masterField2').value = '';
+      } else {
+        f2wrap.classList.add('d-none');
+      }
+
+      document.getElementById('masterTableHead').innerHTML = config.headerHtml;
+    }
+
+    async function loadMasterData() {
+      const config = MASTER_CONFIG[currentMasterType];
+      const body = document.getElementById('masterListBody');
+      body.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-muted"><div class="spinner-border spinner-border-sm"></div> กำลังโหลด...</td></tr>';
+      
+      try {
+        const apiUrl = config.customApi ? config.listUrl : `../backend/master_data_handler.php?action=list&type=${currentMasterType}`;
+        const res = await fetch(apiUrl);
+        const json = await res.json();
+        if (json.success) {
+          masterDataCache = json.data;
+          if (json.data.length === 0) {
+            body.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">ไม่มีข้อมูล</td></tr>';
+          } else {
+            body.innerHTML = json.data.map(item => config.renderRow(item)).join('');
+          }
+        }
+      } catch(e) {
+        body.innerHTML = '<tr><td colspan="3" class="text-center text-danger py-3">❌ ไม่สามารถโหลดข้อมูล</td></tr>';
+      }
+    }
+
+    async function saveMasterData() {
+      const config = MASTER_CONFIG[currentMasterType];
+      const val1 = document.getElementById('masterField1').value.trim();
+      if (!val1) { alert('กรุณากรอกข้อมูล'); return; }
+
+      const fd = new FormData();
+      fd.append('action', 'create');
+      fd.append('type', currentMasterType);
+      fd.append(config.field1, val1);
+      
+      if (config.hasField2) {
+        const val2 = document.getElementById('masterField2').value.trim();
+        if (!val2) { alert('กรุณากรอกรหัส'); return; }
+        fd.append(config.field2, val2);
+      }
+
+      try {
+        const apiUrl = config.customApi ? config.createUrl : '../backend/master_data_handler.php';
+        const res = await fetch(apiUrl, { method: 'POST', body: fd });
+        const json = await res.json();
+        if (json.success) {
+          document.getElementById('masterField1').value = '';
+          if (config.hasField2) document.getElementById('masterField2').value = '';
+          alert('✅ เพิ่มข้อมูลเรียบร้อยแล้ว');
+          loadMasterData();
+        } else {
+          alert('❌ ' + json.message);
+        }
+      } catch(e) {
+        alert('❌ เกิดข้อผิดพลาดในการเชื่อมต่อ');
+      }
+    }
+
+    async function deleteMasterData(id, name) {
+      if (!confirm(`ต้องการลบ "${name}" จริงหรือไม่?`)) return;
+      
+      const config = MASTER_CONFIG[currentMasterType];
+      const fd = new FormData();
+      fd.append('action', 'delete');
+      fd.append('type', currentMasterType);
+      fd.append('id', id);
+
+      try {
+        const apiUrl = config.customApi ? config.deleteUrl : '../backend/master_data_handler.php';
+        const res = await fetch(apiUrl, { method: 'POST', body: fd });
+        const json = await res.json();
+        if (json.success) {
+          alert('✅ ลบข้อมูลเรียบร้อยแล้ว');
+          loadMasterData();
+        } else {
+          alert('❌ ' + json.message);
+        }
+      } catch(e) {
+        alert('❌ เกิดข้อผิดพลาดในการเชื่อมต่อ');
+      }
+    }
+
+    // โหลด master data เมื่อเปิด modal
+    document.getElementById('masterDataModal').addEventListener('show.bs.modal', function() {
+      updateMasterFormUI();
+      loadMasterData();
+    });
 
     // โหลดตอนเปิดหน้า
     loadUsers();

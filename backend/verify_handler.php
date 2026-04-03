@@ -8,7 +8,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $status = (isset($_POST['status']) && trim($_POST['status']) !== '') ? trim($_POST['status']) : 'Pending';
     $verify_remarks = (isset($_POST['verify_remarks']) && trim($_POST['verify_remarks']) !== '') ? trim($_POST['verify_remarks']) : null;
-    $verifier_name = (isset($_POST['verifier']) && trim($_POST['verifier']) !== '') ? trim($_POST['verifier']) : null;
+    
+    // รับข้อมูลผู้อนุมัติจากฟอร์ม verify.php
+    $verifier_emp_id = (isset($_POST['approver_emp_id']) && trim($_POST['approver_emp_id']) !== '') ? trim($_POST['approver_emp_id']) : null;
+    $verifier_name = (isset($_POST['approver_name']) && trim($_POST['approver_name']) !== '') ? trim($_POST['approver_name']) : null;
+    $verifier_signature = (isset($_POST['approver_signature']) && trim($_POST['approver_signature']) !== '') ? trim($_POST['approver_signature']) : null;
     
     // แปลงวันที่ตรวจสอบ d/m/Y -> Y-m-d
     $verify_date_raw = $_POST['verify_date'] ?? '';
@@ -21,22 +25,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     require_once __DIR__ . '/../shared/config/db_connect.php';
-    require_once __DIR__ . '/auth.php'; // เพื่อดึงลายเซ็นจาก Session
+    require_once __DIR__ . '/auth.php';
 
-    $verifier_signature = $_SESSION['user_signature'] ?? null;
     $updated_at = date('Y-m-d H:i:s'); 
 
     try {
         $pdo = getServiceCenterPDO();
 
-        // อัปเดตข้อมูลการตรวจสอบหลัก
+        // อัปเดตข้อมูลการตรวจสอบหลัก (รวม verifier_emp_id ใหม่)
         $sql = "UPDATE `claims` SET 
-                status=?, verify_remarks=?, verifier_name=?, verifier_signature=?, verify_date=?, updated_at=? 
+                status=?, verify_remarks=?, verifier_emp_id=?, verifier_name=?, verifier_signature=?, verify_date=?, updated_at=? 
                 WHERE id=?";
                  
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
-            $status, $verify_remarks, $verifier_name, $verifier_signature, $verify_date, $updated_at, $id
+            $status, $verify_remarks, $verifier_emp_id, $verifier_name, $verifier_signature, $verify_date, $updated_at, $id
         ]);
         
         // อัปเดตข้อมูลการซ่อม (Job Number, Job Amount)

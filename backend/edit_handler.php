@@ -34,8 +34,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $safeVin = preg_replace('/[^a-zA-Z0-9_-]/', '_', $vinInput);
 
         $fieldLabels = [
-            'claim_images' => 'ภาพเพิ่มเติม',
-            'imgParts'     => 'ภาพอะไหล่ที่เคลม'
+            'imgFullCar'  => 'ภาพรถทั้งคัน',
+            'imgSpot'     => 'ภาพจุดปัญหา',
+            'imgPart'     => 'ภาพชิ้นส่วน',
+            'imgWarranty' => 'ภาพสมุดรับประกัน',
+            'imgOdometer' => 'ภาพเลขไมล์',
+            'imgEstimate' => 'ภาพใบประเมิน',
+            'imgParts'    => 'ภาพอะไหล่ที่เคลม',
+            'claim_images' => 'ภาพเพิ่มเติม'
         ];
 
         foreach ($_FILES as $key => $fileData) {

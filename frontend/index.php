@@ -147,13 +147,18 @@ require_once __DIR__ . '/../backend/index_handler.php';
       margin-top: 5px;
     }
   </style>
+  <script>
+    // User tags from session (for controlling visibility)
+    const USER_TAGS = <?= json_encode($_SESSION['user_tags'] ?? []) ?>;
+    const IS_ADMIN = <?= isAdmin() ? 'true' : 'false' ?>;
+  </script>
 </head>
 <body>
   <?php include __DIR__ . '/../shared/assets/includes/sidebar.php'; ?>
   <div class="main-content">
   <main class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <h4 class="fw-bold m-0" style="color: #000;"><i class="fas fa-file-invoice text-primary me-2"></i> บันทึกส่งเคลม</h4>
+      <h4 class="fw-bold m-0" style="color: #000;"></i> ฟอร์มส่งเคลม</h4>
     </div>
 
     <?php if (!empty($message)): ?>
@@ -212,19 +217,12 @@ require_once __DIR__ . '/../backend/index_handler.php';
             <label for="car_brand" class="form-label">ยี่ห้อ <span class="text-danger">*</span></label>
             <select id="car_brand" name="car_brand" class="form-select" required>
               <option value="">-- เลือกยี่ห้อ --</option>
-              <option>Honda</option>
-              <option>Yamaha</option>
-              <option>Vespa</option>
             </select>
           </div>
           <div id="used_grade_block" class="form-row-item d-none" style="grid-template-columns: 60px 1fr;">
             <label for="used_grade" class="form-label">เกรด</label>
             <select id="used_grade" name="used_grade" class="form-select bg-light">
               <option value="">-- เลือกเกรด --</option>
-              <option value="A_premium">A พรีเมี่ยม</option>
-              <option value="A_w6">A (6ด.)</option>
-              <option value="C_w1">C (1ด.)</option>
-              <option value="C_as_is">C (ตามสภาพ)</option>
             </select>
           </div>
         </div>
@@ -314,18 +312,15 @@ require_once __DIR__ . '/../backend/index_handler.php';
             <label for="claim_category" class="form-label fw-bold">ประเภทการเคลม <span class="text-danger">*</span></label>
             <select id="claim_category" name="claim_category" class="form-select" required>
               <option value="">-- เลือกประเภทการเคลม --</option>
-              <option value="เคลมรถก่อนขาย">เคลมรถก่อนขาย</option>
-              <option value="เคลมปัญหาทางเทคนิค">เคลมปัญหาทางเทคนิค</option>
-              <option value="เคลมรถลูกค้า">เคลมรถลูกค้า</option>
             </select>
           </div>
           <div class="col-md-6">
             <label class="form-label fw-bold">การดำเนินการ</label>
             <div class="radio-pill-group mt-1">
-              <div class="form-check"><input class="form-check-input" type="radio" name="claim_action" id="claim_repair" value="repairBranch" required><label class="form-check-label ms-1" for="claim_repair">ซ่อมที่สาขา</label></div>
-              <div class="form-check"><input class="form-check-input" type="radio" name="claim_action" id="claim_send" value="sendHQ"><label class="form-check-label ms-1" for="claim_send">ส่งซ่อมที่สนญ.</label></div>
-              <div class="form-check"><input class="form-check-input" type="radio" name="claim_action" id="claim_replace" value="replaceVehicle"><label class="form-check-label ms-1" for="claim_replace">เปลี่ยนคัน</label></div>
-              <div class="form-check"><input class="form-check-input" type="radio" name="claim_action" id="claim_other" value="other"><label class="form-check-label ms-1" for="claim_other">อื่นๆ</label></div>
+              <div class="form-check" id="action_repairBranch"><input class="form-check-input" type="radio" name="claim_action" id="claim_repair" value="repairBranch" required><label class="form-check-label ms-1" for="claim_repair">ซ่อมที่สาขา</label></div>
+              <div class="form-check" id="action_sendHQ"><input class="form-check-input" type="radio" name="claim_action" id="claim_send" value="sendHQ"><label class="form-check-label ms-1" for="claim_send">ส่งซ่อมที่สนญ.</label></div>
+              <div class="form-check" id="action_replaceVehicle"><input class="form-check-input" type="radio" name="claim_action" id="claim_replace" value="replaceVehicle"><label class="form-check-label ms-1" for="claim_replace">เปลี่ยนคัน</label></div>
+              <div class="form-check" id="action_other"><input class="form-check-input" type="radio" name="claim_action" id="claim_other" value="other"><label class="form-check-label ms-1" for="claim_other">อื่นๆ</label></div>
             </div>
             <input type="text" id="claim_other_text" name="claim_other_text" class="form-control mt-2 d-none" placeholder="ระบุอื่นๆ">
           </div>
@@ -337,17 +332,18 @@ require_once __DIR__ . '/../backend/index_handler.php';
 
         <!-- รายการอะไหล่ (สำหรับซ่อม) -->
         <div id="partsSection" class="d-none mt-4 border-top pt-4">
-          <div class="d-flex justify-content-center align-items-center mb-3">
-            <div class="gap-3 d-flex">
-              <button type="button" id="addPart" class="btn btn-orange rounded-pill px-4">+ เพิ่มรายการ</button>
-              <button type="button" id="btnUploadParts" class="btn btn-green rounded-pill px-4">+ อัปโหลดรูปภาพ</button>
-            </div>
-          </div>
+          
           <div class="table-responsive">
             <table id="partsTable" class="table table-bordered align-middle">
               <thead class="table-light"><tr><th width="60">ลำดับ</th><th>รหัสอะไหล่</th><th>ชื่ออะไหล่</th><th width="100">จำนวน</th><th width="150">ราคา/หน่วย</th><th>หมายเหตุ</th><th width="50"></th></tr></thead>
               <tbody></tbody>
             </table>
+          </div>
+          <div class="d-flex justify-content-center align-items-center mb-3">
+            <div class="gap-3 d-flex">
+              <button type="button" id="addPart" class="btn btn-orange rounded-pill px-4">+ เพิ่มรายการ</button>
+              <button type="button" id="btnUploadParts" class="btn btn-green rounded-pill px-4">+ อัปโหลดรูปภาพ</button>
+            </div>
           </div>
           <input type="file" id="imgPartsUpload" name="imgParts[]" accept="image/*" multiple style="display:none">
           <div id="partsImgPreview" class="d-flex flex-wrap gap-2 mt-3"></div>
@@ -363,12 +359,15 @@ require_once __DIR__ . '/../backend/index_handler.php';
             <input type="text" id="parts_delivery_other_text" name="parts_delivery_other_text" class="form-control mt-2 d-none" placeholder="ระบุการจัดซื้อภายนอกหรืออื่นๆ">
           </div>
 
-          <div id="approverSection" class="mt-4 p-3 border-start border-primary border-4 bg-primary-subtle rounded">
-            <h6 class="fw-bold"><i class="fas fa-user-check me-2"></i> ผู้อนุมัติการดำเนินการ (ภายในสาขา)</h6>
+          <div id="approverSection" class="mt-4 p-3 border-start border-warning border-4 bg-warning-subtle rounded">
+            <h6 class="fw-bold"><i class="fas fa-user-check me-2"></i> ผู้อนุมัติการดำเนินการ</h6>
+            <div class="alert alert-info py-2 px-3 mt-2 mb-3" style="font-size: 0.85rem; border-radius: 10px;">
+              <i class="fas fa-info-circle me-1"></i> ส่วนนี้จะต้องไปอนุมัติที่หน้า <strong>ตรวจเช็ค (Verify)</strong> — ไม่สามารถกรอกตรงนี้ได้
+            </div>
             <div class="row g-3 mt-1">
-              <div class="col-md-4"><label class="form-label small">รหัสพนักงาน</label><select name="approver_id" class="form-select employee-select" data-target-name="approver_name" data-target-sig="approver_signature"><option value="">-- เลือก --</option></select></div>
-              <div class="col-md-4"><label class="form-label small">ชื่อผู้อนุมัติ</label><input type="text" name="approver_name" class="form-control bg-white" readonly></div>
-              <div class="col-md-4"><label class="form-label small">ลายเซ็นต์</label><input type="text" name="approver_signature" class="form-control bg-white" readonly></div>
+              <div class="col-md-4"><label class="form-label small">รหัสพนักงาน</label><input type="text" name="approver_id" class="form-control bg-light" readonly placeholder="จะกรอกที่หน้าตรวจเช็ค"></div>
+              <div class="col-md-4"><label class="form-label small">ชื่อผู้อนุมัติ</label><input type="text" name="approver_name" class="form-control bg-light" readonly placeholder="จะกรอกที่หน้าตรวจเช็ค"></div>
+              <div class="col-md-4"><label class="form-label small">ลายเซ็นต์</label><input type="text" name="approver_signature" class="form-control bg-light" readonly placeholder="จะกรอกที่หน้าตรวจเช็ค"></div>
             </div>
           </div>
         </div>
@@ -390,12 +389,8 @@ require_once __DIR__ . '/../backend/index_handler.php';
             </div>
             <div id="replaceGradeSection" class="col-md-8 d-none">
               <label class="form-label">เกรดรถมือสอง</label>
-              <select name="replace_used_grade" class="form-select">
+              <select name="replace_used_grade" id="replace_used_grade" class="form-select">
                 <option value="">-- เลือกเกรด --</option>
-                <option value="A_premium">A พรีเมี่ยม</option>
-                <option value="A_w6">A (6ด.)</option>
-                <option value="C_w1">C (1ด.)</option>
-                <option value="C_as_is">C (ตามสภาพ)</option>
               </select>
             </div>
           </div>
@@ -405,11 +400,16 @@ require_once __DIR__ . '/../backend/index_handler.php';
             <div class="col-md-4"><label class="form-label">เลขตัวถัง</label><input type="text" name="replace_vin" class="form-control" placeholder="VIN ของคันใหม่"></div>
           </div>
           <div class="mb-4"><label class="form-label fw-bold">สาเหตุที่เปลี่ยนคัน <span class="text-danger">*</span></label><textarea name="replace_reason" class="form-control" rows="2" placeholder="เหตุผลและความจำเป็นในการเปลี่ยนรถคันใหม่"></textarea></div>
-          <div class="row g-3 p-3 bg-primary-subtle rounded border-start border-primary border-4 mt-2">
-            <h6 class="fw-bold col-12 m-0">ผู้อนุมัติการเปลี่ยนคัน</h6>
-            <div class="col-md-4"><label class="form-label small">รหัสพนักงาน</label><select name="replace_id" class="form-select employee-select" data-target-name="replace_name" data-target-sig="replace_signature"><option value="">-- เลือก --</option></select></div>
-            <div class="col-md-4"><label class="form-label small">ชื่อผู้อนุมัติ</label><input type="text" name="replace_name" class="form-control" readonly></div>
-            <div class="col-md-4"><label class="form-label small">วันที่อนุมัติ</label><input type="date" name="replace_approve_date" class="form-control" value="<?= date('Y-m-d') ?>"></div>
+          <div id="approverSection" class="mt-4 p-3 border-start border-warning border-4 bg-warning-subtle rounded">
+            <h6 class="fw-bold"><i class="fas fa-user-check me-2"></i> ผู้อนุมัติการเปลี่ยนคัน</h6>
+            <div class="alert alert-info py-2 px-3 mt-2 mb-3" style="font-size: 0.85rem; border-radius: 10px;">
+              <i class="fas fa-info-circle me-1"></i> ส่วนนี้จะต้องไปอนุมัติที่หน้า <strong>ตรวจเช็ค</strong> — ไม่สามารถกรอกตรงนี้ได้
+            </div>
+            <div class="row g-3 mt-1">
+              <div class="col-md-4"><label class="form-label small">รหัสพนักงาน</label><input type="text" name="approver_id" class="form-control bg-light" readonly placeholder="จะกรอกที่หน้าตรวจเช็ค"></div>
+              <div class="col-md-4"><label class="form-label small">ชื่อผู้อนุมัติ</label><input type="text" name="approver_name" class="form-control bg-light" readonly placeholder="จะกรอกที่หน้าตรวจเช็ค"></div>
+              <div class="col-md-4"><label class="form-label small">ลายเซ็นต์</label><input type="text" name="approver_signature" class="form-control bg-light" readonly placeholder="จะกรอกที่หน้าตรวจเช็ค"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -435,11 +435,92 @@ require_once __DIR__ . '/../backend/index_handler.php';
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 (function(){
+
   // Initialize dynamic data
   if(window.PJUtils){ 
     PJUtils.loadBranches('branch'); 
-    PJUtils.loadEmployees(); 
   }
+
+  // โหลดข้อมูลมาสเตอร์ (ยี่ห้อ, เกรด, ประเภทเคลม)
+  async function loadMasterData() {
+    try {
+      // ยี่ห้อ
+      const brandsRes = await fetch('../backend/api_master_data.php?type=brands');
+      const brandsJson = await brandsRes.json();
+      if (brandsJson.success) {
+        const brandSel = document.getElementById('car_brand');
+        brandsJson.data.forEach(b => {
+          const opt = document.createElement('option');
+          opt.value = b.brand_name;
+          opt.textContent = b.brand_name;
+          brandSel.appendChild(opt);
+        });
+      }
+
+      // เกรด
+      const gradesRes = await fetch('../backend/api_master_data.php?type=grades');
+      const gradesJson = await gradesRes.json();
+      if (gradesJson.success) {
+        const gradeSels = [document.getElementById('used_grade'), document.getElementById('replace_used_grade')];
+        gradeSels.forEach(sel => {
+          if (!sel) return;
+          gradesJson.data.forEach(g => {
+            const opt = document.createElement('option');
+            opt.value = g.grade_code;
+            opt.textContent = g.grade_name;
+            sel.appendChild(opt);
+          });
+        });
+      }
+
+      // ประเภทเคลม
+      const catRes = await fetch('../backend/api_master_data.php?type=claim_categories');
+      const catJson = await catRes.json();
+      if (catJson.success) {
+        const catSel = document.getElementById('claim_category');
+        catJson.data.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.category_name;
+          opt.textContent = c.category_name;
+          catSel.appendChild(opt);
+        });
+      }
+    } catch(e) {
+      console.error('Failed to load master data:', e);
+    }
+  }
+  loadMasterData();
+
+  // ควบคุม visibility ของตัวเลือก "การดำเนินการ" ตาม Tag
+  function applyTagVisibility() {
+    const hasNew = IS_ADMIN || USER_TAGS.includes('replaceVehicleNew');
+    const hasUsed = IS_ADMIN || USER_TAGS.includes('replaceVehicleUsed');
+    const hasReplace = hasNew || hasUsed;
+    const hasRepair = IS_ADMIN || USER_TAGS.includes('repairBranch');
+    const hasSendHQ = IS_ADMIN || USER_TAGS.includes('sendHQ');
+
+    // ซ่อน/แสดง radio ตัวเลือกการดำเนินการ
+    const repairDiv = document.getElementById('action_repairBranch');
+    const sendDiv = document.getElementById('action_sendHQ');
+    const replaceDiv = document.getElementById('action_replaceVehicle');
+
+    if (repairDiv) repairDiv.style.display = hasRepair ? '' : 'none';
+    if (sendDiv) sendDiv.style.display = hasSendHQ ? '' : 'none';
+    if (replaceDiv) replaceDiv.style.display = hasReplace ? '' : 'none';
+
+    // ควบคุม radio ประเภทรถใหม่ ในส่วนเปลี่ยนคัน
+    const replaceNewRadio = document.querySelector('input.replace-car-type[value="รถใหม่"]');
+    const replaceUsedRadio = document.querySelector('input.replace-car-type[value="รถมือสอง"]');
+    if (replaceNewRadio) {
+      replaceNewRadio.closest('.form-check').style.display = hasNew ? '' : 'none';
+      if (!hasNew && hasUsed && replaceUsedRadio) { replaceUsedRadio.checked = true; replaceUsedRadio.dispatchEvent(new Event('change')); }
+    }
+    if (replaceUsedRadio) {
+      replaceUsedRadio.closest('.form-check').style.display = hasUsed ? '' : 'none';
+      if (!hasUsed && hasNew && replaceNewRadio) { replaceNewRadio.checked = true; }
+    }
+  }
+  applyTagVisibility();
 
   // Auto-calculate age
   const saleDateIn = document.getElementById('sale_date');
@@ -479,6 +560,43 @@ require_once __DIR__ . '/../backend/index_handler.php';
   document.querySelectorAll('.replace-car-type').forEach(r => r.onchange = () => {
     document.getElementById('replaceGradeSection').classList.toggle('d-none', r.value !== 'รถมือสอง');
   });
+
+  // Tag-based control: ล็อค radio ประเภทรถใหม่/มือสอง ตาม Tag ของ User
+  (function applyReplaceTypeTags() {
+    const hasNewTag = IS_ADMIN || USER_TAGS.includes('replaceVehicleNew');
+    const hasUsedTag = IS_ADMIN || USER_TAGS.includes('replaceVehicleUsed');
+    
+    document.querySelectorAll('.replace-car-type').forEach(r => {
+      if (r.value === 'รถใหม่' && !hasNewTag) {
+        r.disabled = true;
+        r.closest('.form-check').style.opacity = '0.4';
+        r.closest('.form-check').title = 'คุณไม่มีสิทธิ์เปลี่ยนคัน - รถใหม่';
+      }
+      if (r.value === 'รถมือสอง' && !hasUsedTag) {
+        r.disabled = true;
+        r.closest('.form-check').style.opacity = '0.4';
+        r.closest('.form-check').title = 'คุณไม่มีสิทธิ์เปลี่ยนคัน - รถมือสอง';
+      }
+    });
+
+    // ถ้ามีเฉพาะ Tag มือสอง ให้เลือก มือสอง เป็นค่าเริ่มต้น + แสดงเกรด
+    if (hasUsedTag && !hasNewTag) {
+      const usedRadio = document.querySelector('.replace-car-type[value="รถมือสอง"]');
+      if (usedRadio && !usedRadio.disabled) {
+        usedRadio.checked = true;
+        // แสดง replaceGradeSection ตรงเลย (เพราะ onchange ไม่ trigger จาก dispatchEvent)
+        const gradeSection = document.getElementById('replaceGradeSection');
+        if (gradeSection) gradeSection.classList.remove('d-none');
+      }
+    }
+    // ถ้ามีเฉพาะ Tag รถใหม่ ให้เลือก รถใหม่ เป็นค่าเริ่มต้น
+    if (hasNewTag && !hasUsedTag) {
+      const newRadio = document.querySelector('.replace-car-type[value="รถใหม่"]');
+      if (newRadio && !newRadio.disabled) {
+        newRadio.checked = true;
+      }
+    }
+  })();
 
   // Parts Table Logic
   const partsTbody = document.querySelector('#partsTable tbody');
@@ -525,19 +643,29 @@ require_once __DIR__ . '/../backend/index_handler.php';
     filesMap[f].forEach((file, i) => {
       const div = document.createElement('div');
       div.className = 'thumb';
-      div.style.cssText = 'position:relative;width:60px;height:60px;margin:2px;border-radius:4px;overflow:hidden;border:1px solid #ddd;';
+      div.style.cssText = 'position:relative;width:60px;height:60px;margin:2px;border-radius:4px;overflow:hidden;border:1px solid #ddd;cursor:pointer;';
       const img = document.createElement('img');
       img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
-      const reader = new FileReader(); reader.onload = e => img.src = e.target.result; reader.readAsDataURL(file);
+      const reader = new FileReader(); 
+      reader.onload = e => {
+        img.src = e.target.result;
+        div.onclick = (event) => {
+            if (event.target.tagName !== 'BUTTON') {
+                openLightbox(e.target.result);
+            }
+        };
+      };
+      reader.readAsDataURL(file);
       const btn = document.createElement('button'); 
       btn.innerHTML = '&times;'; 
-      btn.style.cssText = 'position:absolute;top:0;right:0;background:rgba(255,0,0,0.7);color:white;border:none;width:18px;height:18px;font-size:12px;line-height:1;';
+      btn.style.cssText = 'position:absolute;top:0;right:0;background:rgba(255,0,0,0.7);color:white;border:none;width:18px;height:18px;font-size:12px;line-height:1;z-index:2;';
       btn.onclick = (e) => { e.stopPropagation(); filesMap[f].splice(i,1); render(f); };
       div.append(img, btn); pre.append(div);
     });
     const countSpan = card.querySelector('.attach-count');
     if(countSpan) {
       countSpan.innerText = `( ${filesMap[f].length} รูป )`;
+      countSpan.style.color = filesMap[f].length > 0 ? '#ff8533' : '#6c757d';
     }
   };
 
@@ -550,18 +678,37 @@ require_once __DIR__ . '/../backend/index_handler.php';
     pre.innerHTML = '';
     filesMap['imgParts[]'].forEach((file, i) => {
       const div = document.createElement('div');
-      div.style.cssText = 'position:relative;width:80px;height:80px;border-radius:8px;overflow:hidden;border:1px solid #ddd;';
+      div.style.cssText = 'position:relative;width:80px;height:80px;border-radius:8px;overflow:hidden;border:1px solid #ddd;cursor:pointer;';
       const img = document.createElement('img'); img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
-      const reader = new FileReader(); reader.onload = e => img.src = e.target.result; reader.readAsDataURL(file);
+      const reader = new FileReader(); 
+      reader.onload = e => {
+        img.src = e.target.result;
+        div.onclick = (event) => {
+            if (event.target.tagName !== 'BUTTON') {
+                openLightbox(e.target.result);
+            }
+        };
+      };
+      reader.readAsDataURL(file);
       const btn = document.createElement('button'); 
       btn.innerHTML = '&times;'; 
-      btn.style.cssText = 'position:absolute;top:2px;right:2px;background:red;color:white;border:none;border-radius:50%;width:20px;height:20px;';
-      btn.onclick = () => { filesMap['imgParts[]'].splice(i,1); renderParts(); };
+      btn.style.cssText = 'position:absolute;top:2px;right:2px;background:red;color:white;border:none;border-radius:50%;width:20px;height:20px;z-index:2;';
+      btn.onclick = (e) => { e.stopPropagation(); filesMap['imgParts[]'].splice(i,1); renderParts(); };
       div.append(img, btn); pre.append(div);
     });
     const btn = document.getElementById('btnUploadParts');
     btn.innerHTML = filesMap['imgParts[]'].length ? `<i class="fas fa-check me-1"></i> อัปโหลดแล้ว ${filesMap['imgParts[]'].length} รูป` : `<i class="fas fa-upload me-1"></i> อัปโหลดรูปอะไหล่`;
   };
+
+  // Lightbox Helper
+  function openLightbox(src) {
+    const modal = document.getElementById('image-modal');
+    const modalImg = document.getElementById('modal-img');
+    if (modal && modalImg) {
+        modalImg.src = src;
+        modal.style.display = 'flex';
+    }
+  }
 
   // Form Submit Logic
   form.onsubmit = function(e){
@@ -585,6 +732,7 @@ require_once __DIR__ . '/../backend/index_handler.php';
         Object.keys(filesMap).forEach(k => filesMap[k] = []);
         document.querySelectorAll('.preview').forEach(p => p.innerHTML='');
         document.getElementById('partsImgPreview').innerHTML = '';
+        document.querySelectorAll('.attach-count').forEach(s => s.innerText = '( 0 รูป )');
         updateAge();
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
@@ -597,5 +745,11 @@ require_once __DIR__ . '/../backend/index_handler.php';
   };
 })();
 </script>
+
+<!-- Lightbox Modal (Index) -->
+<div class="modal-overlay" id="image-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
+    <div style="position:absolute; top:20px; right:20px; color:white; font-size:40px; cursor:pointer;" onclick="this.parentElement.style.display='none'">×</div>
+    <img src="" id="modal-img" style="max-width:90%; max-height:90%; object-fit:contain;">
+</div>
 </body>
 </html>

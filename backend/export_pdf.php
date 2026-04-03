@@ -68,8 +68,8 @@ try {
         * { box-sizing: border-box; -webkit-print-color-adjust: exact; }
         body { 
             font-family: 'Sarabun', sans-serif; 
-            font-size: 14px; 
-            line-height: 1.3; 
+            font-size: 13px; 
+            line-height: 1.25; 
             margin: 0; 
             padding: 0; 
             background: #f0f0f0; 
@@ -78,19 +78,20 @@ try {
 
         .a4-page {
             width: 210mm;
-            min-height: 297mm;
-            padding: 10mm 15mm;
+            height: 297mm;
+            padding: 10mm 12mm;
             margin: 10mm auto;
             background: #fff;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             position: relative;
             page-break-after: always;
+            overflow: hidden;
         }
         .a4-page:last-child { page-break-after: auto; }
 
         @media print {
             body { background: #fff; }
-            .a4-page { margin: 0; box-shadow: none; width: 100%; min-height: 100%; border: none; padding: 5mm 12mm; }
+            .a4-page { margin: 0; box-shadow: none; width: 100%; height: 297mm; border: none; padding: 10mm 12mm; }
             .no-print { display: none !important; }
             @page { size: A4; margin: 0; }
         }
@@ -106,23 +107,23 @@ try {
 
         /* Header Style */
         .header-container { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2px; }
-        .logo-box { width: 180px; position: relative; }
+        .logo-box { width: 160px; position: relative; }
         .logo-img { width: 100%; height: auto; display: block; }
-        .logo-text-fallback { font-size: 24px; font-weight: 800; color: #000; letter-spacing: -1px; line-height: 1; }
+        .logo-text-fallback { font-size: 20px; font-weight: 800; color: #000; letter-spacing: -1px; line-height: 1; }
         
-        .company-address { text-align: right; font-size: 11.5px; color: #000; line-height: 1.25; }
-        .company-address strong { font-size: 14px; display: block; margin-bottom: 2px; }
+        .company-address { text-align: right; font-size: 11px; color: #000; line-height: 1.25; }
+        .company-address strong { font-size: 13px; display: block; margin-bottom: 2px; }
 
         .doc-title-area {
             text-align: center;
-            margin: 5px 0;
+            margin: 2px 0;
             position: relative;
             width: 100%;
         }
         .title-frame {
-            padding: 8px 40px;
+            padding: 4px 30px;
             display: inline-block;
-            font-size: 18px;
+            font-size: 17px;
             font-weight: bold;
             background: transparent;
         }
@@ -131,43 +132,44 @@ try {
             right: 0;
             top: 50%;
             transform: translateY(-50%);
-            font-size: 12px; 
+            font-size: 11px; 
             font-weight: normal; 
         }
 
         /* Content Rows */
-        .info-line { margin-bottom: 2px; display: flex; align-items: baseline; gap: 12px; width: 100%; }
+        .info-line { margin-bottom: 1px; display: flex; align-items: baseline; gap: 10px; width: 100%; }
         .info-item { display: flex; align-items: baseline; overflow: hidden; }
-        .label-text { font-weight: normal; flex-shrink: 0; white-space: nowrap; margin-right: 5px; }
+        .label-text { font-weight: normal; flex-shrink: 0; white-space: nowrap; margin-right: 5px; font-size: 12.5px; }
         .dotted-fill { 
-            border-bottom: 1px dotted #000; 
+            border-bottom: 0.5pt dotted #000; 
             flex: 1; 
-            padding: 0 2px; 
+            padding: 0 4px; 
             min-height: 18px; 
-            color: #333; 
+            color: #000; 
             white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis;
+            font-weight: 500;
+            font-size: 12.5px;
         }
         
-        .section-tag { font-weight: bold; text-decoration: underline; margin-top: 8px; margin-bottom: 4px; font-size: 14.5px; }
-        .chk-item { display: inline-flex; align-items: center; gap: 4px; margin-right: 12px; white-space: nowrap; }
-        .chk-square { width: 14px; height: 14px; border: 1.2px solid #000; display: inline-block; position: relative; flex-shrink: 0; }
-        .chk-square.is-checked::after { content: '\2713'; position: absolute; top: -6px; left: 0; font-size: 16px; font-weight: bold; }
+        .section-tag { font-weight: bold; text-decoration: underline; margin-top: 4px; margin-bottom: 2px; font-size: 13.5px; }
+        .chk-item { display: inline-flex; align-items: center; gap: 4px; margin-right: 10px; white-space: nowrap; font-size: 12.5px; }
+        .chk-square { width: 13px; height: 13px; border: 1.1px solid #000; display: inline-block; position: relative; flex-shrink: 0; margin-top: 1px; }
+        .chk-square.is-checked::after { content: '\2713'; position: absolute; top: -8px; left: 0px; font-size: 15px; font-weight: bold; color: #000; }
 
-        .data-box { border: 1.2px solid #000; padding: 8px; margin-bottom: 6px; min-height: 105px; position: relative; }
-        .inner-sig { position: absolute; bottom: 8px; right: 8px; border: 1px solid #000; padding: 6px 15px; width: 260px; text-align: center; background: #fff; }
-        .inner-sig-tag { font-size: 10px; font-weight: bold; position: absolute; top: -8px; left: 10px; background: #fff; padding: 0 5px; }
-        .sig-image { height: 40px; max-width: 200px; object-fit: contain; margin-bottom: -15px; }
-        .notice-text { font-size: 11px; color: #333; margin: 5px 0; font-style: italic; line-height: 1.3; }
+        .data-box { border: 1.1px solid #000; padding: 6px; margin-bottom: 4px; min-height: 70px; position: relative; font-size: 12.5px; }
+        .inner-sig { position: absolute; bottom: 6px; right: 6px; border: 1px solid #000; padding: 4px 12px; width: 240px; text-align: center; background: #fff; }
+        .inner-sig-tag { font-size: 9px; font-weight: bold; position: absolute; top: -7px; left: 8px; background: #fff; padding: 0 4px; }
+        .sig-image { height: 35px; max-width: 180px; object-fit: contain; margin-bottom: -15px; }
+        .notice-text { font-size: 10px; color: #333; margin: 3px 0; font-style: italic; line-height: 1.25; }
 
-        .items-grid { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 14px; }
-        .items-grid th, .items-grid td { border: 1.2px solid #000; padding: 4px 8px; text-align: center; }
-        .items-grid th { background: #f0f0f0; font-weight: bold; }
+        .items-grid { width: 100%; border-collapse: collapse; margin-top: 4px; font-size: 12.5px; }
+        .items-grid th, .items-grid td { border: 1.1px solid #000; padding: 3px 6px; text-align: center; }
+        .items-grid th { background: #f8f8f8; font-weight: bold; }
 
-        .sig-row-bottom { display: flex; justify-content: space-between; margin-top: 8px; }
-        .sig-frame-wide { border: 1.5px solid #000; padding: 12px; width: 48.5%; min-height: 90px; text-align: center; }
-        .replacement-panel { border: 1.5px solid #000; padding: 10px; margin-top: 8px; }
+        .sig-row-bottom { display: flex; justify-content: space-between; margin-top: 5px; }
+        .sig-frame-wide { border: 1.4px solid #000; padding: 8px; width: 48.5%; min-height: 75px; text-align: center; }
+        .replacement-panel { border: 1.4px solid #000; padding: 8px; margin-top: 5px; }
         .fw-bold { font-weight: bold; }
     </style>
 </head>
@@ -245,10 +247,10 @@ try {
         </div>
         <div class="info-line" style="margin-top: 3px; flex-wrap: wrap;">
             <span class="label-text" style="margin-right: 12px;">รถเกรด</span>
-            <span class="chk-item"><span class="chk-square <?= ($claim['used_grade'] == 'A_premium' || $claim['used_grade'] == 'A พรีเมี่ยม') ? 'checked is-checked' : '' ?>"></span> A พรีเมี่ยม</span>
-            <span class="chk-item"><span class="chk-square <?= ($claim['used_grade'] == 'A_w6' || $claim['used_grade'] == 'A รับประกันเครื่องยนต์ 6 เดือน') ? 'checked is-checked' : '' ?>"></span> A รับประกันเครื่องยนต์ 6 เดือน</span>
-            <span class="chk-item"><span class="chk-square <?= ($claim['used_grade'] == 'C_w1' || $claim['used_grade'] == 'C รับประกันเครื่องยนต์ 1 เดือน') ? 'checked is-checked' : '' ?>"></span> C รับประกันเครื่องยนต์ 1 เดือน</span>
-            <div class="chk-item" style="white-space: normal;"><span class="chk-square <?= ($claim['used_grade'] == 'C_as_is' || $claim['used_grade'] == 'C ตามสภาพไม่รับประกัน') ? 'checked is-checked' : '' ?>"></span> C ตามสภาพไม่รับประกัน</div>
+            <span class="chk-item"><span class="chk-square <?= (trim($claim['used_grade']) == 'A_premium' || trim($claim['used_grade']) == 'A พรีเมี่ยม') ? 'is-checked' : '' ?>"></span> A พรีเมี่ยม</span>
+            <span class="chk-item"><span class="chk-square <?= (trim($claim['used_grade']) == 'A_w6' || trim($claim['used_grade']) == 'A รับประกันเครื่องยนต์ 6 เดือน') ? 'is-checked' : '' ?>"></span> A (6ด.)</span>
+            <span class="chk-item"><span class="chk-square <?= (trim($claim['used_grade']) == 'C_w1' || trim($claim['used_grade']) == 'C รับประกันเครื่องยนต์ 1 เดือน') ? 'is-checked' : '' ?>"></span> C (1ด.)</span>
+            <div class="chk-item" style="white-space: normal;"><span class="chk-square <?= (trim($claim['used_grade']) == 'C_as_is' || trim($claim['used_grade']) == 'C ตามสภาพไม่รับประกัน') ? 'is-checked' : '' ?>"></span> C ตามสภาพไม่รับประกัน</div>
         </div>
 
         <div class="section-tag">ส่วนที่ 1 เฉพาะสาขา</div>

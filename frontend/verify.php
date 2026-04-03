@@ -68,11 +68,10 @@ try {
         $carAgeDisplay = !empty($parts) ? implode(" ", $parts) : "0 วัน";
     }
     
-    // แปลงประเภทรถ และการดำเนินการ
     // แปลงประเภทรถ
     $carTypeDisplay = $claim['car_type'] === 'new' ? 'รถใหม่' : ($claim['car_type'] === 'used' ? 'รถมือสอง' : $claim['car_type']);
     
-    // แสดงประเภทการเคลม (ดึงจากฐานข้อมูลตรงๆ เพราะเราบันทึกเป็นภาษาไทยอยู่แล้ว)
+    // แสดงประเภทการเคลม
     $claimCategoryDisplay = $claim['claim_category'] ?: '-';
     
     // แปลงชื่อประเภทการเคลมจริงๆ
@@ -99,6 +98,7 @@ try {
   <link rel="stylesheet" href="../shared/assets/css/theme.css">
   <link rel="stylesheet" href="../shared/assets/css/styles-edit_claim.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <script src="../shared/assets/js/utils.js"></script>
 </head>
 <body>
 
@@ -232,36 +232,104 @@ try {
 
         <!-- รูปภาพปัญหา -->
         <div class="edit-card mb-4 border-0 shadow-sm rounded-4 p-4">
-          <div class="section-title mb-4 pb-2 border-bottom fw-bold fs-5">รูปภาพปัญหาที่พบ</div>
-          <div class="gallery-grid">
-            <?php 
+          <div class="section-title mb-4 pb-2 border-bottom fw-bold fs-5">
+            <i class="fas fa-camera me-2" style="color: #ff8533;"></i> รูปภาพปัญหาที่พบ
+            <?php
             $savedImgs = !empty($claim['claim_images']) ? json_decode($claim['claim_images'], true) : [];
-            if(is_array($savedImgs) && count($savedImgs) > 0):
-                foreach($savedImgs as $imgPath):
-                    $fileName = basename($imgPath);
+            if(!is_array($savedImgs)) $savedImgs = [];
+            $totalImgs = count($savedImgs);
             ?>
-                <div class="gallery-item">
-                   <div class="img-preview-container cursor-pointer" onclick="openImageModal('../<?= htmlspecialchars($imgPath) ?>')">
-                       <img src="../<?= htmlspecialchars($imgPath) ?>" alt="รูปภาพเคลม">
-                   </div>
-                   <div class="img-preview-footer text-center">
-                       <span class="img-preview-title" title="<?= htmlspecialchars($fileName) ?>"><?= htmlspecialchars($fileName) ?></span>
-                       <?php 
-                           $ext = pathinfo($fileName, PATHINFO_EXTENSION);
-                           $cleanDownloadName = str_replace(['/', '\\'], '_', htmlspecialchars($fileName)); // Default
-                           // Create clean name: Prefix_VIN
-                           $prefixName = explode('_', $fileName)[0] ?? 'รูปภาพ';
-                           $cleanDownloadName = $prefixName . '_' . htmlspecialchars($claim['vin']) . '.' . $ext;
-                       ?>
-                       <a href="../<?= htmlspecialchars($imgPath) ?>" download="<?= $cleanDownloadName ?>" class="img-download-link"><i class="fas fa-download"></i></a>
-                   </div>
+            <span class="badge rounded-pill ms-2" style="background: #ff8533; font-size: 0.8rem;"><?= $totalImgs ?> รูป</span>
+          </div>
+          <?php
+          // จัดกลุ่มรูปตามหมวด
+          $categories = [
+            'ภาพรถทั้งคัน' => ['icon' => 'fa-car', 'color' => '#ff8533'],
+            'ภาพจุดปัญหา' => ['icon' => 'fa-search-plus', 'color' => '#e74c3c'],
+            'ภาพชิ้นส่วน' => ['icon' => 'fa-cogs', 'color' => '#3498db'],
+            'ภาพสมุดรับประกัน' => ['icon' => 'fa-book', 'color' => '#2ecc71'],
+            'ภาพเลขไมล์' => ['icon' => 'fa-tachometer-alt', 'color' => '#9b59b6'],
+            'ภาพใบประเมิน' => ['icon' => 'fa-file-alt', 'color' => '#f39c12'],
+            'ภาพอะไหล่ที่เคลม' => ['icon' => 'fa-wrench', 'color' => '#1abc9c'],
+          ];
+          $grouped = [];
+          $uncategorized = [];
+          foreach($savedImgs as $imgPath) {
+            $fname = basename($imgPath);
+            $matched = false;
+            foreach($categories as $prefix => $info) {
+              if(mb_strpos($fname, $prefix) === 0) {
+                $grouped[$prefix][] = $imgPath;
+                $matched = true;
+                break;
+              }
+            }
+            if(!$matched) $uncategorized[] = $imgPath;
+          }
+          ?>
+
+          <?php if($totalImgs > 0): ?>
+          <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+            <?php foreach($categories as $catName => $catInfo): 
+              $imgs = $grouped[$catName] ?? [];
+              $count = count($imgs);
+            ?>
+            <div class="col">
+              <div class="p-3 rounded-4 h-100" style="background: #f8f9fa; border: 1px solid #e9ecef;">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <div class="d-flex align-items-center justify-content-center rounded-circle" style="width: 32px; height: 32px; background: <?= $catInfo['color'] ?>15;">
+                    <i class="fas <?= $catInfo['icon'] ?>" style="color: <?= $catInfo['color'] ?>; font-size: 14px;"></i>
+                  </div>
+                  <span class="fw-bold" style="font-size: 0.9rem;"><?= $catName ?></span>
+                  <span class="badge rounded-pill ms-auto" style="background: <?= $count > 0 ? $catInfo['color'] : '#ccc' ?>; font-size: 0.75rem;"><?= $count ?></span>
                 </div>
-            <?php endforeach; else: ?>
-                <div class="col-12 text-center py-4 bg-light rounded-3 border border-dashed">
-                  <p class="text-muted mb-0">ไม่ได้แนบรูปภาพปัญหามาในเอกสารนี้</p>
+                <?php if($count > 0): ?>
+                <div class="d-flex flex-wrap gap-2">
+                  <?php foreach($imgs as $idx => $imgPath): 
+                    $ext = pathinfo($imgPath, PATHINFO_EXTENSION);
+                    $dlName = $catName . '_' . htmlspecialchars($claim['vin'] ?? 'unknown') . '_' . ($idx+1) . '.' . $ext;
+                  ?>
+                  <div style="position: relative; width: 72px; height: 72px; border-radius: 10px; overflow: hidden; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer;" onclick="openImageModal('../<?= htmlspecialchars($imgPath) ?>')">
+                    <img src="../<?= htmlspecialchars($imgPath) ?>" style="width: 100%; height: 100%; object-fit: cover;" alt="<?= $catName ?>">
+                    <a href="../<?= htmlspecialchars($imgPath) ?>" download="<?= $dlName ?>" onclick="event.stopPropagation();" class="position-absolute bottom-0 end-0 d-flex align-items-center justify-content-center" style="width: 22px; height: 22px; background: rgba(0,0,0,0.5); color: #fff; font-size: 10px; border-radius: 8px 0 0 0;">
+                      <i class="fas fa-download"></i>
+                    </a>
+                  </div>
+                  <?php endforeach; ?>
                 </div>
+                <?php else: ?>
+                <div class="text-muted text-center py-2" style="font-size: 0.82rem;">ไม่มีรูปภาพ</div>
+                <?php endif; ?>
+              </div>
+            </div>
+            <?php endforeach; ?>
+
+            <?php if(count($uncategorized) > 0): ?>
+            <div class="col">
+              <div class="p-3 rounded-4 h-100" style="background: #f8f9fa; border: 1px solid #e9ecef;">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <div class="d-flex align-items-center justify-content-center rounded-circle" style="width: 32px; height: 32px; background: #99999915;">
+                    <i class="fas fa-image" style="color: #999; font-size: 14px;"></i>
+                  </div>
+                  <span class="fw-bold" style="font-size: 0.9rem;">อื่นๆ</span>
+                  <span class="badge rounded-pill ms-auto" style="background: #999; font-size: 0.75rem;"><?= count($uncategorized) ?></span>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                  <?php foreach($uncategorized as $idx => $imgPath): ?>
+                  <div style="position: relative; width: 72px; height: 72px; border-radius: 10px; overflow: hidden; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer;" onclick="openImageModal('../<?= htmlspecialchars($imgPath) ?>')">
+                    <img src="../<?= htmlspecialchars($imgPath) ?>" style="width: 100%; height: 100%; object-fit: cover;" alt="รูปภาพ">
+                  </div>
+                  <?php endforeach; ?>
+                </div>
+              </div>
+            </div>
             <?php endif; ?>
           </div>
+          <?php else: ?>
+          <div class="text-center py-4 bg-light rounded-3 border border-dashed">
+            <p class="text-muted mb-0"><i class="fas fa-image me-1"></i> ไม่ได้แนบรูปภาพปัญหามาในเอกสารนี้</p>
+          </div>
+          <?php endif; ?>
         </div>
 
         <!-- รายการอะไหล่ -->
@@ -322,85 +390,108 @@ try {
 
             <!-- ข้อมูลการซ่อม (Job Card) -->
             <div class="job-info-card mb-4 border-0 shadow-sm rounded-4 p-4">
-                <div class="section-title mb-4 pb-2 border-bottom fw-bold fs-5">ข้อมูลการซ่อม (Job)</div>
+                <div class="section-title mb-4 pb-2 border-bottom fw-bold fs-5">Job</div>
                 <div class="row g-4">
                     <div class="col-md-6">
                         <label class="form-label fw-bold text-secondary mb-2">เลขที่ Job</label>
-                        <input type="text" name="job_number" class="form-control pill-input" placeholder="ระบุเลขที่ JOB" value="<?= htmlspecialchars($claim['job_number'] ?? '') ?>" <?= !isAdmin() ? 'readonly' : '' ?>>
+                        <input type="text" name="job_number" class="form-control pill-input" placeholder="ระบุเลขที่ JOB" value="<?= htmlspecialchars($claim['job_number'] ?? '') ?>" <?= !isAdmin() ? 'readonly' : '' ?> readonly>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-bold text-secondary mb-2">จำนวนเงิน (บาท)</label>
-                        <input type="number" step="0.01" name="job_amount" class="form-control pill-input" placeholder="ระบุจำนวนเงิน" value="<?= htmlspecialchars($claim['job_amount'] ?? '') ?>" <?= !isAdmin() ? 'readonly' : '' ?>>
+                        <input type="number" step="0.01" name="job_amount" class="form-control pill-input" placeholder="ระบุจำนวนเงิน" value="<?= htmlspecialchars($claim['job_amount'] ?? '') ?>" <?= !isAdmin() ? 'readonly' : '' ?> readonly>
                     </div>
                 </div>
             </div>
 
             <!-- ผลการตรวจสอบและอนุมัติ -->
-            <div class="edit-log-card border-0 shadow-sm rounded-4 p-4 mb-5" id="verification-section">
-                <div class="section-title mb-4 pb-2 border-bottom fw-bold fs-5" style="color: #ff7a32;">
-                    ผลการตรวจสอบและอนุมัติ
+            <div class="edit-card mb-5 border-0 shadow-sm rounded-4 overflow-hidden" id="verification-section">
+                <div class="px-4 py-3" style="background: linear-gradient(135deg, #00b894, #55efc4);">
+                    <h5 class="fw-bold text-white m-0"><i class="fas fa-clipboard-check me-2"></i> ผลการตรวจสอบและอนุมัติ</h5>
                 </div>
-                
-                <div class="approval-grid">
-                    <!-- ฝั่งซ้าย: Checklist และ ลงนาม -->
-                    <div class="checklist-column">
-                        <label class="form-label fw-bold text-secondary mb-3">รายการตรวจสอบ (Checklist)</label>
-                        <div class="checklist-container">
-                            <label class="checklist-item">
-                                <input type="checkbox" class="checklist-checkbox" id="check1" <?= !isAdmin() ? 'disabled' : '' ?>>
-                                <span class="checklist-text">ตรวจสอบความถูกต้องของข้อมูลลูกค้าและหมายเลขตัวถัง</span>
-                            </label>
-                            <label class="checklist-item">
-                                <input type="checkbox" class="checklist-checkbox" id="check2" <?= !isAdmin() ? 'disabled' : '' ?>>
-                                <span class="checklist-text">ตรวจสอบรายละเอียดและการแนบรูปภาพประกอบของปัญหา</span>
-                            </label>
-                            <label class="checklist-item">
-                                <input type="checkbox" class="checklist-checkbox" id="check3" <?= !isAdmin() ? 'disabled' : '' ?>>
-                                <span class="checklist-text">ตรวจสอบรายการอะไหล่ ค่าแรง และยอดเคลมสุทธิว่าถูกต้องเหมาะสม</span>
-                            </label>
-                        </div>
-
-                        <div class="mt-5">
-                            <div class="row align-items-center mb-3">
-                                <label class="col-sm-4 col-form-label fw-bold text-secondary">ลงชื่อผู้ตรวจสอบ</label>
-                                <div class="col-sm-8">
-                                    <input type="text" name="verifier" class="form-control pill-input bg-light" placeholder="ชื่อ-นามสกุล ผู้ตรวจสอบ" value="<?= htmlspecialchars($claim['verifier_name'] ?? $_SESSION['user_name'] ?? '') ?>" <?= isAdmin() ? 'required' : 'readonly' ?>>
+                <div class="p-4">
+                    <div class="row g-4">
+                        <!-- ฝั่งซ้าย: Checklist + ลงนาม -->
+                        <div class="col-lg-6">
+                            <!-- Checklist -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-secondary mb-3"><i class="fas fa-tasks me-1"></i> รายการตรวจสอบ (Checklist)</label>
+                                <div class="d-flex flex-column gap-2">
+                                    <label class="d-flex align-items-center gap-3 p-3 rounded-3" style="background: #f8f9fa; border: 1px solid #e9ecef; cursor: pointer; transition: all 0.2s;">
+                                        <input type="checkbox" class="form-check-input" style="width: 20px; height: 20px; border: 2px solid #dee2e6; border-radius: 6px;" id="check1" <?= !isAdmin() ? 'disabled' : '' ?>>
+                                        <span style="font-size: 0.9rem; color: #444;">ตรวจสอบความถูกต้องของข้อมูลลูกค้าและหมายเลขตัวถัง</span>
+                                    </label>
+                                    <label class="d-flex align-items-center gap-3 p-3 rounded-3" style="background: #f8f9fa; border: 1px solid #e9ecef; cursor: pointer; transition: all 0.2s;">
+                                        <input type="checkbox" class="form-check-input" style="width: 20px; height: 20px; border: 2px solid #dee2e6; border-radius: 6px;" id="check2" <?= !isAdmin() ? 'disabled' : '' ?>>
+                                        <span style="font-size: 0.9rem; color: #444;">ตรวจสอบรายละเอียดและการแนบรูปภาพประกอบของปัญหา</span>
+                                    </label>
+                                    <label class="d-flex align-items-center gap-3 p-3 rounded-3" style="background: #f8f9fa; border: 1px solid #e9ecef; cursor: pointer; transition: all 0.2s;">
+                                        <input type="checkbox" class="form-check-input" style="width: 20px; height: 20px; border: 2px solid #dee2e6; border-radius: 6px;" id="check3" <?= !isAdmin() ? 'disabled' : '' ?>>
+                                        <span style="font-size: 0.9rem; color: #444;">ตรวจสอบรายการอะไหล่ ค่าแรง และยอดเคลมสุทธิว่าถูกต้องเหมาะสม</span>
+                                    </label>
                                 </div>
                             </div>
-                            <div class="row align-items-center">
-                                <label class="col-sm-4 col-form-label fw-bold text-secondary">วันที่ตรวจสอบ</label>
-                                <div class="col-sm-8">
-                                    <input type="text" name="verify_date" class="form-control pill-input bg-light" placeholder="วว/ดด/ปปปป" value="<?= date('d/m/Y') ?>" <?= isAdmin() ? '' : 'readonly' ?>>
+
+                            <!-- ลงนามผู้อนุมัติ -->
+                            <div class="p-3 rounded-4" style="background: #f8f9fa; border: 1px solid #e9ecef;">
+                                <label class="form-label fw-bold text-secondary mb-3"><i class="fas fa-user-shield me-1"></i> ผู้อนุมัติ</label>
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label text-secondary" style="font-size: 0.85rem;">รหัสพนักงาน</label>
+                                        <select name="approver_emp_id" class="form-select verifier-employee-select" style="border-radius: 12px; padding: 10px 14px; border: 2px solid #e9ecef;" <?= isAdmin() ? 'required' : 'disabled' ?>>
+                                            <option value="">-- เลือก --</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label text-secondary" style="font-size: 0.85rem;">ชื่อผู้อนุมัติ</label>
+                                        <input type="text" name="approver_name" class="form-control bg-white" style="border-radius: 12px; padding: 10px 14px; border: 2px solid #e9ecef;" placeholder="ชื่อผู้อนุมัติ" value="<?= htmlspecialchars($claim['verifier_name'] ?? '') ?>" readonly>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label text-secondary" style="font-size: 0.85rem;">ลายเซ็นต์</label>
+                                        <input type="text" name="approver_signature" class="form-control bg-white" style="border-radius: 12px; padding: 10px 14px; border: 2px solid #e9ecef;" placeholder="ลายเซ็นต์" value="<?= htmlspecialchars($claim['verifier_signature'] ?? '') ?>" readonly>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mt-2">
+                                    <div class="col-md-4">
+                                        <label class="form-label text-secondary" style="font-size: 0.85rem;"><i class="fas fa-calendar-alt me-1"></i> วันที่อนุมัติ</label>
+                                        <input type="text" name="verify_date" class="form-control bg-white" style="border-radius: 12px; padding: 10px 14px; border: 2px solid #e9ecef;" placeholder="วว/ดด/ปปปป" value="<?= date('d/m/Y') ?>" <?= isAdmin() ? '' : 'readonly' ?>>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- ฝั่งขวา: ผลการพิจารณาและหมายเหตุ -->
-                    <div class="action-column d-flex flex-column">
-                        <div class="d-flex align-items-center gap-3 mb-3">
-                            <label class="form-label fw-bold text-secondary mb-0" style="min-width: 100px;">ผลพิจารณา</label>
-                            <select name="status" class="form-select pill-select-orange w-100" required <?= !isAdmin() ? 'disabled' : '' ?>>
-                                <option value="">--กรุณาเลือกผลการตรวจสอบ--</option>
-                                <option value="Approved Claim" <?= $claim['status'] == 'Approved Claim' ? 'selected' : '' ?>>อนุมัติการเคลม</option>
-                                <option value="Approved Replacement" <?= $claim['status'] == 'Approved Replacement' ? 'selected' : '' ?>>อนุมัติเปลี่ยนคัน</option>
-                                <option value="Rejected" <?= $claim['status'] == 'Rejected' ? 'selected' : '' ?>>ไม่อนุมัติ</option>
-                                <option value="Rejected" <?= $claim['status'] == 'Rejected' ? 'selected' : '' ?>>เปลี่ยน  </option>
-                                <option value="Pending Fix" <?= $claim['status'] == 'Pending Fix' ? 'selected' : '' ?>>รอแก้ไข</option>
-                                <option value="Pending" <?= $claim['status'] == 'Pending' ? 'selected' : '' ?>>ดำเนินการเสร็จสิ้น</option>
-                            </select>
-                        </div>
+                        <!-- ฝั่งขวา: ผลพิจารณา + หมายเหตุ + ปุ่ม -->
+                        <div class="col-lg-6 d-flex flex-column">
+                            <!-- ผลพิจารณา -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold text-secondary mb-2"><i class="fas fa-gavel me-1"></i> ผลพิจารณา</label>
+                                <select name="status" class="form-select" style="border-radius: 12px; padding: 12px 16px; border: 2px solid #e9ecef; font-size: 0.95rem;" required <?= !isAdmin() ? 'disabled' : '' ?>>
+                                    <option value="">--กรุณาเลือกผลการตรวจสอบ--</option>
+                                    <option value="Approved Claim" <?= $claim['status'] == 'Approved Claim' ? 'selected' : '' ?>>อนุมัติการเคลม</option>
+                                    <option value="Approved Replacement" <?= $claim['status'] == 'Approved Replacement' ? 'selected' : '' ?>>อนุมัติเปลี่ยนคัน</option>
+                                    <option value="Rejected" <?= $claim['status'] == 'Rejected' ? 'selected' : '' ?>>ไม่อนุมัติ</option>
+                                    <option value="Replaced" <?= $claim['status'] == 'Replaced' ? 'selected' : '' ?>>เปลี่ยนคัน</option>
+                                    <option value="Pending Fix" <?= $claim['status'] == 'Pending Fix' ? 'selected' : '' ?>>รอแก้ไข</option>
+                                    <option value="Completed" <?= $claim['status'] == 'Completed' ? 'selected' : '' ?>>ดำเนินการเสร็จสิ้น</option>
+                                </select>
+                            </div>
 
-                        <div class="mb-4">
-                            <label class="form-label fw-bold text-secondary mb-2">หมายเหตุ / ความเห็นผู้ตรวจสอบ</label>
-                            <textarea name="verify_remarks" class="form-control pill-textarea" rows="5" placeholder="ระบุเหตุผล หากไม่อนุมัติหรือตีกลับ..." <?= !isAdmin() ? 'readonly' : '' ?>><?= htmlspecialchars($claim['verify_remarks'] ?? '') ?></textarea>
-                        </div>
+                            <!-- หมายเหตุ -->
+                            <div class="mb-4 flex-grow-1">
+                                <label class="form-label fw-bold text-secondary mb-2"><i class="fas fa-comment-dots me-1"></i> หมายเหตุ / ความเห็นผู้ตรวจสอบ</label>
+                                <textarea name="verify_remarks" class="form-control" rows="5" style="border-radius: 12px; border: 2px solid #e9ecef; padding: 12px 16px; resize: none;" placeholder="ระบุเหตุผล หากไม่อนุมัติหรือตีกลับ..." <?= !isAdmin() ? 'readonly' : '' ?>><?= htmlspecialchars($claim['verify_remarks'] ?? '') ?></textarea>
+                            </div>
 
-                        <div class="d-flex justify-content-end gap-3 mt-auto">
-                            <a href="<?= isAdmin() ? 'check.php' : 'history.php' ?>" class="btn btn-pill-cancel px-4">ยกเลิก</a>
-                            <?php if(isAdmin()): ?>
-                            <button type="submit" id="btnSubmitVerify" class="btn btn-pill-save px-4">บันทึกผลการตรวจ</button>
-                            <?php endif; ?>
+                            <!-- ปุ่ม -->
+                            <div class="d-flex justify-content-end gap-3 mt-auto">
+                                <a href="<?= isAdmin() ? 'check.php' : 'history.php' ?>" class="btn px-4 py-2 fw-bold" style="border-radius: 12px; border: 2px solid #dee2e6; color: #6c757d; background: white; transition: all 0.2s;">
+                                    <i class="fas fa-times me-1"></i> ยกเลิก
+                                </a>
+                                <?php if(isAdmin()): ?>
+                                <button type="submit" id="btnSubmitVerify" class="btn text-white px-5 py-2 fw-bold" style="border-radius: 12px; background: linear-gradient(135deg, #00b894, #55efc4); border: none; box-shadow: 0 4px 15px rgba(0,184,148,0.3); transition: all 0.2s;">
+                                    <i class="fas fa-check-circle me-1"></i> บันทึกผลการตรวจ
+                                </button>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -412,7 +503,7 @@ try {
 
     <!-- Modal ขยายรูป -->
     <div class="modal-overlay" id="image-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; justify-content:center; align-items:center; transition: all 0.3s ease;">
-        <div style="position:absolute; top:20px; right:30px; color:white; font-size:45px; cursor:pointer;" onclick="closeImageModal()">×</div>
+        <div style="position:absolute; top:20px; right:30px; color:white; font-size:45px; cursor:pointer;" onclick="closeImageModal()">&#215;</div>
         <img src="" id="modal-img" style="max-width:90%; max-height:90%; object-fit:contain; border-radius: 12px; box-shadow: 0 5px 30px rgba(0,0,0,0.5);">
     </div>
 
@@ -426,7 +517,7 @@ try {
         if (modal && modalImg) {
             modalImg.src = src;
             modal.style.display = 'flex';
-            document.body.style.overflow = 'hidden'; // ป้องกันการ Scroll หลังพื้นหลัง
+            document.body.style.overflow = 'hidden';
         }
     }
 
@@ -434,17 +525,67 @@ try {
         const modal = document.getElementById('image-modal');
         if (modal) {
             modal.style.display = 'none';
-            document.body.style.overflow = 'auto'; // คืนค่าการ Scroll
+            document.body.style.overflow = 'auto';
         }
     }
 
-    // ปิด Modal เมื่อคลิกพื้นหลัง
     window.addEventListener('click', function(e) {
         const modal = document.getElementById('image-modal');
         if (e.target === modal) closeImageModal();
     });
 
     document.addEventListener('DOMContentLoaded', function() {
+        // โหลดรายชื่อพนักงานเข้า dropdown ผู้อนุมัติ
+        const verifierSelect = document.querySelector('.verifier-employee-select');
+        if (verifierSelect) {
+            const existingEmpId = '<?= htmlspecialchars($claim["verifier_emp_id"] ?? "") ?>';
+            fetch('../backend/api_users.php')
+            .then(res => res.json())
+            .then(json => {
+                if (json.success) {
+                    json.data.forEach(emp => {
+                        const opt = document.createElement('option');
+                        opt.value = emp.employee_id;
+                        opt.textContent = `${emp.employee_id} - ${emp.name}`;
+                        if (emp.employee_id === existingEmpId) opt.selected = true;
+                        verifierSelect.appendChild(opt);
+                    });
+                    
+                    // Auto-fill on change
+                    verifierSelect.addEventListener('change', function() {
+                        const emp = json.data.find(e => e.employee_id === this.value);
+                        const nameInput = document.querySelector('input[name="approver_name"]');
+                        const sigInput = document.querySelector('input[name="approver_signature"]');
+                        if (nameInput) nameInput.value = emp ? emp.name : '';
+                        if (sigInput) sigInput.value = emp ? (emp.signature || '') : '';
+                    });
+                }
+            })
+            .catch(err => console.error('Failed to load employees:', err));
+        }
+
+        // โหลดสถานะจาก master data (fallback ถ้า master_statuses มีข้อมูล)
+        const statusSelect = document.querySelector('select[name="status"]');
+        if (statusSelect) {
+            const currentStatus = '<?= htmlspecialchars($claim["status"] ?? "") ?>';
+            fetch('../backend/api_master_data.php?type=statuses')
+            .then(res => res.json())
+            .then(json => {
+                if (json.success && json.data.length > 0) {
+                    statusSelect.innerHTML = '<option value="">--กรุณาเลือกผลการตรวจสอบ--</option>';
+                    json.data.forEach(s => {
+                        const opt = document.createElement('option');
+                        opt.value = s.status_code;
+                        opt.textContent = s.status_name;
+                        if (s.status_code === currentStatus) opt.selected = true;
+                        statusSelect.appendChild(opt);
+                    });
+                }
+            })
+            .catch(err => console.error('Failed to load statuses:', err));
+        }
+
+        // Form submit
         const verifyForm = document.getElementById('verifyForm');
         if (verifyForm) {
             verifyForm.addEventListener('submit', function(e) {

@@ -56,6 +56,19 @@ try {
         $params[] = $date_end;
     }
 
+    // New: If not admin, restrict to their own branch
+    $is_admin = isAdmin();
+    $user_branch = $_SESSION['user_branch'] ?? '';
+    
+    if (!$is_admin) {
+        if (!empty($user_branch)) {
+            $whereConditions[] = "branch = ?";
+            $params[] = $user_branch;
+        } else {
+            $whereConditions[] = "1=0";
+        }
+    }
+
     $whereSql = implode(' AND ', $whereConditions);
     
     // ดึงข้อมูลเรียงจากใหม่ไปเก่า (DESC)
@@ -76,6 +89,7 @@ try {
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../shared/assets/css/theme.css">
   <link rel="stylesheet" href="../shared/assets/css/styles-history.css">
+  <script src="../shared/assets/js/utils.js"></script>
 </head>
 <body>
 
@@ -90,20 +104,28 @@ try {
             <div class="col-12 col-lg-auto flex-grow-1">
                 <div class="d-flex flex-wrap gap-2">
                 <input type="text" name="search" placeholder="ค้นหาชื่อ, ทะเบียน, เลขเอกสาร..." class="form-control" style="width: 250px;" value="<?= htmlspecialchars($search) ?>">
-                <select name="branch" class="form-select" style="width: auto; min-width: 140px;">
-                  <option value="">ทุกสาขา</option>
-                  <option value="สาขา สกลนคร" <?= $branch == 'สาขา สกลนคร' ? 'selected' : '' ?>>สกลนคร</option>
+                
+                <?php if ($is_admin): ?>
+                <select id="branchFilter" name="branch" class="form-select" style="width: auto; min-width: 140px;" data-current="<?= htmlspecialchars($branch) ?>">
+                    <option value="">ทุกสาขา</option>
                 </select>
-                <select name="status" class="form-select" style="width: auto; min-width: 140px;">
-                  <option value="">ทุกสถานะ</option>
-                  <option value="Pending" <?= $status == 'Pending' ? 'selected' : '' ?>>ส่งไปตรวจสอบ</option>
-                  <option value="Pending Fix" <?= $status == 'Pending Fix' ? 'selected' : '' ?>>รอแก้ไข</option>
-                  <option value="Completed" <?= $status == 'Completed' ? 'selected' : '' ?>>ดำเนินการเสร็จสิ้น</option>
-                  <option value="Replaced" <?= $status == 'Replaced' ? 'selected' : '' ?>>เปลี่ยนคัน</option>
-                  <option value="Approved Claim" <?= $status == 'Approved Claim' ? 'selected' : '' ?>>อนุมัติเคลม</option>
-                  <option value="Approved Replacement" <?= $status == 'Approved Replacement' ? 'selected' : '' ?>>อนุมัติเปลี่ยนคัน</option>
-                  <option value="Rejected" <?= $status == 'Rejected' ? 'selected' : '' ?>>ปฏิเสธ</option>
+                <?php else: ?>
+                    <input type="hidden" name="branch" value="<?= htmlspecialchars($user_branch) ?>">
+                    <div class="px-3 py-2 bg-light rounded-pill border fw-bold text-secondary" style="font-size: 0.9rem;">
+                        📍 <?= htmlspecialchars($user_branch) ?>
+                    </div>
+                <?php endif; ?>
+                
+                <select id="statusFilter" name="status" class="form-select" style="width: auto; min-width: 140px;" data-current="<?= htmlspecialchars($status) ?>">
+                    <option value="">ทุกสถานะ</option>
+                    <option value="Approved Claim" <?= $status == 'Approved Claim' ? 'selected' : '' ?>>อนุมัติการเคลม</option>
+                    <option value="Approved Replacement" <?= $status == 'Approved Replacement' ? 'selected' : '' ?>>อนุมัติเปลี่ยนคัน</option>
+                    <option value="Rejected" <?= $status == 'Rejected' ? 'selected' : '' ?>>ไม่อนุมัติ</option>
+                    <option value="Replaced" <?= $status == 'Replaced' ? 'selected' : '' ?>>เปลี่ยนคัน</option>
+                    <option value="Pending Fix" <?= $status == 'Pending Fix' ? 'selected' : '' ?>>รอแก้ไข</option>
+                    <option value="Completed" <?= $status == 'Completed' ? 'selected' : '' ?>>ดำเนินการเสร็จสิ้น</option>
                 </select>
+                
                 <div class="input-group" style="width: auto;">
                     <span class="input-group-text">ตั้งแต่</span>
                     <input type="date" name="date_start" class="form-control" value="<?= htmlspecialchars($date_start) ?>">
@@ -267,6 +289,25 @@ try {
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+    // โหลดสาขาเข้า dropdown (เหมือน check.php)
+    const branchSel = document.getElementById('branchFilter');
+    if (branchSel) {
+      const currentBranch = branchSel.getAttribute('data-current') || '';
+      fetch('../backend/api_branches.php')
+      .then(r => r.json())
+      .then(json => {
+        if (json.success) {
+          json.data.forEach(b => {
+            const opt = document.createElement('option');
+            opt.value = b.branch_name;
+            opt.textContent = b.branch_name;
+            if (b.branch_name === currentBranch) opt.selected = true;
+            branchSel.appendChild(opt);
+          });
+        }
+      }).catch(e => console.error('Failed to load branches:', e));
+    }
+
     function applyRealTimeAges() {
         const ageElements = document.querySelectorAll('.realtime-age');
         
@@ -310,10 +351,7 @@ try {
         });
     }
 
-    // ทำงานทันทีที่โหลดหน้าจอ 
     applyRealTimeAges();
-    
-    // อัปเดตข้อมูลอัตโนมัติทุกๆ 1 นาที (60000 ms)
     setInterval(applyRealTimeAges, 60000);
   </script>
 </body>
