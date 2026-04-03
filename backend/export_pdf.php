@@ -332,15 +332,24 @@ try {
                 <div style="width: 50%; display: flex;"><span class="label-text">รถคันใหม่ คงเหลือเงินดาวน์</span><span class="dotted-fill"><?= ($claim['new_down_balance'] > 0) ? number_format($claim['new_down_balance'], 2) : '' ?></span></div>
             </div>
             <div class="info-line" style="margin-top: 5px;">
-                <div style="width: 25%; display: flex;"><span class="label-text">ยี่ห้อ</span><span class="dotted-fill"><?= htmlspecialchars($claim['rp_brand'] ?? '') ?></span></div>
-                <div style="width: 25%; display: flex;"><span class="label-text">รุ่น</span><span class="dotted-fill"><?= htmlspecialchars($claim['rp_model'] ?? '') ?></span></div>
-                <div style="width: 50%; display: flex;"><span class="label-text">เลขถัง</span><span class="dotted-fill"><?= htmlspecialchars($claim['replace_vin'] ?? '') ?></span></div>
+                <div style="width: 18%; display: flex;"><span class="label-text">ยี่ห้อ</span><span class="dotted-fill"><?= htmlspecialchars($claim['rp_brand'] ?? '') ?></span></div>
+                <div style="width: 18%; display: flex;"><span class="label-text">รุ่น</span><span class="dotted-fill"><?= htmlspecialchars($claim['rp_model'] ?? '') ?></span></div>
+                <div style="width: 15%; display: flex;"><span class="label-text">สี</span><span class="dotted-fill"><?= htmlspecialchars($claim['rp_color'] ?? '') ?></span></div>
+                <div style="width: 30%; display: flex;"><span class="label-text">เลขถัง</span><span class="dotted-fill"><?= htmlspecialchars($claim['replace_vin'] ?? '') ?></span></div>
+                <div style="width: 19%; display: flex;"><span class="label-text">วันที่รับรถ</span><span class="dotted-fill"><?= $receiveDateForm ?></span></div>
             </div>
             <div class="info-line" style="margin-top: 5px;">
-                <span class="label-text">สาเหตุที่เปลี่ยน</span><span class="dotted-fill"><?= htmlspecialchars($claim['replace_reason'] ?? '') ?></span>
+                <span class="label-text" style="width: 100px;">สาเหตุที่เปลี่ยน</span><span class="dotted-fill"><?= htmlspecialchars($claim['replace_reason'] ?? '') ?></span>
+            </div>
+            <div class="info-line" style="margin-top: 5px;">
+                <div style="width: 60%; display: flex;"><span class="label-text">ผู้อนุมัติ</span><span class="dotted-fill"><?= htmlspecialchars($claim['rp_app_name'] ?? '') ?></span></div>
+                <div style="width: 40%; display: flex;"><span class="label-text">วันที่อนุมัติ</span><span class="dotted-fill"><?= $approveDateForm ?></span></div>
             </div>
         </div>
-        <div class="notice-text">***หมายเหตุ 1. ลูกค้าแจ้งเปลี่ยนคัน ส่งให้สินเชื่อพร้อมใบอนุมัติทุกครั้งที่มีการเปลี่ยน | 2. บริหารสต็อก ตัดแลกเปลี่ยน / ธุรการสินเชื่อ ตรวจสอบการเปิดขาย</div>
+        <div class="notice-text">
+            ***หมายเหตุ 1. ลูกค้าแจ้งเปลี่ยนคัน ส่งให้สินเชื่อพร้อมใบอนุมัติทุกครั้งที่มีการเปลี่ยน / ตัวจริงแนบมากับสัญญาส่งให้ห้องบัญชี <br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2. สินเชื่อเช็คประกันรถหาย / ทะเบียนแก้ไขพรบ.+ทะเบียน / บริหารสต็อก ตัดแลกเปลี่ยน / ธุรการสินเชื่อ ตรวจสอบการเปิดขาย
+        </div>
     </div>
     <?php endforeach; ?>
 

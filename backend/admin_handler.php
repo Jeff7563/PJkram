@@ -93,7 +93,7 @@ try {
         exit;
     }
 
-    // DELETE — ลบ User (soft delete = is_active = 0)
+    // DELETE — ลบ User จริงๆ (Hard Delete)
     if ($action === 'delete') {
         $id = $_POST['id'] ?? null;
         if (!$id) {
@@ -101,16 +101,18 @@ try {
             exit;
         }
 
-        // ป้องกันไม่ให้ลบตัวเองและไม่ให้ลบ Admin คนสุดท้าย
-        if ($id == ($_SESSION['user_id'] ?? 0)) {
+        // ป้องกันไม่ให้ลบตัวเอง
+        $myId = $_SESSION['user_id'] ?? 0;
+        if (intval($id) === intval($myId)) {
             echo json_encode(['success' => false, 'message' => 'ไม่สามารถลบตัวเองได้'], JSON_UNESCAPED_UNICODE);
             exit;
         }
 
-        $stmt = $pdo->prepare("UPDATE users SET is_active = 0 WHERE id = ?");
+        // ลบจากฐานข้อมูล
+        $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
         $stmt->execute([$id]);
 
-        echo json_encode(['success' => true, 'message' => 'ปิดการใช้งานผู้ใช้เรียบร้อยแล้ว'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['success' => true, 'message' => 'ลบผู้ใช้เรียบร้อยแล้ว'], JSON_UNESCAPED_UNICODE);
         exit;
     }
 

@@ -1,7 +1,7 @@
 <?php
 // 1. เชื่อมต่อฐานข้อมูล
 require_once __DIR__ . '/../backend/auth.php';
-requireAdmin();
+requireLogin();
 require_once __DIR__ . '/../shared/config/db_connect.php';
 
 try {
@@ -56,6 +56,20 @@ try {
         $params[] = $date_end;
     }
 
+    // New: If not admin, restrict to their own branch
+    $is_admin = isAdmin();
+    $user_branch = $_SESSION['user_branch'] ?? '';
+    
+    if (!$is_admin) {
+        if (!empty($user_branch)) {
+            $whereConditions[] = "branch = ?";
+            $params[] = $user_branch;
+        } else {
+            // Safety: If no branch set for user, show nothing or handle error
+            $whereConditions[] = "1=0"; 
+        }
+    }
+
     $whereSql = implode(' AND ', $whereConditions);
     
     // ดึงข้อมูลเรียงจากใหม่ไปเก่า
@@ -94,10 +108,16 @@ try {
                 <div class="d-flex flex-wrap gap-2">
                 <input type="text" name="search" placeholder="ค้นหาชื่อ, ทะเบียน, เลขเอกสาร..." class="form-control" style="width: 250px;" value="<?= htmlspecialchars($search) ?>">
                 
-                <select name="branch" class="form-select" style="width: auto; min-width: 140px;">
+                <?php if ($is_admin): ?>
+                <select id="branchFilter" name="branch" class="form-select" style="width: auto; min-width: 140px;" data-current="<?= htmlspecialchars($branch) ?>">
                     <option value="">ทุกสาขา</option>
-                    <option value="สาขา สกลนคร" <?= $branch == 'สาขา สกลนคร' ? 'selected' : '' ?>>สกลนคร</option>
                 </select>
+                <?php else: ?>
+                    <input type="hidden" name="branch" value="<?= htmlspecialchars($user_branch) ?>">
+                    <div class="px-3 py-2 bg-light rounded-pill border fw-bold text-secondary" style="font-size: 0.9rem;">
+                        📍 <?= htmlspecialchars($user_branch) ?>
+                    </div>
+                <?php endif; ?>
                 
                 <select name="status" class="form-select" style="width: auto; min-width: 140px;">
                     <option value="">ทุกสถานะ</option>
@@ -218,11 +238,15 @@ try {
                            $carTypeDisplay = 'รถมือสอง<br><span style="font-size:0.85rem; color:#666;">'.$brandDisplay.' / เกรด: '.$gradeText.'</span>';
                        }
 
-                      // 7. แปลงประเภทการเคลมเป็นภาษาไทย
-                       $claimCatDisplay = htmlspecialchars($row['claim_category'] ?? '');
-                       if ($claimCatDisplay === 'pre-sale') $claimCatDisplay = 'เคลมรถก่อนขาย';
-                       if ($claimCatDisplay === 'technical') $claimCatDisplay = 'เคลมปัญหาทางเทคนิค';
-                       if ($claimCatDisplay === 'customer' || $claimCatDisplay === 'customer-sale') $claimCatDisplay = 'เคลมรถลูกค้า';
+                      // 7. แปลงประเภทการเคลม (ถ้าเป็นภาษาอังกฤษให้แปลงเป็นไทย ถ้าเป็นไทยอยู่แล้วให้แสดงเลย)
+                       $claimCatRaw = $row['claim_category'] ?? '';
+                       $catMap = [
+                           'pre-sale' => 'เคลมรถก่อนขาย',
+                           'technical' => 'เคลมปัญหาทางเทคนิค',
+                           'customer' => 'เคลมรถลูกค้า',
+                           'customer-sale' => 'เคลมรถลูกค้า'
+                       ];
+                       $claimCatDisplay = $catMap[$claimCatRaw] ?? ($claimCatRaw ?: '-');
                   ?>
                   <tr>
                     <td class="export-col text-center" style="display: none;">
@@ -248,7 +272,9 @@ try {
                       <span class="<?= $badgeClass ?>"><?= $statusDisplay ?></span>
                     </td>
                     <td class="text-center pe-4 text-nowrap">
-                      <a href="verify.php?id=<?= $row['id'] ?>" class="btn-verify text-decoration-none">ตรวจสอบ</a>
+                      <a href="verify.php?id=<?= $row['id'] ?>" class="btn-verify text-decoration-none">
+                        <?= $is_admin ? 'ตรวจสอบ' : 'ดูรายละเอียด' ?>
+                      </a>
                     </td>
                   </tr>
                   <?php endforeach; ?>
@@ -482,6 +508,26 @@ try {
       
       applyRealTimeAges();
       setInterval(applyRealTimeAges, 60000); // 1 minute
+
+      // Load Dynamic Branches for Admin Filter
+      const branchFilter = document.getElementById('branchFilter');
+      if (branchFilter) {
+          fetch('../backend/api_branches.php')
+              .then(res => res.json())
+              .then(resp => {
+                  if (resp.success) {
+                      const currentVal = branchFilter.getAttribute('data-current');
+                      resp.data.forEach(b => {
+                          const opt = document.createElement('option');
+                          opt.value = b.branch_name;
+                          opt.textContent = b.branch_name;
+                          if (b.branch_name === currentVal) opt.selected = true;
+                          branchFilter.appendChild(opt);
+                      });
+                  }
+              })
+              .catch(err => console.error('Failed to load branches:', err));
+      }
       
     });
   </script>

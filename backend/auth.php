@@ -61,7 +61,10 @@ function doLogout() {
 function requireLogin() {
     if (session_status() === PHP_SESSION_NONE) session_start();
     if (empty($_SESSION['logged_in'])) {
-        header('Location: login.php');
+        // ตรวจสอบว่าอยู่ในโฟลเดอร์ backend หรือไม่
+        $currentDir = basename(dirname($_SERVER['SCRIPT_NAME']));
+        $redirectUrl = ($currentDir === 'backend') ? '../frontend/login.php' : 'login.php';
+        header('Location: ' . $redirectUrl);
         exit;
     }
 }
@@ -90,7 +93,9 @@ function isAdmin() {
 function requireAdmin() {
     requireLogin();
     if (!isAdmin()) {
-        header('Location: index.php');
+        $currentDir = basename(dirname($_SERVER['SCRIPT_NAME']));
+        $redirectUrl = ($currentDir === 'backend') ? '../frontend/index.php' : 'index.php';
+        header('Location: ' . $redirectUrl);
         exit;
     }
 }

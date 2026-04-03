@@ -69,10 +69,21 @@ try {
     }
     
     // แปลงประเภทรถ และการดำเนินการ
+    // แปลงประเภทรถ
     $carTypeDisplay = $claim['car_type'] === 'new' ? 'รถใหม่' : ($claim['car_type'] === 'used' ? 'รถมือสอง' : $claim['car_type']);
-    $claimCategoryDisplay = $claim['claim_category'] === 'pre-sale' ? 'เคลมรถก่อนขาย' : ($claim['claim_category'] === 'technical' ? 'เคลมปัญหาทางเทคนิค' : 'เคลมรถลูกค้า');
     
+    // แสดงประเภทการเคลม (ดึงจากฐานข้อมูลตรงๆ เพราะเราบันทึกเป็นภาษาไทยอยู่แล้ว)
+    $claimCategoryDisplay = $claim['claim_category'] ?: '-';
+    
+    // แปลงชื่อประเภทการเคลมจริงๆ
+    $claimTypeMap = [
+        'RepairBranch' => 'ซ่อมที่สาขา',
+        'SendHQ' => 'ส่งซ่อมสนญ.',
+        'ReplaceVehicle' => 'เปลี่ยนคัน',
+        'Other' => 'อื่นๆ'
+    ];
     $cType = $claim['claim_type'] ?? '';
+    $claimTypeDisplay = $claimTypeMap[$cType] ?? ($cType ?: '-');
 
 } catch (Exception $e) {
     die("เกิดข้อผิดพลาด: " . $e->getMessage());
@@ -134,6 +145,10 @@ try {
                        <div class="col-6"><input type="text" class="form-control bg-light border-0 pill-input" value="<?= $carTypeDisplay ?>" readonly></div>
                     </div>
                   </div>
+                </div>
+                <div class="row align-items-center mb-2">
+                  <label class="col-sm-4 col-form-label fw-600">การดำเนินการ</label>
+                  <div class="col-sm-8"><input type="text" class="form-control bg-light border-0 pill-input text-primary-orange fw-bold" value="<?= $claimTypeDisplay ?>" readonly></div>
                 </div>
                 <div class="row align-items-center">
                   <label class="col-sm-4 col-form-label fw-600">เลขที่เอกสาร</label>

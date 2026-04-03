@@ -81,6 +81,7 @@ try {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../shared/assets/css/theme.css">
     <link rel="stylesheet" href="../shared/assets/css/styles-edit_claim.css">
+    <script src="../shared/assets/js/utils.js"></script>
 </head>
 <body>
 
@@ -125,8 +126,8 @@ try {
                                     <div class="row align-items-center">
                                         <label class="col-sm-4 col-form-label fw-600">สาขา</label>
                                         <div class="col-sm-8">
-                                            <select name="branch" class="form-select border-2" required>
-                                                <option value="สาขา สกลนคร" <?= $claim['branch'] == 'สาขา สกลนคร' ? 'selected' : '' ?>>สาขา สกลนคร</option>
+                                            <select id="branch" name="branch" class="form-select border-2" data-current="<?= htmlspecialchars($claim['branch'] ?? '') ?>" required>
+                                                <option value="">-- เลือกสาขา --</option>
                                             </select>
                                         </div>
                                     </div>
@@ -697,130 +698,23 @@ try {
             imageModal.addEventListener('click', (e) => { if (e.target === imageModal) imageModal.style.display = 'none'; });
 
             // --- คำนวณอายุรถ ---
+            // PJUtils Integration
             const saleDateInput = document.getElementById('sale_date');
             const ageDisplay = document.getElementById('vehicle_age');
-            function calculateVehicleAge() {
-                if (!saleDateInput.value) { ageDisplay.value = ''; return; }
-                const start = new Date(saleDateInput.value);
-                start.setHours(0,0,0,0);
-                const end = new Date();
-                
-                let years = end.getFullYear() - start.getFullYear();
-                let months = end.getMonth() - start.getMonth();
-                let days = end.getDate() - start.getDate();
-                let hours = end.getHours();
-                
-                if (days < 0) {
-                    months--;
-                    const prevMonth = new Date(end.getFullYear(), end.getMonth(), 0);
-                    days += prevMonth.getDate();
-                }
-                if (months < 0) {
-                    years--;
-                    months += 12;
-                }
-                
-                let res = [];
-                if (years > 0) res.push(years + " ปี");
-                if (months > 0) res.push(months + " เดือน");
-                if (days > 0) res.push(days + " วัน");
-                res.push(hours + " ชั่วโมง");
-                
-                ageDisplay.value = res.join(" ");
-            }
-            if (saleDateInput) {
-                saleDateInput.addEventListener('change', calculateVehicleAge);
-                calculateVehicleAge();
-            }
-
-            // --- จัดการการแสดงผลตาม Claim Type (Action) ---
-            const repairSection = document.getElementById('repairApproverSection');
-            const deliverySection = document.getElementById('repairDeliverySection');
-            const replaceBlock = document.getElementById('replaceBlock');
-            const partsTableSection = document.getElementById('partsTableSection');
-
-            function updateVisibility() {
-                const checkedRadio = document.querySelector('.act-radio:checked');
-                const val = checkedRadio ? checkedRadio.value : '';
-                
-                if (val === 'ReplaceVehicle') {
-                    if (replaceBlock) { replaceBlock.classList.remove('d-none'); replaceBlock.classList.add('d-block'); }
-                    if (repairSection) repairSection.classList.add('d-none');
-                    if (deliverySection) deliverySection.classList.add('d-none');
-                    if (partsTableSection) partsTableSection.classList.add('d-none');
-                } else {
-                    if (replaceBlock) { replaceBlock.classList.add('d-none'); replaceBlock.classList.remove('d-block'); }
-                    if (repairSection) repairSection.classList.remove('d-none');
-                    if (deliverySection) deliverySection.classList.remove('d-none');
-                    if (partsTableSection) partsTableSection.classList.remove('d-none');
-                }
-            }
-
-            document.querySelectorAll('.act-radio').forEach(r => {
-                r.addEventListener('change', updateVisibility);
-            });
-            updateVisibility(); // Run on load
-
-            function updateGradeVisibility() {
-                const checkedRadio = document.querySelector('.rep-car-type:checked');
-                const gradeField = document.getElementById('repGradeField');
-                if (gradeField) {
-                    const isUsed = checkedRadio && (checkedRadio.value === 'used' || checkedRadio.value === 'รถมือสอง');
-                    if (isUsed) {
-                        gradeField.classList.remove('d-none');
-                    } else {
-                        gradeField.classList.add('d-none');
-                    }
-                }
-            }
-            document.querySelectorAll('.rep-car-type').forEach(r => {
-                r.addEventListener('change', updateGradeVisibility);
-            });
-            updateGradeVisibility(); // Run on load
-
-            // --- ระบบจัดการผู้อนุมัติแบบ Dropdown ---
-            let employeeData = [];
             
-            // ดึงข้อมูลพนักงานทั้งหมด
-            fetch('../backend/api_users.php')
-                .then(res => res.json())
-                .then(resp => {
-                    const data = resp.data || resp; // Handle both {success:true, data:[]} and raw []
-                    employeeData = Array.isArray(data) ? data : [];
-
-                        // เติมข้อมูลลงใน Dropdown ทุกตัวที่มี class employee-select
-                        document.querySelectorAll('.employee-select').forEach(select => {
-                            const currentVal = select.getAttribute('data-current') || select.value;
-                            select.innerHTML = '<option value="">-- เลือกพนักงาน --</option>';
-                            employeeData.forEach(emp => {
-                                const option = document.createElement('option');
-                                option.value = emp.employee_id;
-                                option.textContent = emp.employee_id + ' - ' + emp.name;
-                                if (emp.employee_id === currentVal) option.selected = true;
-                                select.appendChild(option);
-                            });
-                        });
-                })
-                .catch(err => console.error('Error fetching employees:', err));
-
-            // จัดการ Event เมื่อมีการเลือกพนักงาน (Autofill)
-            document.addEventListener('change', function(e) {
-                if (e.target.classList.contains('employee-select')) {
-                    const select = e.target;
-                    const empId = select.value;
-                    const targetNameId = select.getAttribute('data-target-name');
-                    const targetSigId = select.getAttribute('data-target-sig');
-                    
-                    const emp = employeeData.find(u => u.employee_id === empId);
-                    if (emp) {
-                        if (targetNameId) document.getElementById(targetNameId).value = emp.name;
-                        if (targetSigId) document.getElementById(targetSigId).value = emp.signature || '';
-                    } else {
-                        if (targetNameId) document.getElementById(targetNameId).value = '';
-                        if (targetSigId) document.getElementById(targetSigId).value = '';
-                    }
+            function updateVehicleAge() {
+                if (saleDateInput && ageDisplay) {
+                    ageDisplay.value = PJUtils.calculateAge(saleDateInput.value);
                 }
-            });
+            }
+
+            if (saleDateInput) {
+                saleDateInput.addEventListener('change', updateVehicleAge);
+                updateVehicleAge();
+            }
+
+            PJUtils.loadBranches('branch', document.getElementById('branch')?.dataset.current);
+            PJUtils.loadEmployees();
 
 
 
