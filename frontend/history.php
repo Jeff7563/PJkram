@@ -100,46 +100,61 @@ try {
       
       <div class="filter-card">
         <form method="GET" action="history.php">
-            <div class="row w-100 g-3 align-items-center">
-            <div class="col-12 col-lg-auto flex-grow-1">
-                <div class="d-flex flex-wrap gap-2">
-                <input type="text" name="search" placeholder="ค้นหาชื่อ, ทะเบียน, เลขเอกสาร..." class="form-control" style="width: 250px;" value="<?= htmlspecialchars($search) ?>">
+            <div class="row g-3 align-items-end">
+                <!-- ค้นหาข้อความ -->
+                <div class="col-12 col-md-6 col-lg-3">
+                    <label class="form-label fw-bold small text-muted mb-1">ค้นหา</label>
+                    <input type="text" name="search" placeholder="ชื่อ, ทะเบียน, เลขเอกสาร..." class="form-control" value="<?= htmlspecialchars($search) ?>">
+                </div>
                 
+                <!-- สาขา -->
                 <?php if ($is_admin): ?>
-                <select id="branchFilter" name="branch" class="form-select" style="width: auto; min-width: 140px;" data-current="<?= htmlspecialchars($branch) ?>">
-                    <option value="">ทุกสาขา</option>
-                </select>
+                <div class="col-12 col-md-3 col-lg-2">
+                    <label class="form-label fw-bold small text-muted mb-1">สาขา</label>
+                    <select id="branchFilter" name="branch" class="form-select" data-current="<?= htmlspecialchars($branch) ?>">
+                        <option value="">ทุกสาขา</option>
+                    </select>
+                </div>
                 <?php else: ?>
                     <input type="hidden" name="branch" value="<?= htmlspecialchars($user_branch) ?>">
-                    <div class="px-3 py-2 bg-light rounded-pill border fw-bold text-secondary" style="font-size: 0.9rem;">
-                        📍 <?= htmlspecialchars($user_branch) ?>
-                    </div>
                 <?php endif; ?>
                 
-                <select id="statusFilter" name="status" class="form-select" style="width: auto; min-width: 140px;" data-current="<?= htmlspecialchars($status) ?>">
-                    <option value="">ทุกสถานะ</option>
-                    <option value="Approved Claim" <?= $status == 'Approved Claim' ? 'selected' : '' ?>>อนุมัติการเคลม</option>
-                    <option value="Approved Replacement" <?= $status == 'Approved Replacement' ? 'selected' : '' ?>>อนุมัติเปลี่ยนคัน</option>
-                    <option value="Rejected" <?= $status == 'Rejected' ? 'selected' : '' ?>>ไม่อนุมัติ</option>
-                    <option value="Replaced" <?= $status == 'Replaced' ? 'selected' : '' ?>>เปลี่ยนคัน</option>
-                    <option value="Pending Fix" <?= $status == 'Pending Fix' ? 'selected' : '' ?>>รอแก้ไข</option>
-                    <option value="Completed" <?= $status == 'Completed' ? 'selected' : '' ?>>ดำเนินการเสร็จสิ้น</option>
-                </select>
+                <!-- สถานะ -->
+                <div class="col-12 col-md-3 col-lg-2">
+                    <label class="form-label fw-bold small text-muted mb-1">สถานะ</label>
+                    <select id="statusFilter" name="status" class="form-select" data-current="<?= htmlspecialchars($status) ?>">
+                        <option value="">ทุกสถานะ</option>
+                        <option value="Approved Claim" <?= $status == 'Approved Claim' ? 'selected' : '' ?>>อนุมัติการเคลม</option>
+                        <option value="Approved Replacement" <?= $status == 'Approved Replacement' ? 'selected' : '' ?>>อนุมัติเปลี่ยนคัน</option>
+                        <option value="Rejected" <?= $status == 'Rejected' ? 'selected' : '' ?>>ไม่อนุมัติ</option>
+                        <option value="Replaced" <?= $status == 'Replaced' ? 'selected' : '' ?>>เปลี่ยนคัน</option>
+                        <option value="Pending Fix" <?= $status == 'Pending Fix' ? 'selected' : '' ?>>รอแก้ไข</option>
+                        <option value="Completed" <?= $status == 'Completed' ? 'selected' : '' ?>>ดำเนินการเสร็จสิ้น</option>
+                    </select>
+                </div>
                 
-                <div class="input-group" style="width: auto;">
-                    <span class="input-group-text">ตั้งแต่</span>
-                    <input type="date" name="date_start" class="form-control" value="<?= htmlspecialchars($date_start) ?>">
-                    <span class="input-group-text">ถึง</span>
-                    <input type="date" name="date_end" class="form-control" value="<?= htmlspecialchars($date_end) ?>">
+                <!-- ช่วงวันที่ -->
+                <div class="col-12 col-md-6 col-lg-3">
+                    <label class="form-label fw-bold small text-muted mb-1">ช่วงวันที่</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0" style="font-size: 0.85rem;">ตั้งแต่</span>
+                        <input type="date" name="date_start" class="form-control" value="<?= htmlspecialchars($date_start) ?>">
+                        <span class="input-group-text bg-light border-start-0 border-end-0" style="font-size: 0.85rem;">ถึง</span>
+                        <input type="date" name="date_end" class="form-control" value="<?= htmlspecialchars($date_end) ?>">
+                    </div>
                 </div>
+
+                <!-- ปุ่มค้นหา/รีเซ็ต -->
+                <div class="col-12 col-lg-2">
+                    <div class="row g-2">
+                        <div class="col-6 col-lg-12">
+                            <button type="submit" class="btn-search w-100">ค้นหา</button>
+                        </div>
+                        <div class="col-6 col-lg-12">
+                            <a href="history.php" class="btn-reset w-100 text-decoration-none text-center d-block">รีเซ็ต</a>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="col-12 col-lg-auto">
-                <div class="d-flex gap-2 justify-content-lg-end">
-                <button type="submit" class="btn-search">ค้นหา</button>
-                <a href="history.php" class="btn-reset text-decoration-none text-center">รีเซ็ต</a>
-                </div>
-            </div>
             </div>
         </form>
       </div>
