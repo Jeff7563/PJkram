@@ -89,6 +89,7 @@ try {
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../shared/assets/css/theme.css">
   <link rel="stylesheet" href="../shared/assets/css/styles-history.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <script src="../shared/assets/js/utils.js"></script>
 </head>
 <body>
@@ -97,64 +98,53 @@ try {
 
   <div class="main-content">
     <div class="container-fluid p-0">
-      
-      <div class="filter-card">
+
+      <!-- ปุ่มค้นหาสำหรับมือถือ (มุมขวาบน) -->
+      <button class="filter-toggle-btn" id="filterToggleBtn" type="button" title="ค้นหา / กรองข้อมูล">
+        <i class="fas fa-search"></i>
+      </button>
+
+      <!-- Filter Bar -->
+      <div class="filter-card" id="filterCard">
         <form method="GET" action="history.php">
-            <div class="row g-3 align-items-end">
-                <!-- ค้นหาข้อความ -->
-                <div class="col-12 col-md-6 col-lg-3">
-                    <label class="form-label fw-bold small text-muted mb-1">ค้นหา</label>
-                    <input type="text" name="search" placeholder="ชื่อ, ทะเบียน, เลขเอกสาร..." class="form-control" value="<?= htmlspecialchars($search) ?>">
-                </div>
+            <!-- Desktop: Inline row (เหมือน check.php) -->
+            <div class="row w-100 g-3 align-items-center">
+            <div class="col-12 col-lg-auto flex-grow-1">
+                <div class="d-flex flex-wrap gap-2">
+                <input type="text" name="search" placeholder="ค้นหาชื่อ, ทะเบียน, เลขเอกสาร..." class="form-control filter-input-search" value="<?= htmlspecialchars($search) ?>">
                 
-                <!-- สาขา -->
                 <?php if ($is_admin): ?>
-                <div class="col-12 col-md-3 col-lg-2">
-                    <label class="form-label fw-bold small text-muted mb-1">สาขา</label>
-                    <select id="branchFilter" name="branch" class="form-select" data-current="<?= htmlspecialchars($branch) ?>">
-                        <option value="">ทุกสาขา</option>
-                    </select>
-                </div>
+                <select id="branchFilter" name="branch" class="form-select filter-input-select" data-current="<?= htmlspecialchars($branch) ?>">
+                    <option value="">ทุกสาขา</option>
+                </select>
                 <?php else: ?>
                     <input type="hidden" name="branch" value="<?= htmlspecialchars($user_branch) ?>">
                 <?php endif; ?>
                 
-                <!-- สถานะ -->
-                <div class="col-12 col-md-3 col-lg-2">
-                    <label class="form-label fw-bold small text-muted mb-1">สถานะ</label>
-                    <select id="statusFilter" name="status" class="form-select" data-current="<?= htmlspecialchars($status) ?>">
-                        <option value="">ทุกสถานะ</option>
-                        <option value="Approved Claim" <?= $status == 'Approved Claim' ? 'selected' : '' ?>>อนุมัติการเคลม</option>
-                        <option value="Approved Replacement" <?= $status == 'Approved Replacement' ? 'selected' : '' ?>>อนุมัติเปลี่ยนคัน</option>
-                        <option value="Rejected" <?= $status == 'Rejected' ? 'selected' : '' ?>>ไม่อนุมัติ</option>
-                        <option value="Replaced" <?= $status == 'Replaced' ? 'selected' : '' ?>>เปลี่ยนคัน</option>
-                        <option value="Pending Fix" <?= $status == 'Pending Fix' ? 'selected' : '' ?>>รอแก้ไข</option>
-                        <option value="Completed" <?= $status == 'Completed' ? 'selected' : '' ?>>ดำเนินการเสร็จสิ้น</option>
-                    </select>
-                </div>
+                <select id="statusFilter" name="status" class="form-select filter-input-select" data-current="<?= htmlspecialchars($status) ?>">
+                    <option value="">ทุกสถานะ</option>
+                    <option value="Approved Claim" <?= $status == 'Approved Claim' ? 'selected' : '' ?>>อนุมัติการเคลม</option>
+                    <option value="Approved Replacement" <?= $status == 'Approved Replacement' ? 'selected' : '' ?>>อนุมัติเปลี่ยนคัน</option>
+                    <option value="Rejected" <?= $status == 'Rejected' ? 'selected' : '' ?>>ไม่อนุมัติ</option>
+                    <option value="Replaced" <?= $status == 'Replaced' ? 'selected' : '' ?>>เปลี่ยนคัน</option>
+                    <option value="Pending Fix" <?= $status == 'Pending Fix' ? 'selected' : '' ?>>รอแก้ไข</option>
+                    <option value="Completed" <?= $status == 'Completed' ? 'selected' : '' ?>>ดำเนินการเสร็จสิ้น</option>
+                </select>
                 
-                <!-- ช่วงวันที่ -->
-                <div class="col-12 col-md-6 col-lg-3">
-                    <label class="form-label fw-bold small text-muted mb-1">ช่วงวันที่</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-end-0" style="font-size: 0.85rem;">ตั้งแต่</span>
-                        <input type="date" name="date_start" class="form-control" value="<?= htmlspecialchars($date_start) ?>">
-                        <span class="input-group-text bg-light border-start-0 border-end-0" style="font-size: 0.85rem;">ถึง</span>
-                        <input type="date" name="date_end" class="form-control" value="<?= htmlspecialchars($date_end) ?>">
-                    </div>
+                <div class="input-group filter-input-date">
+                    <span class="input-group-text">ตั้งแต่</span>
+                    <input type="date" name="date_start" class="form-control" value="<?= htmlspecialchars($date_start) ?>">
+                    <span class="input-group-text">ถึง</span>
+                    <input type="date" name="date_end" class="form-control" value="<?= htmlspecialchars($date_end) ?>">
                 </div>
-
-                <!-- ปุ่มค้นหา/รีเซ็ต -->
-                <div class="col-12 col-lg-2">
-                    <div class="row g-2">
-                        <div class="col-6 col-lg-12">
-                            <button type="submit" class="btn-search w-100">ค้นหา</button>
-                        </div>
-                        <div class="col-6 col-lg-12">
-                            <a href="history.php" class="btn-reset w-100 text-decoration-none text-center d-block">รีเซ็ต</a>
-                        </div>
-                    </div>
                 </div>
+            </div>
+            <div class="col-12 col-lg-auto">
+                <div class="d-flex gap-2 justify-content-lg-end">
+                <button type="submit" class="btn-search">ค้นหา</button>
+                <a href="history.php" class="btn-reset text-decoration-none text-center">รีเซ็ต</a>
+                </div>
+            </div>
             </div>
         </form>
       </div>
@@ -368,6 +358,23 @@ try {
 
     applyRealTimeAges();
     setInterval(applyRealTimeAges, 60000);
+
+    // --- Mobile Filter Toggle ---
+    const filterToggleBtn = document.getElementById('filterToggleBtn');
+    const filterCard = document.getElementById('filterCard');
+    if (filterToggleBtn && filterCard) {
+      filterToggleBtn.addEventListener('click', function() {
+        const isOpen = filterCard.classList.toggle('filter-open');
+        filterToggleBtn.classList.toggle('active', isOpen);
+        // เปลี่ยน icon
+        const icon = filterToggleBtn.querySelector('i');
+        if (isOpen) {
+          icon.className = 'fas fa-times';
+        } else {
+          icon.className = 'fas fa-search';
+        }
+      });
+    }
   </script>
 </body>
 </html>

@@ -21,9 +21,24 @@ require_once __DIR__ . '/../backend/index_handler.php';
     const USER_TAGS = <?= json_encode($_SESSION['user_tags'] ?? []) ?>;
     const IS_ADMIN = <?= isAdmin() ? 'true' : 'false' ?>;
   </script>
+  <style>
+    /* Mobile Table Fix */
+    @media (max-width: 768px) {
+      #partsTable { min-width: 650px !important; }
+      table .btn { width: auto !important; display: inline-block !important; margin-bottom: 0 !important; }
+    }
+    
+    /* Global Table Alignment Fix */
+    #partsTable td {
+      vertical-align: middle !important;
+    }
+  </style>
 </head>
 <body>
-  <?php include __DIR__ . '/../shared/assets/includes/sidebar.php'; ?>
+  <?php 
+    include __DIR__ . '/../shared/assets/includes/sidebar.php'; 
+    include __DIR__ . '/../shared/includes/components/toast.php';
+  ?>
   <div class="main-content">
   <main class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -31,10 +46,17 @@ require_once __DIR__ . '/../backend/index_handler.php';
     </div>
 
     <?php if (!empty($message)): ?>
-      <div class="alert alert-info alert-dismissible fade show" role="alert">
+      <div class="alert alert-info alert-dismissible fade show d-none" role="alert" id="initialAlert">
         <?php echo htmlspecialchars($message); ?>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
+      <script>
+        window.addEventListener('DOMContentLoaded', () => {
+          if(window.showToast) {
+            window.showToast(<?= json_encode($message) ?>, 'info');
+          }
+        });
+      </script>
     <?php endif; ?>
 
     <svg style="display:none" aria-hidden="true">
@@ -584,8 +606,11 @@ require_once __DIR__ . '/../backend/index_handler.php';
     e.preventDefault();
     if(!this.checkValidity()){ this.reportValidity(); return; }
     
-    result.style.display = 'block'; 
-    result.innerHTML = '<div class="alert alert-warning"><i class="fas fa-spinner fa-spin me-2"></i> กำลังประมวลผลข้อมูลและอัปโหลดไฟล์... กรุณารอสักครู่</div>';
+    // แสดง loading toast หรือ เปลี่ยนสถานะปุ่ม
+    const btn = this.querySelector('button[type="submit"]');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> กำลังบันทึก...';
     
     const fd = new FormData(this);
     // Add custom images from filesMap
@@ -594,8 +619,9 @@ require_once __DIR__ . '/../backend/index_handler.php';
     fetch(this.action, { method:'POST', body:fd })
     .then(r => r.text())
     .then(t => {
-      result.innerHTML = t;
       if(t.includes('✅')){
+        if(window.showToast) window.showToast('บันทึกข้อมูลการเคลมเรียบร้อยแล้ว!', 'success');
+        
         // Reset form and UI
         this.reset(); 
         Object.keys(filesMap).forEach(k => filesMap[k] = []);
@@ -603,13 +629,26 @@ require_once __DIR__ . '/../backend/index_handler.php';
         document.getElementById('partsImgPreview').innerHTML = '';
         document.querySelectorAll('.attach-count').forEach(s => s.innerText = '( 0 รูป )');
         updateAge();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        // ให้เวลาอ่าน toast นิดนึงก่อน redirect (หรือจะไม่ redirect ตาม handler)
+        // handler เดิมมี redirect ใน script tag: t.includes('<script>')
+        result.innerHTML = t; // ยังต้องใส่เพื่อให้ script ใน t ทำงาน (redirect)
+        result.style.display = 'none'; // แต่ซ่อนหน้าตาไว้
       } else {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        result.style.display = 'block';
+        result.innerHTML = t;
         window.scrollTo({ top: result.offsetTop - 100, behavior: 'smooth' });
+        if(window.showToast) window.showToast('เกิดข้อผิดพลาดในการบันทึกข้อมูล', 'error');
       }
     })
     .catch(err => {
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+      result.style.display = 'block';
       result.innerHTML = `<div class="alert alert-danger">❌ เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์: ${err.message}</div>`;
+      if(window.showToast) window.showToast('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
     });
   };
 })();

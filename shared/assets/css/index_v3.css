@@ -2119,7 +2119,11 @@ table#partsTable {
   border-radius: 8px;
   width: 34px;
   height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.2s;
+  padding: 0;
 }
 
 .btn-remove-part-orange:hover {

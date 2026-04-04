@@ -90,6 +90,7 @@ try {
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../shared/assets/css/theme.css">
   <link rel="stylesheet" href="../shared/assets/css/styles-check.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body>
 
@@ -100,26 +101,28 @@ try {
     <iframe name="export_iframe" id="export_iframe" style="display: none;"></iframe>
 
     <div class="container-fluid p-0">
+
+      <!-- ปุ่มค้นหาสำหรับมือถือ (มุมขวาบน) -->
+      <button class="filter-toggle-btn" id="filterToggleBtn" type="button" title="ค้นหา / กรองข้อมูล">
+        <i class="fas fa-search"></i>
+      </button>
     
-      <div class="filter-card">
+      <div class="filter-card" id="filterCard">
         <form method="GET" action="check.php">
             <div class="row w-100 g-3 align-items-center">
             <div class="col-12 col-lg-auto flex-grow-1">
                 <div class="d-flex flex-wrap gap-2">
-                <input type="text" name="search" placeholder="ค้นหาชื่อ, ทะเบียน, เลขเอกสาร..." class="form-control" style="width: 250px;" value="<?= htmlspecialchars($search) ?>">
+                <input type="text" name="search" placeholder="ค้นหาชื่อ, ทะเบียน, เลขเอกสาร..." class="form-control filter-input-search" value="<?= htmlspecialchars($search) ?>">
                 
                 <?php if ($is_admin): ?>
-                <select id="branchFilter" name="branch" class="form-select" style="width: auto; min-width: 140px;" data-current="<?= htmlspecialchars($branch) ?>">
+                <select id="branchFilter" name="branch" class="form-select filter-input-select" data-current="<?= htmlspecialchars($branch) ?>">
                     <option value="">ทุกสาขา</option>
                 </select>
                 <?php else: ?>
                     <input type="hidden" name="branch" value="<?= htmlspecialchars($user_branch) ?>">
-                    <div class="px-3 py-2 bg-light rounded-pill border fw-bold text-secondary" style="font-size: 0.9rem;">
-                        📍 <?= htmlspecialchars($user_branch) ?>
-                    </div>
                 <?php endif; ?>
                 
-                <select name="status" class="form-select" style="width: auto; min-width: 140px;">
+                <select name="status" class="form-select filter-input-select">
                     <option value="">ทุกสถานะ</option>
                     <option value="Pending Fix" <?= $status == 'Pending Fix' ? 'selected' : '' ?>>รอแก้ไข</option>
                     <option value="Completed" <?= $status == 'Completed' ? 'selected' : '' ?>>ดำเนินการเสร็จสิ้น</option>
@@ -129,7 +132,7 @@ try {
                     <option value="Rejected" <?= $status == 'Rejected' ? 'selected' : '' ?>>ปฏิเสธ</option>
                 </select>
                 
-                <div class="input-group" style="width: auto;">
+                <div class="input-group filter-input-date">
                     <span class="input-group-text">ตั้งแต่</span>
                     <input type="date" name="date_start" class="form-control" value="<?= htmlspecialchars($date_start) ?>">
                     <span class="input-group-text">ถึง</span>
@@ -527,6 +530,18 @@ try {
                   }
               })
               .catch(err => console.error('Failed to load branches:', err));
+      }
+
+      // --- Mobile Filter Toggle ---
+      const filterToggleBtn = document.getElementById('filterToggleBtn');
+      const filterCard = document.getElementById('filterCard');
+      if (filterToggleBtn && filterCard) {
+        filterToggleBtn.addEventListener('click', function() {
+          const isOpen = filterCard.classList.toggle('filter-open');
+          filterToggleBtn.classList.toggle('active', isOpen);
+          const icon = filterToggleBtn.querySelector('i');
+          icon.className = isOpen ? 'fas fa-times' : 'fas fa-search';
+        });
       }
       
     });
